@@ -610,8 +610,8 @@ export const CARD_CONTENT = [
   },
   {
     img: 'mental-wellness-2',
-    icon: 'tag-mental-wellness',
-    tag: 'Mental Wellness',
+    icon: 'tag-care',
+    tag: 'Care',
     title: 'Give your mind the same attention',
   },
   {
@@ -663,9 +663,9 @@ export const CAROUSEL = parked(16, { c: [1668, 953], o: 0 }, [
   { c: [1668, 953], o: 1 },
   { c: [960, 654], o: 1 },
   { c: [960, 654], o: 1 },
-  { c: [537, 507], o: 1 },
-  { c: [537, 326], o: 1 },
-  { c: [-202, -5], o: 1 },
+  { c: [960, 507], o: 1 },
+  { c: [960, 326], o: 1 },
+  { c: [960, -5], o: 1 },
   { c: [-202, -264], o: 1 },
 ])
 
@@ -696,6 +696,42 @@ export const TIMELINE = parked(20, { c: [5929.5, 966], o: 0, b: 4 }, [
   { c: [5545.5, 635], o: 0.6, b: 0 },
   { c: [5328.5, 376], o: 0.6, b: 0 },
 ])
+
+/**
+ * The hour labels, as CENTRES in the ruler's own pixels.
+ *
+ * Taken one by one from the file rather than spaced evenly, because they are
+ * not evenly spaced: Figma builds the ruler as an auto-layout row of 241 ticks
+ * and labels, and a label's own width pushes its neighbours along. Spreading
+ * them evenly puts 5:00 about a thousand pixels from where the design has it,
+ * which matters here — the marker sits still and the ruler moves under it, so
+ * a label in the wrong place tells the wrong time.
+ *
+ * The ruler runs 5:00 to midnight. Slides 21 to 23 travel from just before
+ * 5:00 to exactly 6:00.
+ */
+export const RULER_HOURS = [
+  ['5:00', 471],
+  ['6:00', 1002.5],
+  ['7:00', 1534],
+  ['8:00', 2065.5],
+  ['9:00', 2597.5],
+  ['10:00', 3133],
+  ['11:00', 3669.5],
+  ['12:00', 4205],
+  ['13:00', 4742],
+  ['14:00', 5279.5],
+  ['15:00', 5817.5],
+  ['16:00', 6314.5],
+  ['17:00', 6811],
+  ['18:00', 7307.5],
+  ['19:00', 7804.5],
+  ['20:00', 8304],
+  ['21:00', 8803],
+  ['22:00', 9301],
+  ['23:00', 9801],
+  ['00:00', 10303.5],
+]
 
 export const TIMELINE_DOT = parked(20, { c: [960, 924], o: 0, b: 4 }, [
   { c: [960, 924], o: 0.4, b: 4 },

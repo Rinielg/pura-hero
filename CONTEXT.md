@@ -87,7 +87,7 @@ Note the ordering: **6 sits above 5 on purpose.** See §5.
 | 10–16 | The whole first-act scene travels up and out. Act 3 copy arrives, then the promo card row scrolls in from the right. |
 | 17 | Everything from the first three acts leaves together (a 434px rise). "Help for every part of your health." and the filter pills arrive. |
 | 18–19 | The feature carousel. **Arrow-driven** — see §6. |
-| 20–23 | The carousel leaves left; "See how Pura fits into one ordinary day.", the time ruler, and the day's media panel, which *grows* rather than fades. |
+| 20–23 | The carousel holds the centre and rises, leaving left only at 23. "See how Pura fits into one ordinary day.", the time ruler, and the day's media panel, which *grows* rather than fades. |
 
 ### Slide numbering, and the off-by-one that will catch you
 
@@ -157,6 +157,18 @@ the wrapper, so clicks never reached the button. Fixed with `.layer--interactive
 
 **If you add another control inside the sequence, it must live in that layer.**
 
+### The hour ruler read the wrong time *(2026-09-18)*
+
+The ruler was built with seven labels (5:00–11:00) spread evenly across its
+10,741px, which put 5:00 about a thousand pixels from where the design has it. The
+marker stands still and the ruler moves under it, so a label in the wrong place
+tells the wrong time. `RULER_HOURS` now carries all twenty labels at the centres
+Figma gives them — they are **not** evenly spaced, because a label's own width
+pushes its neighbours along in the auto-layout row.
+
+Slides 21→23 travel from just before 5:00 to exactly 6:00; the marker landing on
+6:00 at Slide 23 is the check that the positions are right.
+
 ### Figma asset extraction
 
 - Exports **clip to the slide frame**. The hand came back 610px instead of 1884; the fix
@@ -224,7 +236,8 @@ To watch a tween with the pane hidden, advance `gsap.globalTimeline` by hand.
   is ~603px on a 375px screen even after scaling with `--ps` — the ends are cut off. It
   wants either a real mobile frame or a horizontally scrollable row. Flagged, not invented.
 - **Slides 20–23 interactions** are still to come; Riniel is providing them.
-- **Card 2 and card 3** of the promo row both read "Give your mind the same attention"
-  under a Mental Wellness tag. Worth confirming that is intentional in the file.
+- **Promo cards 3 and 4** still share the line "Give your mind the same attention".
+  The tags now differ (Mental Wellness / Care) and the file has it that way, so the
+  build follows it — but the body copy looks like placeholder waiting to be written.
 - **The repo is private** because of the brand assets. Public visibility is Riniel's call.
 - The bundle is over 500 kB — three.js and the model. Code-splitting is untouched.

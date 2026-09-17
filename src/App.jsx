@@ -12,6 +12,7 @@ import {
   HAND_ASPECT,
   MOBILE_CHIPS,
   PILL_LABELS,
+  RULER_HOURS,
   scrollLength,
 } from './hero/frames'
 import { pickLayout, projectChip, stageScale as computeStageScale } from './hero/layout'
@@ -417,9 +418,9 @@ export default function App() {
           {/* 10,741px of ruler in Figma, drawn as 241 rectangles. Here it is a
               repeating gradient with the hours labelled over it. */}
           <div className="ruler" ref={refs.timeline} aria-hidden="true">
-            {['5:00', '6:00', '7:00', '8:00', '9:00', '10:00', '11:00'].map((t, i) => (
-              <span key={t} style={{ left: `${(i + 0.5) * (10741 / 7)}px` }}>
-                {t}
+            {RULER_HOURS.map(([label, x]) => (
+              <span key={label} style={{ left: `${x}px` }}>
+                {label}
               </span>
             ))}
           </div>

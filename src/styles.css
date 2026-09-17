@@ -863,12 +863,15 @@ body {
   height: 32px;
   background-image: repeating-linear-gradient(
     90deg,
-    #cfcabf 0 1px,
+    #d9d9d9 0 1px,
     transparent 1px 41px
   );
   will-change: transform, opacity;
 }
 
+/* The white padding stands in for what Figma does structurally: the label
+   REPLACES a tick in the auto-layout row rather than sitting over it. The
+   layer's own 0.6 comes from the timeline track, so nothing is dimmed twice. */
 .ruler span {
   position: absolute;
   top: 50%;
@@ -876,9 +879,11 @@ body {
   padding: 0 14px;
   background: #fff;
   font-family: var(--brand);
-  font-size: 15px;
+  font-weight: 600;
+  font-size: 20px;
+  letter-spacing: -0.2px;
   color: var(--ink);
-  opacity: 0.75;
+  white-space: nowrap;
 }
 
 .ruler-dot {
