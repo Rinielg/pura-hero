@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#fbefe3" />
+    <meta name="description" content="Your wearables, medical history and lab results, together in one app." />
+    <title>Pura — Your health, simplified.</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Figtree stands in for Greycliff CF where the brand face is not
+         installed; Noto Sans is what the design actually specifies for the
+         button and the scroll cue. -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Noto+Sans:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="preload" as="fetch" href="/models/iphone-18-pro.glb" crossorigin />
+    <link rel="preload" as="image" href="/assets/pura-screen.jpg" />
+    <link rel="preload" as="image" href="/assets/hand.png" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
