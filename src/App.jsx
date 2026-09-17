@@ -1,9 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import gsap from 'gsap'
 import { Scene } from './Scene'
 import { LottieBackground } from './LottieBackground'
 import { QUALITY } from './config'
 import { AppStores, Nav } from './hero/Chrome'
-import { CARD_CONTENT, CHIPS, HAND_ASPECT, MOBILE_CHIPS, scrollLength } from './hero/frames'
+import {
+  CARD_CONTENT,
+  CAROUSEL_GEO,
+  CAROUSEL_ITEMS,
+  CHIPS,
+  HAND_ASPECT,
+  MOBILE_CHIPS,
+  PILL_LABELS,
+  scrollLength,
+} from './hero/frames'
 import { pickLayout, projectChip, stageScale as computeStageScale } from './hero/layout'
 import { advance, handBaseWidth, useHeroTimeline } from './hero/useHeroTimeline'
 
@@ -57,6 +67,119 @@ const Wash = ({ ref }) => (
   </div>
 )
 
+/**
+ * The feature carousel.
+ *
+ * Its position on the page is on the scroll timeline like everything else; what
+ * is NOT on the timeline is the row inside it, which the two arrows drive. That
+ * split is deliberate — slides 18 and 19 are identical in the Figma file, and
+ * that stretch is where the page stops moving and hands control to the reader.
+ * Putting the row on the timeline as well would have meant the scroll fighting
+ * the arrows for the same transform.
+ *
+ * Paging is derived rather than authored: the row is as wide as its contents
+ * and the viewport is the frame, so the number of pages falls out of how much
+ * overflow there is at the current breakpoint. On a phone that is several
+ * pages; on a wide desktop it is two, which is what the design's half-filled
+ * pagination bar shows.
+ */
+function Carousel({ scale, frameW, innerRef, controlRef }) {
+  const [page, setPage] = useState(0)
+  const rowRef = useRef(null)
+
+  const { rowPad, item, gap } = CAROUSEL_GEO
+  const step = (item + gap) * scale
+  const rowW = (rowPad * 2 + CAROUSEL_ITEMS.length * item + (CAROUSEL_ITEMS.length - 1) * gap) * scale
+  const overflow = Math.max(0, rowW - frameW)
+  const pages = Math.max(1, Math.ceil(overflow / step) + 1)
+  const offset = Math.min(page * step, overflow)
+
+  // Clamp if the breakpoint changed under us and there are fewer pages now.
+  useEffect(() => {
+    setPage((p) => Math.min(p, pages - 1))
+  }, [pages])
+
+  // The row is the one thing on the page that moves on a click rather than on
+  // scroll, so it is tweened here rather than tracked in the timeline. A plain
+  // effect is enough: nothing else writes to this element, and the tween has to
+  // outlive the render that made it.
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const tween = gsap.to(rowRef.current, {
+      x: -offset,
+      duration: reduced ? 0 : 0.55,
+      ease: 'power3.out',
+      overwrite: true,
+    })
+    return () => tween.kill()
+  }, [offset])
+
+  const go = (delta) => setPage((p) => Math.max(0, Math.min(pages - 1, p + delta)))
+
+  return (
+    <>
+      <div className="carousel" ref={innerRef} style={{ width: `${frameW}px` }}>
+        <div
+          className="carousel__row"
+          ref={rowRef}
+          style={{ padding: `0 ${rowPad * scale}px`, gap: `${gap * scale}px` }}
+        >
+          {CAROUSEL_ITEMS.map((it, i) =>
+            it.kind === 'photo' ? (
+              <figure
+                className="carousel__photo"
+                key={i}
+                style={{ width: `${item * scale}px`, height: `${CAROUSEL_GEO.photoH * scale}px` }}
+              >
+                <img src="/assets/carousel/lead.jpg" alt={it.alt} />
+              </figure>
+            ) : (
+              <article className="feature" key={i} style={{ width: `${item * scale}px` }}>
+                <div className="feature__panel" style={{ height: `${item * scale}px` }}>
+                  <div className="feature__inner">
+                    <span className="feature__label">{it.label}</span>
+                    <strong className="feature__value">{it.value}</strong>
+                    <span className="feature__caption">{it.caption}</span>
+                    <span className="feature__bar">
+                      <span style={{ width: `${it.fill * 100}%` }} />
+                    </span>
+                  </div>
+                </div>
+                <h3 className="feature__title">{it.title}</h3>
+                <p className="feature__body">{it.body}</p>
+              </article>
+            )
+          )}
+        </div>
+      </div>
+
+      <div className="carousel-ctrl" ref={controlRef}>
+        <button
+          type="button"
+          className="carousel-ctrl__arrow"
+          onClick={() => go(-1)}
+          disabled={page === 0}
+          aria-label="Previous"
+        >
+          <img src="/assets/icons/arrow-right.svg" alt="" />
+        </button>
+        <span className="carousel-ctrl__bar" role="presentation">
+          <span style={{ width: `${100 / pages}%`, left: `${(page * 100) / pages}%` }} />
+        </span>
+        <button
+          type="button"
+          className="carousel-ctrl__arrow"
+          onClick={() => go(1)}
+          disabled={page >= pages - 1}
+          aria-label="Next"
+        >
+          <img src="/assets/icons/arrow-right.svg" alt="" />
+        </button>
+      </div>
+    </>
+  )
+}
+
 export default function App() {
   const wrapperRef = useRef(null)
   const contentRef = useRef(null)
@@ -78,6 +201,14 @@ export default function App() {
     act3Body: useRef(null),
     act3Cta: useRef(null),
     cards: useRef(null),
+    act4Head: useRef(null),
+    act5Head: useRef(null),
+    pills: useRef(null),
+    carousel: useRef(null),
+    carouselCtrl: useRef(null),
+    timeline: useRef(null),
+    timelineDot: useRef(null),
+    dayMedia: useRef(null),
     cue: useRef(null),
   }
 
@@ -210,8 +341,10 @@ export default function App() {
         </div>
       </div>
 
-      {/* In front of the wash, and this layer reads. */}
-      <div className="layer layer--front">
+      {/* In front of the wash, and this layer reads. It also carries the only
+          controls inside the sequence — the carousel arrows — so it sits above
+          the scroll wrapper rather than under it. */}
+      <div className="layer layer--front layer--interactive">
         <div className="stage" style={stageStyle}>
           <h2 className="act3-head" ref={refs.act3Head}>
             One place for your whole health.
@@ -259,6 +392,41 @@ export default function App() {
               </article>
             ))}
           </div>
+
+          <h2 className="act4-head" ref={refs.act4Head}>
+            Help for every part of your health.
+          </h2>
+          <div className="pills" ref={refs.pills} style={{ '--ps': layout.chipScale }}>
+            {PILL_LABELS.map((label, i) => (
+              <button type="button" className={i === 0 ? 'pill is-on' : 'pill'} key={label}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <Carousel
+            scale={layout.cardScale}
+            frameW={layout.frame[0]}
+            innerRef={refs.carousel}
+            controlRef={refs.carouselCtrl}
+          />
+
+          <h2 className="act5-head" ref={refs.act5Head}>
+            See how Pura fits into one ordinary day.
+          </h2>
+          {/* 10,741px of ruler in Figma, drawn as 241 rectangles. Here it is a
+              repeating gradient with the hours labelled over it. */}
+          <div className="ruler" ref={refs.timeline} aria-hidden="true">
+            {['5:00', '6:00', '7:00', '8:00', '9:00', '10:00', '11:00'].map((t, i) => (
+              <span key={t} style={{ left: `${(i + 0.5) * (10741 / 7)}px` }}>
+                {t}
+              </span>
+            ))}
+          </div>
+          <span className="ruler-dot" ref={refs.timelineDot} aria-hidden="true" />
+          <figure className="day-media" ref={refs.dayMedia}>
+            <img src="/assets/carousel/one-day.jpg" alt="A morning walk, tracked by Pura" />
+          </figure>
 
           <div className="agent-bar" ref={refs.bar}>
             <img className="agent-bar__mark" src="/assets/pura-sparkle.png" alt="" />

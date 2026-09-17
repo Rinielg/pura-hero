@@ -91,6 +91,12 @@ body {
 .layer--back { z-index: 1; }
 .layer--copy { z-index: 1; }
 .layer--front { z-index: 3; }
+/* Above #smooth-wrapper (z 5), which is fixed and covers the viewport. The
+   wrapper holds nothing but the scroll spacer, so it has nothing to hide — but
+   it does swallow clicks, and the carousel arrows live in this layer. The layer
+   itself is still pointer-events: none; only the controls inside it take a
+   click. */
+.layer--interactive { z-index: 6; }
 
 /**
  * The design frame, scaled to cover the viewport.
@@ -625,6 +631,278 @@ body {
 .card__more:hover { transform: scale(1.08); }
 .card__more img { display: block; width: 12.5px; height: 12.5px; }
 
+/* --------------------------------------- the fourth and fifth acts */
+
+.act4-head,
+.act5-head {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  font-family: var(--brand);
+  font-weight: 400;
+  font-size: 44px;
+  line-height: 1.18;
+  letter-spacing: -0.9px;
+  text-align: center;
+  color: var(--ink);
+  will-change: transform, opacity;
+}
+
+.act4-head { width: 691px; }
+.act5-head { width: 814px; }
+
+/* The filter row is 974 frame pixels wide, which is most of a desktop frame and
+   more than a whole phone. It takes the same scale the chip cloud does, for the
+   same reason: the row has to read as one row, not as a thing with its ends cut
+   off. Figma has no mobile frame for this section yet. */
+.pills {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  gap: calc(12px * var(--ps, 1));
+  will-change: transform, opacity;
+}
+
+.pill {
+  height: calc(54px * var(--ps, 1));
+  padding: 0 calc(24px * var(--ps, 1));
+  margin: 0;
+  border: 1px solid #d9cfc8;
+  border-radius: 999px;
+  background: #fff;
+  font-family: var(--brand);
+  font-weight: 500;
+  font-size: calc(16px * var(--ps, 1));
+  letter-spacing: -0.25px;
+  color: var(--ink);
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.pill.is-on {
+  border-color: transparent;
+  background: #1b2238;
+  color: #fff;
+}
+
+/**
+ * The carousel viewport. Its own position comes from the timeline; the row
+ * inside is moved by the arrows, which is why the two are separate elements
+ * with separate transforms.
+ */
+.carousel {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: hidden;
+  will-change: transform, opacity;
+}
+
+.carousel__row {
+  display: flex;
+  align-items: flex-start;
+  will-change: transform;
+}
+
+.carousel__photo {
+  flex: none;
+  margin: 0;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.carousel__photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.feature { flex: none; }
+
+.feature__panel {
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #f5ded1 0%, #ede6e0 100%);
+}
+
+/* 252 x 190 inside a 300 x 300 panel — kept as a ratio so the whole card can
+   be scaled by one number at a breakpoint. */
+.feature__inner {
+  display: flex;
+  flex-direction: column;
+  width: 84%;
+  height: 63.3%;
+  padding: 6.7%;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.feature__label {
+  font-family: var(--brand);
+  font-weight: 600;
+  font-size: 13px;
+  color: #5e5a66;
+}
+
+.feature__value {
+  margin-top: 1.05em;
+  font-family: var(--brand);
+  font-weight: 500;
+  font-size: 48px;
+  line-height: 1;
+  color: var(--ink);
+}
+
+.feature__caption {
+  margin-top: 0.75em;
+  font-family: var(--brand);
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.feature__bar {
+  position: relative;
+  display: block;
+  margin-top: auto;
+  height: 6px;
+  border-radius: 3px;
+  background: #f1e6df;
+  overflow: hidden;
+}
+
+.feature__bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 3px;
+  background: #7c9cc4;
+}
+
+.feature__title {
+  margin: 18px 0 0;
+  font-family: var(--brand);
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1.1;
+  color: var(--ink);
+}
+
+.feature__body {
+  margin: 8px 0 0;
+  font-family: var(--brand);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--ink);
+  opacity: 0.8;
+}
+
+.carousel-ctrl {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 376px;
+  height: 32px;
+  will-change: transform, opacity;
+}
+
+.carousel-ctrl__arrow {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #f5f5f2;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background 0.18s ease, opacity 0.18s ease;
+}
+
+.carousel-ctrl__arrow:hover:not(:disabled) { background: #e8e8e3; }
+.carousel-ctrl__arrow:disabled { opacity: 0.35; cursor: default; }
+.carousel-ctrl__arrow img { display: block; width: 12.5px; height: 10.5px; }
+/* One glyph, turned around, exactly as the component does it in Figma. */
+.carousel-ctrl__arrow:first-child img { transform: rotate(180deg); }
+
+.carousel-ctrl__bar {
+  position: relative;
+  display: block;
+  width: 90px;
+  height: 4px;
+  border-radius: 40px;
+  background: #e8e8e3;
+  overflow: hidden;
+}
+
+.carousel-ctrl__bar span {
+  position: absolute;
+  top: 0;
+  height: 4px;
+  border-radius: 40px;
+  background: var(--ink);
+  transition: left 0.45s cubic-bezier(0.4, 0, 0.2, 1), width 0.45s ease;
+}
+
+/**
+ * The day ruler. Figma draws 241 separate 1px rectangles; a repeating gradient
+ * is the same picture and one element, which matters when it is 10,741px wide
+ * and being transformed every frame.
+ */
+.ruler {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 10741px;
+  height: 32px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    #cfcabf 0 1px,
+    transparent 1px 41px
+  );
+  will-change: transform, opacity;
+}
+
+.ruler span {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0 14px;
+  background: #fff;
+  font-family: var(--brand);
+  font-size: 15px;
+  color: var(--ink);
+  opacity: 0.75;
+}
+
+.ruler-dot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: #5e88a8;
+  will-change: transform, opacity;
+}
+
+.day-media {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  overflow: hidden;
+  will-change: transform, width, height, opacity;
+}
+
+.day-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
 /* ------------------------------------------------------------- navigation */
 
 .nav {
@@ -815,6 +1093,18 @@ body {
   .act3-body { width: 380px; font-size: 15px; line-height: 24px; }
   .act3-cta a { height: 40px; padding: 0 18px; font-size: 13px; }
   .cards { gap: 12px; }
+  .act4-head { width: 390px; font-size: 30px; letter-spacing: -0.6px; }
+  .act5-head { width: 400px; font-size: 30px; letter-spacing: -0.6px; }
+  /* Six pills do not fit a phone; they scroll instead of wrapping, because
+     wrapping would change the row's height and move everything under it. */
+  .pills { gap: 8px; }
+  .pill { height: 42px; padding: 0 16px; font-size: 13px; }
+  .feature__title { font-size: 17px; }
+  .feature__body { font-size: 12px; line-height: 1.4; }
+  .feature__value { font-size: 34px; }
+  .feature__label { font-size: 11px; }
+  .feature__caption { font-size: 11px; }
+  .ruler span { font-size: 12px; }
   .card__head, .card__foot { padding: 14px; }
   .card__title { font-size: 20px; line-height: 24px; }
   .card__tag { font-size: 12px; }

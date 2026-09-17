@@ -23,7 +23,7 @@
 export const FRAME = { w: 1920, h: 1080 }
 
 /** Slides in the sequence. Adding one in Figma means adding an entry below. */
-export const SLIDES = 15
+export const SLIDES = 23
 
 /**
  * The twelve pillar chips.
@@ -196,6 +196,15 @@ export const MOBILE_CHIPS = new Set([
   'cardiovascular',
 ])
 
+/**
+ * Leading slides for an element that has no node until partway through.
+ *
+ * Tracks may be SHORTER than SLIDES — the timeline holds the last value — but
+ * they cannot be short at the front, because slide 1 has to render something.
+ * This is how a late arrival says "parked here, invisible, until then".
+ */
+const parked = (untilSlide, state, rest) => [...Array(untilSlide).fill(state), ...rest]
+
 /** Slide 4's device rect is the reference: 1440px tall renders at 1.23. */
 const sz = (rectHeight) => Math.round((rectHeight / 1440) * 1.23 * 1e4) / 1e4
 /**
@@ -245,6 +254,11 @@ export const DEVICE_POSE = [
   { c: [959.9, -424.5], s: ai(823), r: FACE },
   { c: [959.9, -424.5], s: ai(823), r: FACE },
   { c: [959.9, -424.5], s: ai(823), r: FACE },
+  { c: [959.9, -424.5], s: ai(823), r: FACE },
+  // Slide 17 drops the device from the file altogether. It still has 11px of
+  // itself inside the frame at slide 16, so it is carried out on the same
+  // 434px rise the rest of the scene takes rather than simply switched off.
+  { c: [959.9, -858.5], s: ai(823), r: FACE },
 ]
 
 /**
@@ -253,7 +267,7 @@ export const DEVICE_POSE = [
  * It crossfades across the turn to face-on, so the content changes while the
  * device is moving rather than snapping while it is sitting still.
  */
-export const SCREEN_MIX = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+export const SCREEN_MIX = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
 /**
  * The hand.
@@ -423,6 +437,8 @@ export const AGENT_BAR = [
   { c: [960, -96], w: 302, o: 1 },
   { c: [960, -96], w: 302, o: 1 },
   { c: [960, -96], w: 302, o: 1 },
+  { c: [960, -96], w: 302, o: 1 },
+  { c: [960, -530], w: 302, o: 1 },
 ]
 
 /**
@@ -437,9 +453,11 @@ export const AGENT_BAR = [
  * is how the AI screen's foot dissolves hard enough for the agent bar to sit on
  * nothing. One layer cannot express it, so there are two here too.
  */
-const washY = [858, 858, 858, 858, 858, 858, 858, 858, 858, 637, 351, 206, -136, -136, -136]
-const washA = [1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-const washB = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+// The last entry is slide 17, where Figma deletes the overlay. 86px of it are
+// still inside the frame at slide 16, so it leaves on the scene's own rise.
+const washY = [858, 858, 858, 858, 858, 858, 858, 858, 858, 637, 351, 206, -136, -136, -136, -136, -570]
+const washA = [1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+const washB = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
 export const WASH_A = washY.map((y, i) => ({ y, o: washA[i] }))
 export const WASH_B = washY.map((y, i) => ({ y, o: washB[i] }))
@@ -452,7 +470,7 @@ export const WASH_B = washY.map((y, i) => ({ y, o: washB[i] }))
  * white — so the backdrop layer translates and the page shows through beneath
  * it, exactly as the design has it.
  */
-export const BACKDROP_Y = [0, 0, 0, 0, 0, 0, 0, 0, 0, -221, -507, -652, -994, -994, -994]
+export const BACKDROP_Y = [0, 0, 0, 0, 0, 0, 0, 0, 0, -221, -507, -652, -994, -994, -994, -994, -1428]
 
 /* ------------------------------------------------------------ the third act */
 
@@ -479,6 +497,9 @@ export const ACT3_HEAD = [
   { c: [960.5, 216], o: 1, b: 0 },
   { c: [960.5, 216], o: 1, b: 0 },
   { c: [960.5, 216], o: 1, b: 0 },
+  // Slide 16: the third act leaves the way it arrived.
+  { c: [960.5, 81], o: 0, b: 8 },
+  { c: [960.5, -353], o: 0, b: 8 },
 ]
 
 export const ACT3_BODY = [
@@ -497,6 +518,8 @@ export const ACT3_BODY = [
   { c: [960, 290], o: 1, b: 0 },
   { c: [960, 290], o: 1, b: 0 },
   { c: [960, 290], o: 1, b: 0 },
+  { c: [960, 155], o: 0.2, b: 4 },
+  { c: [960, -279], o: 0, b: 8 },
 ]
 
 /** The two pills under the paragraph. They arrive a slide later than the copy. */
@@ -516,6 +539,8 @@ export const ACT3_CTA = [
   { c: [960, 372], o: 1 },
   { c: [960, 372], o: 1 },
   { c: [960, 372], o: 1 },
+  { c: [960, 237], o: 0.4 },
+  { c: [960, -197], o: 0 },
 ]
 
 /**
@@ -545,6 +570,12 @@ export const CARDS = [
   { c: [1291, 676], o: 1 },
   { c: [1112, 676], o: 1 },
   { c: [808, 676], o: 1 },
+  // 16 and 17 carry the promo row off to the left as the fourth act arrives.
+  { c: [502, 541], o: 1 },
+  { c: [-212, 107], o: 1 },
+  // Gone from slide 18 in the file. The row keeps drifting on its own axis
+  // while the page carries it up, and fades out over that step.
+  { c: [-926, -192], o: 0 },
 ]
 
 /**
@@ -591,6 +622,164 @@ export const CARD_CONTENT = [
   },
 ]
 
+
+/* ------------------------------------------- the fourth and fifth acts */
+
+/**
+ * "Help for every part of your health." and the category pills under it.
+ *
+ * The fourth act arrives while the third is still leaving — slide 16 has the
+ * new headline at 20% behind the old one at 0%. That overlap is the design's,
+ * and it is what stops the page reading as a stack of separate sections.
+ */
+export const ACT4_HEAD = parked(15, { c: [960.5, 971], o: 0, b: 8 }, [
+  { c: [960.5, 971], o: 0.2, b: 8 },
+  { c: [960.5, 537], o: 1, b: 0 },
+  { c: [960.5, 238], o: 1, b: 0 },
+  { c: [960.5, 238], o: 1, b: 0 },
+  { c: [960.5, 91], o: 0.3, b: 8 },
+  { c: [960.5, -90], o: 0, b: 8 },
+])
+
+export const PILLS = parked(16, { c: [960, 634], o: 0, b: 8 }, [
+  { c: [960, 634], o: 1, b: 0 },
+  { c: [960, 335], o: 1, b: 0 },
+  { c: [960, 335], o: 1, b: 0 },
+  { c: [960, 188], o: 0.6, b: 4 },
+  { c: [960, 7], o: 0.2, b: 4 },
+  { c: [960, -324], o: 0.2, b: 4 },
+])
+
+/**
+ * The feature carousel.
+ *
+ * This track moves the whole carousel through the page. What the arrows move is
+ * the row INSIDE it, which is not on the timeline at all — see CAROUSEL_ITEMS
+ * and the note on the component. Slides 18 and 19 are identical here on
+ * purpose: that is the stretch where the carousel stands still and the reader
+ * drives it.
+ */
+export const CAROUSEL = parked(16, { c: [1668, 953], o: 0 }, [
+  { c: [1668, 953], o: 1 },
+  { c: [960, 654], o: 1 },
+  { c: [960, 654], o: 1 },
+  { c: [537, 507], o: 1 },
+  { c: [537, 326], o: 1 },
+  { c: [-202, -5], o: 1 },
+  { c: [-202, -264], o: 1 },
+])
+
+export const CAROUSEL_CTRL = parked(17, { c: [960, 932], o: 0, b: 0 }, [
+  { c: [960, 932], o: 1, b: 0 },
+  { c: [960, 932], o: 1, b: 0 },
+  { c: [960, 785], o: 1, b: 0 },
+  { c: [960, 604], o: 1, b: 0 },
+  { c: [960, 273], o: 0.2, b: 8 },
+  { c: [960, 14], o: 0.2, b: 8 },
+])
+
+/** "See how Pura fits into one ordinary day." */
+export const ACT5_HEAD = parked(19, { c: [956, 1030], o: 0, b: 8 }, [
+  { c: [956, 1030], o: 0.3, b: 8 },
+  { c: [956, 849], o: 0.3, b: 8 },
+  { c: [956, 518], o: 1, b: 0 },
+  { c: [956, 259], o: 1, b: 0 },
+])
+
+/**
+ * The day timeline: a 10,741px ruler that slides left as the page scrolls, so
+ * the hours pass under a fixed marker. Rebuilt as repeating CSS rather than the
+ * 241 individual rectangles Figma draws it with.
+ */
+export const TIMELINE = parked(20, { c: [5929.5, 966], o: 0, b: 4 }, [
+  { c: [5929.5, 966], o: 0.6, b: 4 },
+  { c: [5545.5, 635], o: 0.6, b: 0 },
+  { c: [5328.5, 376], o: 0.6, b: 0 },
+])
+
+export const TIMELINE_DOT = parked(20, { c: [960, 924], o: 0, b: 4 }, [
+  { c: [960, 924], o: 0.4, b: 4 },
+  { c: [960, 593], o: 1, b: 0 },
+  { c: [960, 334], o: 1, b: 0 },
+])
+
+/**
+ * The day's media panel. It does not fade in — it GROWS, from a 154x88 pill
+ * into a 764x437 stadium, and its corner radius grows with it so the shape
+ * stays a stadium the whole way rather than becoming a rounded rectangle.
+ */
+export const DAY_MEDIA = parked(21, { c: [960, 755], w: 154, h: 88, r: 150, o: 0 }, [
+  { c: [960, 755], w: 154, h: 88, r: 150, o: 1 },
+  { c: [960, 670.5], w: 764, h: 437, r: 290, o: 1 },
+])
+
+/** The category pills, in order. The first is the selected one. */
+export const PILL_LABELS = [
+  'My Health',
+  'Heart and Metabolism',
+  'Sleep and Stress',
+  'Care',
+  'Wellness',
+  "Women's Health",
+]
+
+/**
+ * What the carousel holds: a lead photograph, then five feature cards.
+ *
+ * `fill` is how far along the card's little progress bar runs, as a fraction —
+ * Figma draws it as a 212px track with a coloured bar over it.
+ */
+export const CAROUSEL_ITEMS = [
+  { kind: 'photo', img: 'lead', alt: 'Someone checking their health on the Pura app' },
+  {
+    kind: 'card',
+    label: 'PureScore',
+    value: '92',
+    caption: '+8 pts · Great',
+    fill: 0.28,
+    title: 'PureScore',
+    body: 'One score for your overall health, built from your lab results and wearable data, with what moved it explained in plain words.',
+  },
+  {
+    kind: 'card',
+    label: 'Health systems',
+    value: '2 of 4',
+    caption: 'Cardiovascular · worth a look',
+    fill: 0.5,
+    title: 'Health systems',
+    body: 'Your results grouped by body system, from heart and metabolism to liver and kidneys, each with a simple status.',
+  },
+  {
+    kind: 'card',
+    label: 'Wearable data',
+    value: '70 bpm',
+    caption: 'Resting heart rate · synced',
+    fill: 0.62,
+    title: 'Wearable data',
+    body: 'Sleep, heart rate and activity from the wearable you already use, shown beside your lab results.',
+  },
+  {
+    kind: 'card',
+    label: 'Digital Twin',
+    value: '12 mo',
+    caption: 'Illustrative projection',
+    fill: 0.8,
+    title: 'Digital Twin',
+    body: 'See how your health could change over 3, 6 and 12 months, and try a change before you commit to it.',
+  },
+  {
+    kind: 'card',
+    label: 'Medical history',
+    value: 'Synced',
+    caption: 'Records and past results',
+    fill: 1,
+    title: 'Medical history',
+    body: "Bring past results and records into one place, so Pura starts from what's already known about you.",
+  },
+]
+
+/** Carousel geometry, in frame pixels. */
+export const CAROUSEL_GEO = { rowPad: 140, item: 300, gap: 24, photoH: 420, cardH: 424 }
 
 /**
  * How much scroll each step gets, relative to the others. Equal: every step is

@@ -8,22 +8,30 @@ import {
   ACT3_BODY,
   ACT3_CTA,
   ACT3_HEAD,
+  ACT4_HEAD,
+  ACT5_HEAD,
   AGENT_BAR,
   BACKDROP_Y,
   BODY_COPY,
   CARDS,
   CARD_ROW_W,
+  CAROUSEL,
+  CAROUSEL_CTRL,
   CHIPS,
   COPY_HEAD,
   COPY_SUB,
   COPY_Y,
   DEVICE_POSE,
+  DAY_MEDIA,
   HAND_FADE,
   HAND_POSE,
   KICKER,
+  PILLS,
   SCREEN_MIX,
   STEP_WEIGHTS,
   STEP_WINDOWS,
+  TIMELINE,
+  TIMELINE_DOT,
   WASH_A,
   WASH_B,
 } from './frames'
@@ -92,11 +100,12 @@ function stepBounds() {
 }
 
 /**
- * Tracks with fewer entries than there are slides hold their last value.
+ * Read a track at a slide, holding the last value past its end.
  *
- * The chips stop moving five slides in and the rest of the sequence leaves them
- * where they are; clamping says that once, here, instead of repeating identical
- * rows in every table that happens to finish early.
+ * EVERY track goes through this, not just the ones that obviously stop early.
+ * Slides keep being added to the Figma file, and the alternative is padding a
+ * dozen tables by hand each time — which is the kind of chore that gets done
+ * wrong once and then silently animates something to `undefined`.
  */
 const at = (track, slide) => track[Math.min(slide, track.length - 1)]
 
@@ -211,6 +220,16 @@ export function useHeroTimeline({
        */
       const blur = (px) => `blur(${px}px)`
 
+      /**
+       * Centre projection for anything that belongs to the flat copy layer —
+       * headings, pills, rulers. They live with the chip cloud rather than with
+       * the device, so they take the chip convergence and nothing else.
+       */
+      const project = (c) => {
+        const [x, y] = projectChip(c, L)
+        return { x, y }
+      }
+
       // ---------------------------------------------------------------- chips
       // The -50%/-50% centring goes through GSAP rather than CSS so that GSAP
       // owns the element's transform outright. Mixing a CSS transform with
@@ -228,7 +247,7 @@ export function useHeroTimeline({
 
       // --------------------------------------------------------------- device
       track(deviceProxy, (slide) => {
-        const pose = DEVICE_POSE[slide]
+        const pose = at(DEVICE_POSE, slide)
         const [fx, fy] = projectObject(pose.c, L)
         return {
           fx,
@@ -237,7 +256,7 @@ export function useHeroTimeline({
           rx: pose.r[0],
           ry: pose.r[1],
           rz: pose.r[2],
-          screenMix: SCREEN_MIX[slide],
+          screenMix: at(SCREEN_MIX, slide),
         }
       }, STEP_WINDOWS.device)
 
@@ -251,11 +270,11 @@ export function useHeroTimeline({
         gsap.set(refs.hand.current, { xPercent: -50, yPercent: -50 })
         const base = HAND_POSE[3].w
         track(refs.hand.current, (slide) => {
-          const pose = HAND_POSE[slide]
+          const pose = at(HAND_POSE, slide)
           const [x, y] = projectObject(pose.c, L)
           return { x, y, scale: pose.w / base }
         })
-        track(refs.hand.current, (slide) => ({ opacity: HAND_FADE[slide] }), STEP_WINDOWS.handFade)
+        track(refs.hand.current, (slide) => ({ opacity: at(HAND_FADE, slide) }), STEP_WINDOWS.handFade)
       }
 
       // ------------------------------------------------------------ hero copy
@@ -263,22 +282,22 @@ export function useHeroTimeline({
       // heading dims as it softens; the sub-heading only softens. Figma treats
       // them differently and the difference is what stops the pair reading as a
       // single card being turned down.
-      track(refs.heading.current, (slide) => ({ y: COPY_Y[slide] * L.chipK[1] }))
+      track(refs.heading.current, (slide) => ({ y: at(COPY_Y, slide) * L.chipK[1] }))
       track(refs.headLine.current, (slide) => ({
-        opacity: COPY_HEAD[slide].o,
-        filter: blur(COPY_HEAD[slide].b),
+        opacity: at(COPY_HEAD, slide).o,
+        filter: blur(at(COPY_HEAD, slide).b),
       }))
       track(refs.subLine.current, (slide) => ({
-        opacity: COPY_SUB[slide].o,
-        filter: blur(COPY_SUB[slide].b),
+        opacity: at(COPY_SUB, slide).o,
+        filter: blur(at(COPY_SUB, slide).b),
       }))
 
       // --------------------------------------------------------------- kicker
       if (refs.kicker.current) {
         gsap.set(refs.kicker.current, { xPercent: -50, yPercent: -50 })
         track(refs.kicker.current, (slide) => {
-          const [x, y] = projectChip([960, KICKER[slide].y], L)
-          return { x, y, opacity: KICKER[slide].o, filter: blur(KICKER[slide].b) }
+          const [x, y] = projectChip([960, at(KICKER, slide).y], L)
+          return { x, y, opacity: at(KICKER, slide).o, filter: blur(at(KICKER, slide).b) }
         })
       }
 
@@ -291,9 +310,9 @@ export function useHeroTimeline({
         const mobile = L.name === 'mobile'
         track(refs.body.current, (slide) => {
           const [x, y] = mobile
-            ? projectChip([960, KICKER[slide].y + 120], L)
-            : projectChip(BODY_COPY[slide].c, L)
-          return { x, y, opacity: BODY_COPY[slide].o, filter: blur(BODY_COPY[slide].b) }
+            ? projectChip([960, at(KICKER, slide).y + 120], L)
+            : projectChip(at(BODY_COPY, slide).c, L)
+          return { x, y, opacity: at(BODY_COPY, slide).o, filter: blur(at(BODY_COPY, slide).b) }
         })
       }
 
@@ -304,12 +323,62 @@ export function useHeroTimeline({
       if (refs.bar.current) {
         gsap.set(refs.bar.current, { xPercent: -50, yPercent: -50 })
         track(refs.bar.current, (slide) => {
-          const [x, y] = projectBottom(AGENT_BAR[slide].c, L)
+          const [x, y] = projectBottom(at(AGENT_BAR, slide).c, L)
           return {
             x,
             y,
-            width: projectLength(AGENT_BAR[slide].w, L),
-            opacity: AGENT_BAR[slide].o,
+            width: projectLength(at(AGENT_BAR, slide).w, L),
+            opacity: at(AGENT_BAR, slide).o,
+          }
+        })
+      }
+
+      // ------------------------------------------- the fourth and fifth acts
+      for (const [ref, table] of [
+        [refs.act4Head, ACT4_HEAD],
+        [refs.act5Head, ACT5_HEAD],
+        [refs.pills, PILLS],
+        [refs.carouselCtrl, CAROUSEL_CTRL],
+        [refs.timelineDot, TIMELINE_DOT],
+      ]) {
+        if (!ref.current) continue
+        gsap.set(ref.current, { xPercent: -50, yPercent: -50 })
+        track(ref.current, (slide) => {
+          const row = at(table, slide)
+          return { ...project(row.c), opacity: row.o, filter: blur(row.b ?? 0) }
+        })
+      }
+
+      // The carousel and the ruler are both far wider than the frame, so they
+      // move on the x axis like the promo row rather than converging with the
+      // chip cloud.
+      for (const [ref, table] of [
+        [refs.carousel, CAROUSEL],
+        [refs.timeline, TIMELINE],
+      ]) {
+        if (!ref.current) continue
+        gsap.set(ref.current, { xPercent: -50, yPercent: -50 })
+        track(ref.current, (slide) => {
+          const row = at(table, slide)
+          const [x, y] = projectCards(row.c, L)
+          return { x, y, opacity: row.o, filter: blur(row.b ?? 0) }
+        })
+      }
+
+      // The day's media panel grows rather than fades, and its radius grows
+      // with it so the shape stays a stadium instead of becoming a rounded box.
+      if (refs.dayMedia.current) {
+        gsap.set(refs.dayMedia.current, { xPercent: -50, yPercent: -50 })
+        track(refs.dayMedia.current, (slide) => {
+          const row = at(DAY_MEDIA, slide)
+          const [x, y] = projectChip(row.c, L)
+          return {
+            x,
+            y,
+            width: projectLength(row.w, L),
+            height: projectLength(row.h, L),
+            borderRadius: `${projectLength(row.r, L)}px`,
+            opacity: row.o,
           }
         })
       }
@@ -320,8 +389,9 @@ export function useHeroTimeline({
       // it leaves with it.
       const washTrack = (el, table) =>
         track(el, (slide) => {
-          const [, y] = projectChip([960, table[slide].y], L)
-          return { y, opacity: table[slide].o }
+          const row = at(table, slide)
+          const [, y] = projectChip([960, row.y], L)
+          return { y, opacity: row.o }
         })
       washTrack(refs.washA.current, WASH_A)
       washTrack(refs.washB.current, WASH_B)
@@ -331,7 +401,7 @@ export function useHeroTimeline({
       // on, which is the file saying the first act is over. Plain white sits
       // behind it, so translating the layer is the whole effect.
       track(refs.backdrop.current, (slide) => ({
-        y: projectChip([960, 540 + BACKDROP_Y[slide]], L)[1] - L.frame[1] / 2,
+        y: projectChip([960, 540 + at(BACKDROP_Y, slide)], L)[1] - L.frame[1] / 2,
       }))
 
       // ------------------------------------------------------- the third act
@@ -342,16 +412,17 @@ export function useHeroTimeline({
         if (!ref.current) continue
         gsap.set(ref.current, { xPercent: -50, yPercent: -50 })
         track(ref.current, (slide) => {
-          const [x, y] = projectChip(table[slide].c, L)
-          return { x, y, opacity: table[slide].o, filter: blur(table[slide].b) }
+          const row = at(table, slide)
+          const [x, y] = projectChip(row.c, L)
+          return { x, y, opacity: row.o, filter: blur(row.b) }
         })
       }
 
       if (refs.act3Cta.current) {
         gsap.set(refs.act3Cta.current, { xPercent: -50, yPercent: -50 })
         track(refs.act3Cta.current, (slide) => {
-          const [x, y] = projectChip(ACT3_CTA[slide].c, L)
-          return { x, y, opacity: ACT3_CTA[slide].o }
+          const [x, y] = projectChip(at(ACT3_CTA, slide).c, L)
+          return { x, y, opacity: at(ACT3_CTA, slide).o }
         })
       }
 
@@ -364,8 +435,8 @@ export function useHeroTimeline({
           width: CARD_ROW_W * L.cardScale,
         })
         track(refs.cards.current, (slide) => {
-          const [x, y] = projectCards(CARDS[slide].c, L)
-          return { x, y, opacity: CARDS[slide].o }
+          const [x, y] = projectCards(at(CARDS, slide).c, L)
+          return { x, y, opacity: at(CARDS, slide).o }
         })
       }
 
