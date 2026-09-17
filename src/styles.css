@@ -36,7 +36,8 @@
 
   /* Straight out of the Figma file. */
   --ink: #0e1a2b;
-  --page: #fbefe3;
+  --page: #ffffff;
+  --cream: #fbefe3;
   --chip-surface: #ffffff;
 
   color-scheme: light;
@@ -71,7 +72,17 @@ body {
   overflow: hidden;
 }
 
-.backdrop { z-index: 0; }
+/* The gradient lives in a stage now so it can travel in frame pixels like
+   everything else. What it uncovers on the way out is the page: plain white. */
+.layer--backdrop { z-index: 0; }
+
+.backdrop-travel {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.backdrop { position: absolute; inset: 0; z-index: 0; }
 .backdrop svg { width: 100% !important; height: 100% !important; }
 
 .device-layer { z-index: 2; }
@@ -302,12 +313,18 @@ body {
  * purpose — in the design it washes out the bottom of the phone, which is what
  * makes the resting state read as settled rather than cropped.
  */
+/**
+ * Positioned from the top, not pinned to the bottom. Up to slide 9 it sits
+ * against the foot of the frame, but from slide 10 it travels away with the
+ * scene it belongs to, so it needs a y the timeline can move.
+ */
 .wash {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
-  height: 20.5%;
+  top: 0;
+  height: 222px;
+  will-change: transform, opacity;
 }
 
 /**
@@ -417,6 +434,116 @@ body {
 /* At the end it turns around: the same control, pointing the other way. */
 .cue.is-end .cue__dot { transform: rotate(180deg); }
 .cue.is-end:hover .cue__dot { transform: rotate(180deg) translateY(2px); }
+
+/* -------------------------------------------------------- the third act */
+
+/**
+ * "One place for your whole health." and the copy under it. Positioned entirely
+ * by the timeline — no `transform` or `left`/`top` here, because GSAP owns it.
+ */
+.act3-head {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  width: 679px;
+  font-family: var(--brand);
+  font-weight: 400;
+  font-size: 44px;
+  line-height: 1.18;
+  letter-spacing: -0.9px;
+  text-align: center;
+  color: var(--ink);
+  will-change: transform, opacity;
+}
+
+.act3-body {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  width: 700px;
+  font-family: var(--brand);
+  font-size: 19px;
+  line-height: 31px;
+  letter-spacing: -0.2px;
+  text-align: center;
+  color: var(--ink);
+  opacity: 0.75;
+  will-change: transform, opacity;
+}
+
+.act3-cta {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  gap: 12px;
+  will-change: transform, opacity;
+}
+
+.act3-cta a {
+  display: inline-flex;
+  align-items: center;
+  height: 46px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: -0.3px;
+  text-decoration: none;
+  white-space: nowrap;
+  pointer-events: auto;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.act3-cta a:hover { transform: translateY(-1px); opacity: 0.92; }
+
+/**
+ * The promo row.
+ *
+ * Wider than the frame by design — the last three slides change nothing but its
+ * x, so this is where the page's vertical scroll turns into a horizontal one.
+ * Its width is set by the timeline, which is also what keeps the card size and
+ * the distance travelled in proportion at every breakpoint.
+ */
+.cards {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  gap: 16px;
+  will-change: transform, opacity;
+}
+
+.card {
+  position: relative;
+  flex: 1 0 0;
+  aspect-ratio: 376 / 402;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The card's tag, title and + button are part of the exported image — see the
+   README. This keeps the text in the accessibility tree without drawing it. */
+.card__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 /* ------------------------------------------------------------- navigation */
 
@@ -604,6 +731,10 @@ body {
   /* The frame is narrower than these were authored for, so they are sized to
      the frame rather than carried across at their desktop widths. */
   .kicker { width: 360px; font-size: 27px; letter-spacing: -0.5px; }
+  .act3-head { width: 390px; font-size: 30px; letter-spacing: -0.6px; }
+  .act3-body { width: 380px; font-size: 15px; line-height: 24px; }
+  .act3-cta a { height: 40px; padding: 0 18px; font-size: 13px; }
+  .cards { gap: 12px; }
   /* Centred under the headline rather than right-aligned beside the phone. */
   .body-copy { width: 300px; font-size: 13px; line-height: 18px; text-align: center; }
   .agent-bar { height: 56px; gap: 6px; padding: 0 12px 0 18px; }

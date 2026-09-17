@@ -46,6 +46,7 @@ export const LAYOUTS = {
     /** Uniform scale for device + hand. */
     objScale: 1,
     objOffset: [0, 0],
+    cardScale: 1,
     allChips: true,
   },
   mobile: {
@@ -67,6 +68,11 @@ export const LAYOUTS = {
     // Raised, so the device is not sitting under the store badges by the time
     // it reaches its resting pose.
     objOffset: [0, -18],
+    // Cards keep a readable size rather than shrinking with the frame: at the
+    // frame's own ratio each 376px card would land at 84px wide, which is a
+    // thumbnail rather than a card. 0.74 puts them at about two thirds of a
+    // phone's width, so one reads at a time and the row still scrolls.
+    cardScale: 0.74,
     allChips: false,
   },
 }
@@ -101,6 +107,19 @@ export const projectLength = (v, L) => v * L.objScale
  * device, which is not what a piece of page furniture does. What the bar
  * actually wants is to keep its distance from the bottom edge, proportionally.
  */
+/**
+ * The promo card row: horizontal position scaled with the cards themselves.
+ *
+ * The row's whole point is that it is wider than the frame, so it cannot be
+ * projected like the chip cloud (which converges) or like the device (which
+ * scales with the viewport). It scales with the card size, which keeps the
+ * distance the row travels proportional to how much of it you can see.
+ */
+export const projectCards = ([x, y], L) => [
+  L.frame[0] / 2 + (x - DESIGN_CX) * L.cardScale,
+  L.frame[1] / 2 + (y - DESIGN_CY) * L.chipK[1] + L.chipOffset[1],
+]
+
 export const projectBottom = ([x, y], L) => [
   L.frame[0] / 2 + (x - DESIGN_CX) * L.chipK[0],
   L.frame[1] - (FRAME.h - y) * (L.frame[1] / FRAME.h),

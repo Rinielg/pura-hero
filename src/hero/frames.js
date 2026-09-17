@@ -23,7 +23,7 @@
 export const FRAME = { w: 1920, h: 1080 }
 
 /** Slides in the sequence. Adding one in Figma means adding an entry below. */
-export const SLIDES = 8
+export const SLIDES = 15
 
 /**
  * The twelve pillar chips.
@@ -199,11 +199,12 @@ export const MOBILE_CHIPS = new Set([
 /** Slide 4's device rect is the reference: 1440px tall renders at 1.23. */
 const sz = (rectHeight) => Math.round((rectHeight / 1440) * 1.23 * 1e4) / 1e4
 /**
- * Slides 7 and 8 have no Device node — Figma draws a separate flat front-on
- * mock there, 901px of SCREEN. Converting that to body height through the
- * model's own screen-to-body ratio is what keeps the turn continuous.
+ * Slides 7 onward have no Device node — Figma draws a separate flat front-on
+ * mock. Its SCREEN height converts to a body height through the model's own
+ * screen-to-body ratio, which is what keeps the turn to face-on continuous
+ * across the handover from one representation to the other.
  */
-const AI_SIZE = Math.round(((901 * 163.371) / 158.259 / 630) * 1e4) / 1e4
+const ai = (screenHeight) => Math.round(((screenHeight * 163.371) / 158.259 / 630) * 1e4) / 1e4
 
 const TILT = [-32, -35, -24]
 const FACE = [0, 0, 0]
@@ -233,8 +234,17 @@ export const DEVICE_POSE = [
   { c: [905.7, 503], s: sz(1440), r: TILT },
   { c: [905.7, 479.9], s: sz(1035), r: TILT },
   { c: [905.7, 518.5], s: sz(1435), r: TILT },
-  { c: [960, 753.5], s: AI_SIZE, r: FACE },
-  { c: [960, 753.5], s: AI_SIZE, r: FACE },
+  { c: [960, 753.5], s: ai(901), r: FACE },
+  { c: [959.9, 753], s: ai(901), r: FACE },
+  // From slide 9 the whole scene starts travelling up and out of frame, and
+  // the device goes with it — smaller, and rising faster than the copy.
+  { c: [959.9, 628.5], s: ai(823), r: FACE },
+  { c: [959.9, 348.5], s: ai(823), r: FACE },
+  { c: [959.9, 62.5], s: ai(823), r: FACE },
+  { c: [959.9, -82.5], s: ai(823), r: FACE },
+  { c: [959.9, -424.5], s: ai(823), r: FACE },
+  { c: [959.9, -424.5], s: ai(823), r: FACE },
+  { c: [959.9, -424.5], s: ai(823), r: FACE },
 ]
 
 /**
@@ -243,7 +253,7 @@ export const DEVICE_POSE = [
  * It crossfades across the turn to face-on, so the content changes while the
  * device is moving rather than snapping while it is sitting still.
  */
-export const SCREEN_MIX = [0, 0, 0, 0, 0, 0, 1, 1]
+export const SCREEN_MIX = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
 /**
  * The hand.
@@ -252,19 +262,32 @@ export const SCREEN_MIX = [0, 0, 0, 0, 0, 0, 1, 1]
  * extends below, so the group's own centre is not the image's. It has no node
  * before slide 4, so the early slides park it below the frame rather than
  * fading it in: a hand that materialises in mid-air reads as a glitch, one that
- * rises into shot reads as the point. By slide 6 it is fading out again as the
- * device lifts away from it.
+ * rises into shot reads as the point.
+ *
+ * From slide 5 it FADES IN PLACE and never moves again. Figma's later slides do
+ * drift it around, but on a page those few pixels of travel read as the hand
+ * being dragged off rather than letting go — it should simply stop being there.
+ * So the resting pose is held and only opacity moves.
  */
 const HAND_BELOW = { c: [915, 1883], w: 476, o: 1 }
+/** Where the hand comes to rest, and where it fades from. */
+const HAND_REST = { c: [912.4, 999.3], w: 342 }
 export const HAND_POSE = [
   HAND_BELOW,
   HAND_BELOW,
   HAND_BELOW,
   { c: [915, 1263], w: 476, o: 1 },
-  { c: [912.4, 999.3], w: 342, o: 1 },
-  { c: [913.2, 1202.4], w: 383, o: 0.2 },
-  { c: [913.2, 1042.4], w: 383, o: 0 },
-  { c: [913.2, 1042.4], w: 383, o: 0 },
+  { ...HAND_REST, o: 1 },
+  { ...HAND_REST, o: 0.2 },
+  { ...HAND_REST, o: 0 },
+  { ...HAND_REST, o: 0 },
+  { ...HAND_REST, o: 0 },
+  { ...HAND_REST, o: 0 },
+  { ...HAND_REST, o: 0 },
+  { ...HAND_REST, o: 0 },
+  { ...HAND_REST, o: 0 },
+  { ...HAND_REST, o: 0 },
+  { ...HAND_REST, o: 0 },
 ]
 
 /** Native size of `hand.png`, so width alone can drive it. */
@@ -282,11 +305,18 @@ export const HAND_ASPECT = 1016 / 476
  *
  * `y` is the shared travel, `o` opacity, `b` blur radius in frame pixels.
  */
-export const COPY_Y = [0, -50, -100, -100, -100, -100, -100, -100]
+export const COPY_Y = [0, -50, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100]
 
 export const COPY_HEAD = [
   { o: 1, b: 0 },
   { o: 0.4, b: 8 },
+  { o: 0, b: 12 },
+  { o: 0, b: 12 },
+  { o: 0, b: 12 },
+  { o: 0, b: 12 },
+  { o: 0, b: 12 },
+  { o: 0, b: 12 },
+  { o: 0, b: 12 },
   { o: 0, b: 12 },
   { o: 0, b: 12 },
   { o: 0, b: 12 },
@@ -298,6 +328,13 @@ export const COPY_HEAD = [
 export const COPY_SUB = [
   { o: 1, b: 0 },
   { o: 1, b: 4 },
+  { o: 0, b: 10 },
+  { o: 0, b: 10 },
+  { o: 0, b: 10 },
+  { o: 0, b: 10 },
+  { o: 0, b: 10 },
+  { o: 0, b: 10 },
+  { o: 0, b: 10 },
   { o: 0, b: 10 },
   { o: 0, b: 10 },
   { o: 0, b: 10 },
@@ -320,6 +357,15 @@ export const KICKER = [
   { y: 306, o: 0.4, b: 8 },
   { y: 206, o: 1, b: 0 },
   { y: 206, o: 1, b: 0 },
+  // It hands over to the third act's headline from here, rising and softening
+  // back out the way it came in.
+  { y: 146, o: 0.4, b: 8 },
+  { y: 116, o: 0, b: 8 },
+  { y: 116, o: 0, b: 8 },
+  { y: 116, o: 0, b: 8 },
+  { y: 116, o: 0, b: 8 },
+  { y: 116, o: 0, b: 8 },
+  { y: 116, o: 0, b: 8 },
 ]
 
 /** The supporting paragraph, which slides in from the right as it resolves. */
@@ -332,6 +378,13 @@ export const BODY_COPY = [
   { c: [576.5, 414.5], o: 0, b: 8 },
   { c: [576.5, 414.5], o: 0.4, b: 8 },
   { c: [536.5, 414.5], o: 1, b: 0 },
+  { c: [536.5, 344.5], o: 0.6, b: 4 },
+  { c: [536.5, 314.5], o: 0, b: 8 },
+  { c: [536.5, 314.5], o: 0, b: 8 },
+  { c: [536.5, 314.5], o: 0, b: 8 },
+  { c: [536.5, 314.5], o: 0, b: 8 },
+  { c: [536.5, 314.5], o: 0, b: 8 },
+  { c: [536.5, 314.5], o: 0, b: 8 },
 ]
 
 /**
@@ -348,17 +401,146 @@ export const AGENT_BAR = [
   { c: [960, 931], w: 354, o: 0 },
   { c: [960, 931], w: 354, o: 1 },
   { c: [960, 931], w: 560, o: 1 },
+  { c: [960, 957], w: 306, o: 1 },
+  { c: [960, 677], w: 302, o: 1 },
+  { c: [960, 391], w: 302, o: 1 },
+  { c: [960, 246], w: 302, o: 1 },
+  { c: [960, -96], w: 302, o: 1 },
+  { c: [960, -96], w: 302, o: 1 },
+  { c: [960, -96], w: 302, o: 1 },
 ]
 
 /**
- * The white wash across the bottom, as two stacked layers.
+ * The white wash, as two stacked layers.
  *
- * Figma really does stack two identical gradient rectangles on slides 7 and 8 —
- * that is how the AI screen's foot dissolves hard enough for the agent bar to
- * sit on nothing. One layer cannot express it, so there are two here too.
+ * It has a POSITION now, not just an opacity. Up to slide 9 it sits against the
+ * bottom of the frame as page furniture; from slide 10 the whole first-act
+ * scene travels up and out and the wash goes with it, because it belongs to
+ * that scene rather than to the viewport.
+ *
+ * Figma really does stack two identical gradient rectangles from slide 7 — that
+ * is how the AI screen's foot dissolves hard enough for the agent bar to sit on
+ * nothing. One layer cannot express it, so there are two here too.
  */
-export const WASH_A = [1, 0, 0, 0, 1, 1, 1, 1]
-export const WASH_B = [0, 0, 0, 0, 0, 0, 1, 1]
+const washY = [858, 858, 858, 858, 858, 858, 858, 858, 858, 637, 351, 206, -136, -136, -136]
+const washA = [1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+const washB = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+
+export const WASH_A = washY.map((y, i) => ({ y, o: washA[i] }))
+export const WASH_B = washY.map((y, i) => ({ y, o: washB[i] }))
+
+/**
+ * The gradient backdrop's own travel.
+ *
+ * Figma moves the background rectangle itself from slide 10, which is the file
+ * saying "the page scrolls on now". Everything below where it ends up is plain
+ * white — so the backdrop layer translates and the page shows through beneath
+ * it, exactly as the design has it.
+ */
+export const BACKDROP_Y = [0, 0, 0, 0, 0, 0, 0, 0, 0, -221, -507, -652, -994, -994, -994]
+
+/* ------------------------------------------------------------ the third act */
+
+/**
+ * "One place for your whole health." and its paragraph.
+ *
+ * They rise from below the fold as the first act leaves, arriving blurred and
+ * dim and resolving as they settle — the same treatment every other piece of
+ * copy on this page gets.
+ */
+export const ACT3_HEAD = [
+  { c: [960.5, 908], o: 0, b: 8 },
+  { c: [960.5, 908], o: 0, b: 8 },
+  { c: [960.5, 908], o: 0, b: 8 },
+  { c: [960.5, 908], o: 0, b: 8 },
+  { c: [960.5, 908], o: 0, b: 8 },
+  { c: [960.5, 908], o: 0, b: 8 },
+  { c: [960.5, 908], o: 0, b: 8 },
+  { c: [960.5, 908], o: 0, b: 8 },
+  { c: [960.5, 908], o: 0, b: 8 },
+  { c: [960.5, 908], o: 0.4, b: 8 },
+  { c: [960.5, 643], o: 1, b: 0 },
+  { c: [960.5, 498], o: 1, b: 0 },
+  { c: [960.5, 216], o: 1, b: 0 },
+  { c: [960.5, 216], o: 1, b: 0 },
+  { c: [960.5, 216], o: 1, b: 0 },
+]
+
+export const ACT3_BODY = [
+  { c: [960, 982], o: 0, b: 8 },
+  { c: [960, 982], o: 0, b: 8 },
+  { c: [960, 982], o: 0, b: 8 },
+  { c: [960, 982], o: 0, b: 8 },
+  { c: [960, 982], o: 0, b: 8 },
+  { c: [960, 982], o: 0, b: 8 },
+  { c: [960, 982], o: 0, b: 8 },
+  { c: [960, 982], o: 0, b: 8 },
+  { c: [960, 982], o: 0, b: 8 },
+  { c: [960, 982], o: 0.2, b: 8 },
+  { c: [960, 717], o: 1, b: 0 },
+  { c: [960, 572], o: 1, b: 0 },
+  { c: [960, 290], o: 1, b: 0 },
+  { c: [960, 290], o: 1, b: 0 },
+  { c: [960, 290], o: 1, b: 0 },
+]
+
+/** The two pills under the paragraph. They arrive a slide later than the copy. */
+export const ACT3_CTA = [
+  { c: [960, 1064], o: 0 },
+  { c: [960, 1064], o: 0 },
+  { c: [960, 1064], o: 0 },
+  { c: [960, 1064], o: 0 },
+  { c: [960, 1064], o: 0 },
+  { c: [960, 1064], o: 0 },
+  { c: [960, 1064], o: 0 },
+  { c: [960, 1064], o: 0 },
+  { c: [960, 1064], o: 0 },
+  { c: [960, 1064], o: 0 },
+  { c: [960, 799], o: 1 },
+  { c: [960, 654], o: 1 },
+  { c: [960, 372], o: 1 },
+  { c: [960, 372], o: 1 },
+  { c: [960, 372], o: 1 },
+]
+
+/**
+ * The promo card row.
+ *
+ * Five 376px cards with a 16px gap — 1944px of row against a 1920px frame, so
+ * it is always wider than the screen. Slides 13, 14 and 15 change nothing but
+ * its x, which makes the last stretch of the page a horizontal scroll driven by
+ * the vertical one. That is the only place in the sequence where the two axes
+ * are crossed, and it is why the row is tracked as a position rather than
+ * living in an overflow container.
+ */
+export const CARD_ROW_W = 1944
+export const CARDS = [
+  { c: [1891, 1368], o: 0 },
+  { c: [1891, 1368], o: 0 },
+  { c: [1891, 1368], o: 0 },
+  { c: [1891, 1368], o: 0 },
+  { c: [1891, 1368], o: 0 },
+  { c: [1891, 1368], o: 0 },
+  { c: [1891, 1368], o: 0 },
+  { c: [1891, 1368], o: 0 },
+  { c: [1891, 1368], o: 0 },
+  { c: [1891, 1368], o: 0 },
+  { c: [1891, 1103], o: 1 },
+  { c: [1581, 958], o: 1 },
+  { c: [1291, 676], o: 1 },
+  { c: [1112, 676], o: 1 },
+  { c: [808, 676], o: 1 },
+]
+
+/** What each card says, in row order. */
+export const CARD_CONTENT = [
+  { img: 'movement', tag: 'Movement', title: 'Move with a reason' },
+  { img: 'nutrition', tag: 'Nutrition', title: 'Know what your food is doing for you' },
+  { img: 'mental-wellness', tag: 'Mental Wellness', title: 'Give your mind the same attention' },
+  { img: 'mental-wellness-2', tag: 'Mental Wellness', title: 'Give your mind the same attention' },
+  { img: 'family', tag: 'Family', title: 'Health for the whole family' },
+]
+
 
 /**
  * How much scroll each step gets, relative to the others. Equal: every step is

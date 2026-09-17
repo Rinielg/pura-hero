@@ -3,7 +3,7 @@ import { Scene } from './Scene'
 import { LottieBackground } from './LottieBackground'
 import { QUALITY } from './config'
 import { AppStores, Nav } from './hero/Chrome'
-import { CHIPS, HAND_ASPECT, MOBILE_CHIPS, scrollLength } from './hero/frames'
+import { CARD_CONTENT, CHIPS, HAND_ASPECT, MOBILE_CHIPS, scrollLength } from './hero/frames'
 import { pickLayout, projectChip, stageScale as computeStageScale } from './hero/layout'
 import { advance, handBaseWidth, useHeroTimeline } from './hero/useHeroTimeline'
 
@@ -73,6 +73,11 @@ export default function App() {
     bar: useRef(null),
     washA: useRef(null),
     washB: useRef(null),
+    backdrop: useRef(null),
+    act3Head: useRef(null),
+    act3Body: useRef(null),
+    act3Cta: useRef(null),
+    cards: useRef(null),
     cue: useRef(null),
   }
 
@@ -123,7 +128,16 @@ export default function App() {
 
   return (
     <>
-      <LottieBackground />
+      {/* The gradient sits in a stage of its own so it can travel in frame
+          pixels like everything else. Plain white is behind it: from slide 10
+          the first act scrolls away and what it uncovers is the page. */}
+      <div className="layer layer--backdrop" aria-hidden="true">
+        <div className="stage" style={stageStyle}>
+          <div className="backdrop-travel" ref={refs.backdrop}>
+            <LottieBackground />
+          </div>
+        </div>
+      </div>
 
       <div className="device-layer" aria-hidden="true">
         <Scene layout={layout} stageScale={scale} quality={QUALITY} />
@@ -186,13 +200,44 @@ export default function App() {
       </div>
 
       {/* -------------------------------------------- in front of the device */}
+      {/* Two stacked washes, as Figma has them: one alone dissolves the foot of
+          the device, both together clear enough room under it for the agent bar
+          to sit on nothing. Purely decorative, so this layer is hidden. */}
       <div className="layer layer--front" aria-hidden="true">
         <div className="stage" style={stageStyle}>
-          {/* Two stacked washes, as Figma has them: one alone dissolves the
-              foot of the device, both together clear enough room under it for
-              the agent bar to sit on nothing at all. */}
           <Wash ref={refs.washA} />
           <Wash ref={refs.washB} />
+        </div>
+      </div>
+
+      {/* In front of the wash, and this layer reads. */}
+      <div className="layer layer--front">
+        <div className="stage" style={stageStyle}>
+          <h2 className="act3-head" ref={refs.act3Head}>
+            One place for your whole health.
+          </h2>
+          <p className="act3-body" ref={refs.act3Body}>
+            Pura brings your data, your doctors and your daily habits together, so
+            every day adds up to a healthier life.
+          </p>
+          <div className="act3-cta" ref={refs.act3Cta}>
+            <a href="#top">Why Pura</a>
+            <a href="#top">How it works</a>
+          </div>
+
+          {/* Five cards, wider than the frame on purpose: slides 13 to 15 change
+              nothing but this row's x, so the end of the page is a horizontal
+              scroll driven by the vertical one. */}
+          <div className="cards" ref={refs.cards}>
+            {CARD_CONTENT.map((card) => (
+              <article className="card" key={card.img + card.title}>
+                <img src={`/assets/cards/${card.img}.jpg`} alt="" />
+                <span className="card__label">
+                  {card.tag} — {card.title}
+                </span>
+              </article>
+            ))}
+          </div>
 
           <div className="agent-bar" ref={refs.bar}>
             <img className="agent-bar__mark" src="/assets/pura-sparkle.png" alt="" />

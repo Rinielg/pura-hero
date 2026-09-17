@@ -5,8 +5,14 @@ import { ScrollSmoother } from 'gsap/ScrollSmoother'
 import { useGSAP } from '@gsap/react'
 import { deviceProxy } from '../deviceProxy'
 import {
+  ACT3_BODY,
+  ACT3_CTA,
+  ACT3_HEAD,
   AGENT_BAR,
+  BACKDROP_Y,
   BODY_COPY,
+  CARDS,
+  CARD_ROW_W,
   CHIPS,
   COPY_HEAD,
   COPY_SUB,
@@ -23,6 +29,7 @@ import {
 import {
   DEVICE_REF_H,
   projectBottom,
+  projectCards,
   projectChip,
   projectLength,
   projectObject,
@@ -297,8 +304,59 @@ export function useHeroTimeline({
       }
 
       // ----------------------------------------------------------- white wash
-      track(refs.washA.current, (slide) => ({ opacity: WASH_A[slide] }))
-      track(refs.washB.current, (slide) => ({ opacity: WASH_B[slide] }))
+      // It travels now. Up to slide 9 it is page furniture pinned to the bottom
+      // of the frame; from slide 10 it belongs to the scene that is leaving, so
+      // it leaves with it.
+      const washTrack = (el, table) =>
+        track(el, (slide) => {
+          const [, y] = projectChip([960, table[slide].y], L)
+          return { y, opacity: table[slide].o }
+        })
+      washTrack(refs.washA.current, WASH_A)
+      washTrack(refs.washB.current, WASH_B)
+
+      // -------------------------------------------------------- the backdrop
+      // Figma moves the gradient rectangle itself once the page starts scrolling
+      // on, which is the file saying the first act is over. Plain white sits
+      // behind it, so translating the layer is the whole effect.
+      track(refs.backdrop.current, (slide) => ({
+        y: projectChip([960, 540 + BACKDROP_Y[slide]], L)[1] - L.frame[1] / 2,
+      }))
+
+      // ------------------------------------------------------- the third act
+      for (const [ref, table] of [
+        [refs.act3Head, ACT3_HEAD],
+        [refs.act3Body, ACT3_BODY],
+      ]) {
+        if (!ref.current) continue
+        gsap.set(ref.current, { xPercent: -50, yPercent: -50 })
+        track(ref.current, (slide) => {
+          const [x, y] = projectChip(table[slide].c, L)
+          return { x, y, opacity: table[slide].o, filter: blur(table[slide].b) }
+        })
+      }
+
+      if (refs.act3Cta.current) {
+        gsap.set(refs.act3Cta.current, { xPercent: -50, yPercent: -50 })
+        track(refs.act3Cta.current, (slide) => {
+          const [x, y] = projectChip(ACT3_CTA[slide].c, L)
+          return { x, y, opacity: ACT3_CTA[slide].o }
+        })
+      }
+
+      // The row is laid out at its projected width and moved by x, so the
+      // horizontal scroll is a transform rather than a layout change.
+      if (refs.cards.current) {
+        gsap.set(refs.cards.current, {
+          xPercent: -50,
+          yPercent: -50,
+          width: CARD_ROW_W * L.cardScale,
+        })
+        track(refs.cards.current, (slide) => {
+          const [x, y] = projectCards(CARDS[slide].c, L)
+          return { x, y, opacity: CARDS[slide].o }
+        })
+      }
 
       activeTrigger = tl.scrollTrigger
 

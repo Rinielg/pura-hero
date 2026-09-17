@@ -1,7 +1,7 @@
 # Pura — hero scroll prototype
 
 The hero transition from `Pura Website → Final Website` in Figma, built as a
-real page: slides 1–8 are eight moments of one scroll-driven sequence, and the
+real page: slides 1–15 are fifteen moments of one scroll-driven sequence, and the
 phone in the middle of it is the three.js device from
 [pura-device-viewer](https://github.com/Rinielg/pura-device-viewer) rather than
 the flat render the design uses as a placeholder.
@@ -20,16 +20,15 @@ npm run build    # static output in dist/ — deploy that folder anywhere
 
 ## The sequence
 
-| Slide | What moves |
+| Slides | What moves |
 |---|---|
 | 1 | At rest. Heading up top, twelve chips scattered across the frame, the device small and front-on at the bottom under a white wash. |
-| 2 | The heading **dissolves** where it used to slide away — Figma moves it 50px and drops it to 40%. The cloud gathers inward, the device rotates into its 3/4 pose and grows. |
-| 3 | The cloud keeps closing; chips behind the device start to fade. Device rises. |
-| 4 | Chips are gone. Device at full size. The hand enters from below. |
-| 5 | Device and hand settle toward each other; the white wash comes back. |
-| 6 | The device lifts and grows again, the hand fades to 20%, and "A health companion that knows you" arrives at 40% **behind** the phone. |
-| 7 | The device turns back to **face-on**, its screen crossfades from Home to Pura AI, the headline resolves and the agent bar appears. |
-| 8 | The agent bar **widens** from 354 to 560 and the supporting paragraph slides in and resolves. The page ends here, holding this frame. |
+| 2–4 | The heading dissolves rather than slides — Figma moves it 50px and drops it to 40%. The cloud gathers inward and fades; the device rotates into its 3/4 pose, grows and rises. |
+| 5–6 | The hand comes up to meet the device, then **fades in place** as the device lifts away. "A health companion that knows you" arrives at 40% behind the phone. |
+| 7–8 | The device turns back to **face-on**, its screen crossfades from Home to Pura AI, and the agent bar appears then widens from 354 to 560. |
+| 9–10 | The whole first act starts travelling up and out — device, wash and gradient backdrop together. What it uncovers is plain white. The second act's copy softens away as "One place for your whole health." rises from below. |
+| 11–12 | The third act resolves: headline, paragraph, two pills, and a five-card promo row entering from the right. |
+| 13–15 | Nothing moves but the card row's x. The last stretch of the page is a **horizontal** scroll driven by the vertical one. |
 
 `Slide overview` in Figma is an assembly board rather than a moment in the
 sequence, and is deliberately ignored — it does not show the whole site.
@@ -105,6 +104,17 @@ The result lands within 1.5% of the reference on both axes.
 
 ## Notes
 
+- **The hand fades in place.** Figma's later slides drift it around while it
+  fades, but on a page those few pixels of travel read as the hand being dragged
+  off rather than letting go. It holds its resting pose and only opacity moves.
+- **The backdrop travels.** From slide 10 Figma moves the gradient rectangle
+  itself, which is the file saying the first act is over. The gradient layer
+  translates and the page shows through beneath it — white, by design.
+- **The cards are exported as composed images.** Photo, scrim, tag chip and +
+  button are baked in, because the crop is a Figma CROP transform that is not
+  worth replicating for a prototype. The text is in the accessibility tree as a
+  visually-hidden label. If these need to be real components, that is the one
+  thing here that would have to be rebuilt.
 - **Copy blurs as it fades.** Figma puts `LAYER_BLUR` on every piece of text at
   the moment it drops back — 8px on a heading, 4px on a sub-heading that keeps
   its opacity. That is what makes copy read as receding rather than as being
