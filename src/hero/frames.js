@@ -258,49 +258,52 @@ export const SCREEN_MIX = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 /**
  * The hand.
  *
- * `c` is the centre of the hand IMAGE — Figma groups it with a backdrop that
- * extends below, so the group's own centre is not the image's. It has no node
- * before slide 4, so the early slides park it below the frame rather than
- * fading it in: a hand that materialises in mid-air reads as a glitch, one that
- * rises into shot reads as the point.
+ * `c` is the centre of the image and `w` its width, both in frame pixels.
+ * OPACITY IS NOT HERE — it is HAND_FADE below, on its own track, because the
+ * two need different timing inside the same step.
  *
- * From slide 5 it FADES IN PLACE and never moves again. Figma's later slides do
- * drift it around, but on a page those few pixels of travel read as the hand
- * being dragged off rather than letting go — it should simply stop being there.
- * So the resting pose is held and only opacity moves.
+ * It has no node before slide 4, so the early slides park it below the frame
+ * rather than fading it in: a hand that materialises in mid-air reads as a
+ * glitch, one that rises into shot reads as the point. And it never moves once
+ * it has arrived — Figma's later slides drift it around while it fades, which
+ * on a page reads as the hand being dragged off rather than letting go.
  *
- * It goes all the way to zero in one step, and over less than half of it (see
- * STEP_WINDOWS). Figma holds it at 20% for a slide, which on a static frame
- * reads as "nearly gone" and in motion reads as a smudge that will not leave.
- */
-/**
- * Where the hand rests and fades from. The asset was replaced for slides 4–6:
- * a different cut-out at a different aspect (500 x 942 rather than 476 x 1016),
- * so every number here is the new one and HAND_ASPECT moved with it.
+ * The asset was replaced for slides 4–6: a different cut-out at a different
+ * aspect (500 x 942 rather than 476 x 1016), so every number here is the new
+ * one and HAND_ASPECT moved with it.
  */
 const HAND_REST = { c: [895, 929], w: 386 }
-/** Parked below the frame: the hand has no node at all before slide 4. */
-const HAND_BELOW = { c: [895, 1866], w: 500, o: 1 }
+/** Parked below the frame. */
+const HAND_BELOW = { c: [895, 1866], w: 500 }
 
 export const HAND_POSE = [
   HAND_BELOW,
   HAND_BELOW,
   HAND_BELOW,
-  { c: [895, 1246], w: 500, o: 1 },
-  { ...HAND_REST, o: 1 },
-  // Figma now takes it to zero by slide 6 as well, so the design and the page
-  // agree: it is gone, not nearly gone.
-  { ...HAND_REST, o: 0 },
-  { ...HAND_REST, o: 0 },
-  { ...HAND_REST, o: 0 },
-  { ...HAND_REST, o: 0 },
-  { ...HAND_REST, o: 0 },
-  { ...HAND_REST, o: 0 },
-  { ...HAND_REST, o: 0 },
-  { ...HAND_REST, o: 0 },
-  { ...HAND_REST, o: 0 },
-  { ...HAND_REST, o: 0 },
+  { c: [895, 1246], w: 500 },
+  HAND_REST,
+  HAND_REST,
+  HAND_REST,
+  HAND_REST,
+  HAND_REST,
+  HAND_REST,
+  HAND_REST,
+  HAND_REST,
+  HAND_REST,
+  HAND_REST,
+  HAND_REST,
 ]
+
+/**
+ * The hand's opacity, tracked separately from its movement.
+ *
+ * It starts going halfway through slide 4 → 5 — the moment the phone comes to
+ * rest against the fingers — and is gone shortly after slide 5. Splitting it
+ * from HAND_POSE is what allows that: the hand still travels and shrinks
+ * across the whole of step 3 while the fade only occupies the back half of it.
+ * Running both on one track would have delayed the movement too.
+ */
+export const HAND_FADE = [1, 1, 1, 1, 0.45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 /** Native size of `hand.webp`, so width alone can drive it. */
 export const HAND_ASPECT = 942 / 500
@@ -600,16 +603,18 @@ export const STEP_WEIGHTS = Array(SLIDES - 1).fill(1)
  * Where inside a step a given element actually moves, as [start, end] fractions.
  *
  * Everything runs across the whole step by default, which is right for a camera
- * move — but step 5→6 is not one. There the hand lets go of the device, and
- * both happening at once reads as the phone escaping rather than being
- * released. So the hand goes first — all the way out, over the first 40% of the
- * step — and the device only starts climbing as it finishes, with a short
- * overlap, because a clean handover would be a stop and a restart.
+ * move — but the handover from hand to device is not one. The hand lets go
+ * while the device climbs away, and both happening at once reads as the phone
+ * escaping rather than being released. So the fade goes first and the device
+ * only starts climbing as it finishes, with a short overlap, because a clean
+ * handover would be a stop and a restart.
  *
- * Keyed by step index: step 4 is slide 5 → slide 6.
+ * Keyed by step index: step 3 is slide 4 → slide 5, step 4 is slide 5 → 6.
  */
 export const STEP_WINDOWS = {
-  hand: { 4: [0, 0.4] },
+  // The fade begins halfway through step 3 and finishes early in step 4; the
+  // hand's movement is untouched and still runs both steps end to end.
+  handFade: { 3: [0.5, 1], 4: [0, 0.4] },
   device: { 4: [0.34, 1] },
 }
 

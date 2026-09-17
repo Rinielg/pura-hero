@@ -18,6 +18,7 @@ import {
   COPY_SUB,
   COPY_Y,
   DEVICE_POSE,
+  HAND_FADE,
   HAND_POSE,
   KICKER,
   SCREEN_MIX,
@@ -244,14 +245,17 @@ export function useHeroTimeline({
       // Laid out at its largest authored width and scaled down from there, so
       // its size animates on the compositor instead of through layout — a width
       // tween on a 476px image would reflow on every scrubbed frame.
+      // Two tracks on one element: where it is, and whether you can see it.
+      // They deliberately do not share timing — see STEP_WINDOWS.
       if (refs.hand.current) {
         gsap.set(refs.hand.current, { xPercent: -50, yPercent: -50 })
         const base = HAND_POSE[3].w
         track(refs.hand.current, (slide) => {
           const pose = HAND_POSE[slide]
           const [x, y] = projectObject(pose.c, L)
-          return { x, y, scale: pose.w / base, opacity: pose.o }
-        }, STEP_WINDOWS.hand)
+          return { x, y, scale: pose.w / base }
+        })
+        track(refs.hand.current, (slide) => ({ opacity: HAND_FADE[slide] }), STEP_WINDOWS.handFade)
       }
 
       // ------------------------------------------------------------ hero copy
