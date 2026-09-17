@@ -167,8 +167,8 @@ body {
   top: 0;
   display: block;
   transform-origin: 50% 50%;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 58%, rgba(0, 0, 0, 0) 99%);
-  mask-image: linear-gradient(180deg, #000 0%, #000 58%, rgba(0, 0, 0, 0) 99%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 60%, rgba(0, 0, 0, 0) 99%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 60%, rgba(0, 0, 0, 0) 99%);
   will-change: transform;
 }
 

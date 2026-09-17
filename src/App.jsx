@@ -163,7 +163,7 @@ export default function App() {
           <img
             className="hand"
             ref={refs.hand}
-            src="/assets/hand.png"
+            src="/assets/hand.webp"
             alt=""
             style={{ width: `${handW}px`, height: `${handW * HAND_ASPECT}px` }}
           />

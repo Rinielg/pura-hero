@@ -273,15 +273,23 @@ export const SCREEN_MIX = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
  * STEP_WINDOWS). Figma holds it at 20% for a slide, which on a static frame
  * reads as "nearly gone" and in motion reads as a smudge that will not leave.
  */
-const HAND_BELOW = { c: [915, 1883], w: 476, o: 1 }
-/** Where the hand comes to rest, and where it fades from. */
-const HAND_REST = { c: [912.4, 999.3], w: 342 }
+/**
+ * Where the hand rests and fades from. The asset was replaced for slides 4–6:
+ * a different cut-out at a different aspect (500 x 942 rather than 476 x 1016),
+ * so every number here is the new one and HAND_ASPECT moved with it.
+ */
+const HAND_REST = { c: [895, 929], w: 386 }
+/** Parked below the frame: the hand has no node at all before slide 4. */
+const HAND_BELOW = { c: [895, 1866], w: 500, o: 1 }
+
 export const HAND_POSE = [
   HAND_BELOW,
   HAND_BELOW,
   HAND_BELOW,
-  { c: [915, 1263], w: 476, o: 1 },
+  { c: [895, 1246], w: 500, o: 1 },
   { ...HAND_REST, o: 1 },
+  // Figma now takes it to zero by slide 6 as well, so the design and the page
+  // agree: it is gone, not nearly gone.
   { ...HAND_REST, o: 0 },
   { ...HAND_REST, o: 0 },
   { ...HAND_REST, o: 0 },
@@ -294,8 +302,8 @@ export const HAND_POSE = [
   { ...HAND_REST, o: 0 },
 ]
 
-/** Native size of `hand.png`, so width alone can drive it. */
-export const HAND_ASPECT = 1016 / 476
+/** Native size of `hand.webp`, so width alone can drive it. */
+export const HAND_ASPECT = 942 / 500
 
 /**
  * The hero copy.

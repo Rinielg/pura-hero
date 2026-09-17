@@ -97,7 +97,7 @@ The result lands within 1.5% of the reference on both axes.
 |---|---|
 | `public/models/iphone-18-pro.glb` | pura-device-viewer |
 | `public/assets/pura-screen.jpg` | the app screen from Figma, on the model's display |
-| `public/assets/hand.png` | Figma, with the wrist fade rebuilt as a CSS mask |
+| `public/assets/hand.webp` | Figma, cropped from the source by its CROP transform, with the wrist fade rebuilt as a CSS mask |
 | `public/assets/icons/*.svg` | the twelve chips' duotone icons, exported from Figma |
 | `public/assets/store-*.svg`, `pura-logo.svg` | Figma |
 | `public/bg/*.json` | the supplied mesh-gradient Lottie |
