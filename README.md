@@ -105,6 +105,19 @@ The result lands within 1.5% of the reference on both axes.
 
 ## Notes
 
+- **Copy blurs as it fades.** Figma puts `LAYER_BLUR` on every piece of text at
+  the moment it drops back — 8px on a heading, 4px on a sub-heading that keeps
+  its opacity. That is what makes copy read as receding rather than as being
+  turned down, and the two lines are animated separately because Figma does not
+  treat them the same.
+- **The white wash is a progressive blur, not one.** A single `backdrop-filter`
+  draws a hard horizontal line where its box starts; the blur is on or off with
+  nothing in between. Four masked bands of increasing radius ramp it instead,
+  which is what `BACKGROUND_BLUR 60` looks like in Figma.
+- **The hand lets go before the device leaves.** Step 5→6 is the one step whose
+  parts are deliberately out of phase: the hand fades over the first 55%, the
+  device climbs over the last 55%. Simultaneous reads as the phone escaping;
+  staggered reads as it being released. `STEP_WINDOWS` in `frames.js`.
 - **The screen shows two things.** Home for slides 1–6, Pura AI for 7–8, mixed
   in the emissive fragment rather than swapped. The device is turning from a 3/4
   view to face-on while the content changes and at no point is the screen hidden

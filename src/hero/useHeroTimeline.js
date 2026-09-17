@@ -8,12 +8,15 @@ import {
   AGENT_BAR,
   BODY_COPY,
   CHIPS,
-  COPY,
+  COPY_HEAD,
+  COPY_SUB,
+  COPY_Y,
   DEVICE_POSE,
   HAND_POSE,
   KICKER,
   SCREEN_MIX,
   STEP_WEIGHTS,
+  STEP_WINDOWS,
   WASH_A,
   WASH_B,
 } from './frames'
@@ -168,18 +171,30 @@ export function useHeroTimeline({
        * top-left corner and a device at the scene origin. The `tl.set` is what
        * makes scrubbing back to the top return to that state.
        */
-      const track = (target, state) => {
+      const track = (target, state, windows) => {
         if (!target) return
         gsap.set(target, state(0))
         tl.set(target, state(0), 0)
         for (let i = 0; i < STEPS; i++) {
+          const span = bounds[i + 1] - bounds[i]
+          const [from, to] = windows?.[i] ?? [0, 1]
           tl.to(
             target,
-            { ...state(i + 1), duration: bounds[i + 1] - bounds[i], ease: EASE },
-            bounds[i]
+            { ...state(i + 1), duration: span * (to - from), ease: EASE },
+            bounds[i] + span * from
           )
         }
       }
+
+      /**
+       * Blur in FRAME pixels, left exactly as Figma gives it.
+       *
+       * No projection: a filter is applied in the element's own coordinate
+       * space and the stage's transform scales the result afterwards, so the
+       * blur already tracks the breakpoint. Projecting it as well would scale
+       * it twice and leave the copy nearly sharp on a phone.
+       */
+      const blur = (px) => `blur(${px}px)`
 
       // ---------------------------------------------------------------- chips
       // The -50%/-50% centring goes through GSAP rather than CSS so that GSAP
@@ -209,7 +224,7 @@ export function useHeroTimeline({
           rz: pose.r[2],
           screenMix: SCREEN_MIX[slide],
         }
-      })
+      }, STEP_WINDOWS.device)
 
       // ----------------------------------------------------------------- hand
       // Laid out at its largest authored width and scaled down from there, so
@@ -222,13 +237,22 @@ export function useHeroTimeline({
           const pose = HAND_POSE[slide]
           const [x, y] = projectObject(pose.c, L)
           return { x, y, scale: pose.w / base, opacity: pose.o }
-        })
+        }, STEP_WINDOWS.hand)
       }
 
       // ------------------------------------------------------------ hero copy
-      track(refs.heading.current, (slide) => ({
-        y: COPY[slide].y * L.chipK[1],
-        opacity: COPY[slide].o,
+      // One translate for the block, one opacity-and-blur track per line. The
+      // heading dims as it softens; the sub-heading only softens. Figma treats
+      // them differently and the difference is what stops the pair reading as a
+      // single card being turned down.
+      track(refs.heading.current, (slide) => ({ y: COPY_Y[slide] * L.chipK[1] }))
+      track(refs.headLine.current, (slide) => ({
+        opacity: COPY_HEAD[slide].o,
+        filter: blur(COPY_HEAD[slide].b),
+      }))
+      track(refs.subLine.current, (slide) => ({
+        opacity: COPY_SUB[slide].o,
+        filter: blur(COPY_SUB[slide].b),
       }))
 
       // --------------------------------------------------------------- kicker
@@ -236,7 +260,7 @@ export function useHeroTimeline({
         gsap.set(refs.kicker.current, { xPercent: -50, yPercent: -50 })
         track(refs.kicker.current, (slide) => {
           const [x, y] = projectChip([960, KICKER[slide].y], L)
-          return { x, y, opacity: KICKER[slide].o }
+          return { x, y, opacity: KICKER[slide].o, filter: blur(KICKER[slide].b) }
         })
       }
 
@@ -251,7 +275,7 @@ export function useHeroTimeline({
           const [x, y] = mobile
             ? projectChip([960, KICKER[slide].y + 120], L)
             : projectChip(BODY_COPY[slide].c, L)
-          return { x, y, opacity: BODY_COPY[slide].o }
+          return { x, y, opacity: BODY_COPY[slide].o, filter: blur(BODY_COPY[slide].b) }
         })
       }
 

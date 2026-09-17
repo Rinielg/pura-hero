@@ -34,6 +34,29 @@ import { advance, handBaseWidth, useHeroTimeline } from './hero/useHeroTimeline'
  * more slides in `frames.js` first, and as sections here only once they stop
  * being part of the sequence.
  */
+/**
+ * The white wash across the bottom.
+ *
+ * A single element with one `backdrop-filter` gives a hard horizontal line
+ * where its box starts — the blur is either on or off, with nothing in between,
+ * and against a smooth gradient that edge is the most visible thing on the
+ * page. Figma's `BACKGROUND_BLUR 60` has no such edge because Figma ramps it.
+ *
+ * So the blur is built in layers instead: four bands of increasing radius, each
+ * masked to fade in where the one before it is still weak. The result is a blur
+ * that grows with depth rather than switching on, which is what the design
+ * shows. The white gradient rides on top as its own layer.
+ */
+const Wash = ({ ref }) => (
+  <div className="wash" ref={ref}>
+    <div className="wash__blur wash__blur--1" />
+    <div className="wash__blur wash__blur--2" />
+    <div className="wash__blur wash__blur--3" />
+    <div className="wash__blur wash__blur--4" />
+    <div className="wash__tint" />
+  </div>
+)
+
 export default function App() {
   const wrapperRef = useRef(null)
   const contentRef = useRef(null)
@@ -43,6 +66,8 @@ export default function App() {
     chips: useRef({}),
     hand: useRef(null),
     heading: useRef(null),
+    headLine: useRef(null),
+    subLine: useRef(null),
     kicker: useRef(null),
     body: useRef(null),
     bar: useRef(null),
@@ -137,8 +162,10 @@ export default function App() {
       <div className="layer layer--copy">
         <div className="stage" style={stageStyle}>
           <div className="hero-copy" ref={refs.heading} style={{ top: `${copyTop}px` }}>
-            <h1>Your health, simplified.</h1>
-            <p>Your wearables, medical history and lab results, together in one app.</p>
+            <h1 ref={refs.headLine}>Your health, simplified.</h1>
+            <p ref={refs.subLine}>
+              Your wearables, medical history and lab results, together in one app.
+            </p>
           </div>
         </div>
       </div>
@@ -164,8 +191,8 @@ export default function App() {
           {/* Two stacked washes, as Figma has them: one alone dissolves the
               foot of the device, both together clear enough room under it for
               the agent bar to sit on nothing at all. */}
-          <div className="wash" ref={refs.washA} />
-          <div className="wash" ref={refs.washB} />
+          <Wash ref={refs.washA} />
+          <Wash ref={refs.washB} />
 
           <div className="agent-bar" ref={refs.bar}>
             <img className="agent-bar__mark" src="/assets/pura-sparkle.png" alt="" />

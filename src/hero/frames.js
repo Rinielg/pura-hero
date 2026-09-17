@@ -271,22 +271,39 @@ export const HAND_POSE = [
 export const HAND_ASPECT = 1016 / 476
 
 /**
- * The hero copy, as a y offset from its resting position and an opacity.
+ * The hero copy.
  *
- * It now FADES where it used to travel. Figma moves it only 50px between slides
- * 1 and 2 while dropping it to 40%, so the slide-up has been replaced by a
- * dissolve. The third entry carries the drift on rather than stopping it dead,
- * which a pure two-state fade would.
+ * It does not just fade — it goes OUT OF FOCUS as it fades, and that is the
+ * part that makes it read as receding rather than as being turned down. Figma
+ * puts `LAYER_BLUR 8` on the heading and `LAYER_BLUR 4` on the sub-heading at
+ * the moment they drop back, and the two are not treated the same: the heading
+ * loses opacity while the sub-heading keeps it and only softens. Animating them
+ * as one block loses that, so they are two tracks over a shared translate.
+ *
+ * `y` is the shared travel, `o` opacity, `b` blur radius in frame pixels.
  */
-export const COPY = [
-  { y: 0, o: 1 },
-  { y: -50, o: 0.4 },
-  { y: -100, o: 0 },
-  { y: -100, o: 0 },
-  { y: -100, o: 0 },
-  { y: -100, o: 0 },
-  { y: -100, o: 0 },
-  { y: -100, o: 0 },
+export const COPY_Y = [0, -50, -100, -100, -100, -100, -100, -100]
+
+export const COPY_HEAD = [
+  { o: 1, b: 0 },
+  { o: 0.4, b: 8 },
+  { o: 0, b: 12 },
+  { o: 0, b: 12 },
+  { o: 0, b: 12 },
+  { o: 0, b: 12 },
+  { o: 0, b: 12 },
+  { o: 0, b: 12 },
+]
+
+export const COPY_SUB = [
+  { o: 1, b: 0 },
+  { o: 1, b: 4 },
+  { o: 0, b: 10 },
+  { o: 0, b: 10 },
+  { o: 0, b: 10 },
+  { o: 0, b: 10 },
+  { o: 0, b: 10 },
+  { o: 0, b: 10 },
 ]
 
 /**
@@ -295,26 +312,26 @@ export const COPY = [
  * resolves as the device turns to face you.
  */
 export const KICKER = [
-  { y: 306, o: 0 },
-  { y: 306, o: 0 },
-  { y: 306, o: 0 },
-  { y: 306, o: 0 },
-  { y: 306, o: 0 },
-  { y: 306, o: 0.4 },
-  { y: 206, o: 1 },
-  { y: 206, o: 1 },
+  { y: 306, o: 0, b: 8 },
+  { y: 306, o: 0, b: 8 },
+  { y: 306, o: 0, b: 8 },
+  { y: 306, o: 0, b: 8 },
+  { y: 306, o: 0, b: 8 },
+  { y: 306, o: 0.4, b: 8 },
+  { y: 206, o: 1, b: 0 },
+  { y: 206, o: 1, b: 0 },
 ]
 
 /** The supporting paragraph, which slides in from the right as it resolves. */
 export const BODY_COPY = [
-  { c: [576.5, 414.5], o: 0 },
-  { c: [576.5, 414.5], o: 0 },
-  { c: [576.5, 414.5], o: 0 },
-  { c: [576.5, 414.5], o: 0 },
-  { c: [576.5, 414.5], o: 0 },
-  { c: [576.5, 414.5], o: 0 },
-  { c: [576.5, 414.5], o: 0.4 },
-  { c: [536.5, 414.5], o: 1 },
+  { c: [576.5, 414.5], o: 0, b: 8 },
+  { c: [576.5, 414.5], o: 0, b: 8 },
+  { c: [576.5, 414.5], o: 0, b: 8 },
+  { c: [576.5, 414.5], o: 0, b: 8 },
+  { c: [576.5, 414.5], o: 0, b: 8 },
+  { c: [576.5, 414.5], o: 0, b: 8 },
+  { c: [576.5, 414.5], o: 0.4, b: 8 },
+  { c: [536.5, 414.5], o: 1, b: 0 },
 ]
 
 /**
@@ -349,6 +366,23 @@ export const WASH_B = [0, 0, 0, 0, 0, 0, 1, 1]
  * under a scrub.
  */
 export const STEP_WEIGHTS = Array(SLIDES - 1).fill(1)
+
+/**
+ * Where inside a step a given element actually moves, as [start, end] fractions.
+ *
+ * Everything runs across the whole step by default, which is right for a camera
+ * move — but step 5→6 is not one. There the hand lets go of the device, and
+ * both happening at once reads as the phone escaping rather than being
+ * released. So the hand fades over the first part of that step, and the device
+ * only begins its climb once the hand has nearly gone — with a short overlap,
+ * because a clean handover would be a stop and a restart.
+ *
+ * Keyed by step index: step 4 is slide 5 → slide 6.
+ */
+export const STEP_WINDOWS = {
+  hand: { 4: [0, 0.55] },
+  device: { 4: [0.45, 1] },
+}
 
 /**
  * Pinned scroll distance, in CSS pixels — half a viewport per step.
