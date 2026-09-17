@@ -9,7 +9,8 @@ import { loadImageElement, makeScreenTexture } from './screenTexture'
 import { deviceRefHeight } from './hero/useHeroTimeline'
 
 const MODEL_URL = '/models/iphone-18-pro.glb'
-const SCREEN_URL = '/assets/pura-screen.jpg'
+/** The two things the screen shows, crossfaded across the turn to face-on. */
+const SCREEN_URLS = ['/assets/pura-screen.jpg', '/assets/pura-ai-screen.jpg']
 
 /** The colourway the hero uses. Black reads as one dark mass against the
  *  cream gradient, which makes the lit screen the brightest thing on the page —
@@ -169,17 +170,63 @@ function applyVariant(scene, variant) {
   })
 }
 
-/** The emissiveMap is the screen. The base colour stays black, exactly as the
- *  asset has it, so the image reads as emitted light rather than a sticker. */
-function applyScreen(scene, texture) {
-  if (!texture) return
+/**
+ * The emissiveMap is the screen. The base colour stays black, exactly as the
+ * asset has it, so the image reads as emitted light rather than a sticker.
+ *
+ * Two screens, not one, because the page changes what the phone is showing
+ * halfway through. They are blended in the shader rather than swapped, and
+ * rather than redrawn into a canvas texture every frame: the device is turning
+ * from a 3/4 view to face-on while the content changes, and at no point in that
+ * turn is the screen hidden enough to hide a cut. A one-line mix in the
+ * emissive fragment costs nothing and is the only way the change reads as the
+ * screen updating rather than as a glitch.
+ */
+function applyScreens(scene, textures) {
+  if (!textures) return
   scene.traverse((o) => {
     const m = o.isMesh && o.material
     if (!m || !STOCK_WALLPAPER.has(m)) return
-    m.emissiveMap = texture
+
+    m.emissiveMap = textures[0]
     m.toneMapped = SCREEN_TONE_MAPPED
+
+    m.onBeforeCompile = (shader) => {
+      shader.uniforms.uScreenB = { value: textures[1] }
+      shader.uniforms.uScreenMix = { value: 0 }
+      // Supplying a uniform does not declare it. three.js only auto-declares
+      // its own, so anything added here has to be prepended to the source by
+      // hand or the program fails to compile with "undeclared identifier".
+      shader.fragmentShader =
+        'uniform sampler2D uScreenB;\nuniform float uScreenMix;\n' + shader.fragmentShader
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <emissivemap_fragment>',
+        `#ifdef USE_EMISSIVEMAP
+           vec4 puraA = texture2D( emissiveMap, vEmissiveMapUv );
+           vec4 puraB = texture2D( uScreenB, vEmissiveMapUv );
+           vec4 emissiveColor = mix( puraA, puraB, uScreenMix );
+           #ifdef DECODE_VIDEO_TEXTURE_EMISSIVE
+             emissiveColor = sRGBTransferEOTF( emissiveColor );
+           #endif
+           totalEmissiveRadiance *= emissiveColor.rgb;
+         #endif`
+      )
+      m.userData.shader = shader
+    }
     m.needsUpdate = true
+    SCREEN_MATERIALS.add(m)
   })
+}
+
+/** Every display material, so the mix uniform can be pushed each frame. */
+const SCREEN_MATERIALS = new Set()
+
+/** Push the crossfade value into whichever materials have compiled so far. */
+function setScreenMix(value) {
+  for (const m of SCREEN_MATERIALS) {
+    const u = m.userData.shader?.uniforms?.uScreenMix
+    if (u) u.value = value
+  }
 }
 
 /** Anisotropy is per-texture, so it has to be walked onto every one in use. */
@@ -255,23 +302,32 @@ export function Device({ layout, stageScale, anisotropy = 4 }) {
   useEffect(() => {
     let cancelled = false
     let built = null
-    fetch(SCREEN_URL)
-      .then((r) => r.blob())
-      .then(loadImageElement)
-      .then((image) => {
+    // Both screens are needed before either is applied: compiling the shader
+    // with only one bound would leave the second sampler undefined, and the
+    // first frame of the crossfade would be the frame that shows it.
+    Promise.all(
+      SCREEN_URLS.map((url) =>
+        fetch(url)
+          .then((r) => r.blob())
+          .then(loadImageElement)
+      )
+    )
+      .then((images) => {
         if (cancelled) return
-        built = makeScreenTexture(image, findDisplay(scene))
+        const display = findDisplay(scene)
+        built = images.map((image) => makeScreenTexture(image, display))
         setScreenTexture(built)
       })
-      .catch((error) => console.warn('[device] screen texture failed:', error.message))
+      .catch((error) => console.warn('[device] screen textures failed:', error.message))
     return () => {
       cancelled = true
-      built?.dispose()
+      built?.forEach((t) => t.dispose())
     }
   }, [scene])
 
   useLayoutEffect(() => {
-    applyScreen(scene, screenTexture)
+    applyScreens(scene, screenTexture)
+    return () => SCREEN_MATERIALS.clear()
   }, [scene, screenTexture])
 
   useFrame(() => {
@@ -292,6 +348,7 @@ export function Device({ layout, stageScale, anisotropy = 4 }) {
       MathUtils.degToRad(deviceProxy.rz)
     )
     g.scale.setScalar((deviceProxy.s * deviceRefHeight(layout) * u) / modelHeight.current)
+    setScreenMix(deviceProxy.screenMix)
   })
 
   return (

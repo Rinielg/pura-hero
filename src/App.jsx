@@ -3,7 +3,7 @@ import { Scene } from './Scene'
 import { LottieBackground } from './LottieBackground'
 import { QUALITY } from './config'
 import { AppStores, Nav } from './hero/Chrome'
-import { CHIPS, HAND_ASPECT, HEADING_Y, MOBILE_CHIPS, scrollLength } from './hero/frames'
+import { CHIPS, HAND_ASPECT, MOBILE_CHIPS, scrollLength } from './hero/frames'
 import { pickLayout, projectChip, stageScale as computeStageScale } from './hero/layout'
 import { advance, handBaseWidth, useHeroTimeline } from './hero/useHeroTimeline'
 
@@ -25,9 +25,14 @@ import { advance, handBaseWidth, useHeroTimeline } from './hero/useHeroTimeline'
  *   Part of the composition has to be under the canvas and part over it, which
  *   one element cannot be.
  *
- *   The section after the hero then scrolls up over all of it by ordinary
+ *   Whatever comes after the hero can then scroll up over all of it by ordinary
  *   document flow, with no handoff to arrange. A pinned hero would need every
  *   fixed layer torn down at exactly the right scroll position instead.
+ *
+ * There is nothing after it yet: the document is the spacer and stops when the
+ * sequence does, so the page ends holding its last frame. New scenes go in as
+ * more slides in `frames.js` first, and as sections here only once they stop
+ * being part of the sequence.
  */
 export default function App() {
   const wrapperRef = useRef(null)
@@ -38,7 +43,11 @@ export default function App() {
     chips: useRef({}),
     hand: useRef(null),
     heading: useRef(null),
-    overlay: useRef(null),
+    kicker: useRef(null),
+    body: useRef(null),
+    bar: useRef(null),
+    washA: useRef(null),
+    washB: useRef(null),
     cue: useRef(null),
   }
 
@@ -83,8 +92,9 @@ export default function App() {
   const handW = handBaseWidth(layout)
   // The heading belongs to the flat layer, so it is projected with the chip
   // cloud's convergence rather than the device's uniform scale — otherwise it
-  // drifts away from the chips it is supposed to sit above.
-  const copyTop = projectChip([960, HEADING_Y[0]], layout)[1]
+  // drifts away from the chips it is supposed to sit above. 205 is where
+  // Figma's slide 1 puts the top of the heading.
+  const copyTop = projectChip([960, 205], layout)[1]
 
   return (
     <>
@@ -133,10 +143,40 @@ export default function App() {
         </div>
       </div>
 
+      {/* The second act's copy. It sits BEHIND the device, which is the whole
+          reason the kicker reads as arriving from somewhere: at 40% it is
+          partly hidden by a phone that has not turned to face you yet. */}
+      <div className="layer layer--copy">
+        <div className="stage" style={stageStyle}>
+          <h2 className="kicker" ref={refs.kicker}>
+            A health companion that knows you
+          </h2>
+          <p className="body-copy" ref={refs.body}>
+            Ask Pura AI anything. Every answer is built from your health records, lab
+            results, and your history.
+          </p>
+        </div>
+      </div>
+
       {/* -------------------------------------------- in front of the device */}
       <div className="layer layer--front" aria-hidden="true">
         <div className="stage" style={stageStyle}>
-          <div className="wash" ref={refs.overlay} />
+          {/* Two stacked washes, as Figma has them: one alone dissolves the
+              foot of the device, both together clear enough room under it for
+              the agent bar to sit on nothing at all. */}
+          <div className="wash" ref={refs.washA} />
+          <div className="wash" ref={refs.washB} />
+
+          <div className="agent-bar" ref={refs.bar}>
+            <img className="agent-bar__mark" src="/assets/pura-sparkle.png" alt="" />
+            <span className="agent-bar__label">Ask Pura anything</span>
+            <span className="agent-bar__btn">
+              <img src="/assets/agent-plus.svg" alt="" />
+            </span>
+            <span className="agent-bar__btn">
+              <img src="/assets/agent-voice.svg" alt="" />
+            </span>
+          </div>
         </div>
       </div>
 
@@ -170,8 +210,10 @@ export default function App() {
       {/* ----------------------------------------------------- the document */}
       <div id="smooth-wrapper" ref={wrapperRef}>
         <div id="smooth-content" ref={contentRef}>
-          {/* Scroll length, and nothing else. Everything it drives lives in the
-              fixed layers above, which is why this is empty. */}
+          {/* Scroll length, and nothing else. Everything it drives lives in
+              the fixed layers above, which is why this is empty — and why the
+              page ends on the sequence's last frame rather than scrolling past
+              it onto nothing. */}
           <div
             className="hero-spacer"
             ref={heroRef}
@@ -180,17 +222,6 @@ export default function App() {
             }}
           />
 
-          <section className="after">
-            <div className="after__inner">
-              <span className="after__kicker">Where the hero hands off</span>
-              <h2>The rest of the page starts here.</h2>
-              <p>
-                A stub, so the end of the sequence has somewhere to go. It scrolls
-                up over the fixed layers by ordinary document flow, which is the
-                whole reason the hero is built as fixed layers plus a spacer.
-              </p>
-            </div>
-          </section>
         </div>
       </div>
     </>

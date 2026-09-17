@@ -1,10 +1,14 @@
 # Pura — hero scroll prototype
 
 The hero transition from `Pura Website → Final Website` in Figma, built as a
-real page: slides 1–6 are six moments of one scroll-driven sequence, and the
+real page: slides 1–8 are eight moments of one scroll-driven sequence, and the
 phone in the middle of it is the three.js device from
 [pura-device-viewer](https://github.com/Rinielg/pura-device-viewer) rather than
 the flat render the design uses as a placeholder.
+
+The sequence is still growing. New slides go into `src/hero/frames.js` as extra
+entries, not into new code: the scroll length, the step boundaries and the cue's
+notion of "one moment forward" all derive from the slide count.
 
 ```bash
 npm install
@@ -19,16 +23,21 @@ npm run build    # static output in dist/ — deploy that folder anywhere
 | Slide | What moves |
 |---|---|
 | 1 | At rest. Heading up top, twelve chips scattered across the frame, the device small and front-on at the bottom under a white wash. |
-| 2 | The big one. The heading leaves through the top, the cloud gathers inward and up, the device **rotates into its 3/4 pose** and grows. |
+| 2 | The heading **dissolves** where it used to slide away — Figma moves it 50px and drops it to 40%. The cloud gathers inward, the device rotates into its 3/4 pose and grows. |
 | 3 | The cloud keeps closing; chips behind the device start to fade. Device rises. |
 | 4 | Chips are gone. Device at full size. The hand enters from below. |
-| 5 | Device and hand scale down **together** by the same 0.805 — the camera pulling back, not the phone shrinking. |
-| 6 | A straight pan: both travel up 410px. The phone leaves the top, the hand fills the frame. |
+| 5 | Device and hand settle toward each other; the white wash comes back. |
+| 6 | The device lifts and grows again, the hand fades to 20%, and "A health companion that knows you" arrives at 40% **behind** the phone. |
+| 7 | The device turns back to **face-on**, its screen crossfades from Home to Pura AI, the headline resolves and the agent bar appears. |
+| 8 | The agent bar **widens** from 354 to 560 and the supporting paragraph slides in and resolves. The page ends here, holding this frame. |
 
-Slide 7 in Figma is the assembled composition rather than a moment in the
-sequence. It was used to confirm the resting layout and the device-to-hand
-relationship — it agrees with slide 2 offset by 280px — and it is not a
-keyframe here.
+`Slide overview` in Figma is an assembly board rather than a moment in the
+sequence, and is deliberately ignored — it does not show the whole site.
+
+Figma's slides get **rebuilt** rather than edited: every node id changed between
+revisions. Nothing here matches a node by id. `tools/extract-frames.js` is the
+plugin snippet that re-reads the sequence by layer name; paste it into the Figma
+console after a design change rather than re-deriving anything by hand.
 
 ## How it is put together
 
@@ -96,6 +105,11 @@ The result lands within 1.5% of the reference on both axes.
 
 ## Notes
 
+- **The screen shows two things.** Home for slides 1–6, Pura AI for 7–8, mixed
+  in the emissive fragment rather than swapped. The device is turning from a 3/4
+  view to face-on while the content changes and at no point is the screen hidden
+  enough to hide a cut, so a one-line `mix()` is the only way it reads as the
+  screen updating rather than as a glitch.
 - **The device is black.** It reads as one dark mass against the cream gradient,
   which makes the lit screen the brightest thing on the page. The finish is one
   constant in `src/Device.jsx` — `variants.json` also carries Plum, Silver and

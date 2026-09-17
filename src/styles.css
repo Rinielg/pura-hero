@@ -194,6 +194,107 @@ body {
   color: var(--ink);
 }
 
+/* ------------------------------------------------------- the second act */
+
+/**
+ * "A health companion that knows you" and its paragraph. Both are positioned
+ * entirely by GSAP — the transform, including the -50%/-50% centring, belongs
+ * to the timeline, so there is no `transform` or `left`/`top` here.
+ */
+.kicker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  width: 623px;
+  font-family: var(--brand);
+  font-weight: 400;
+  font-size: 40px;
+  line-height: 1.2;
+  letter-spacing: -0.8px;
+  text-align: center;
+  color: var(--ink);
+  will-change: transform, opacity;
+}
+
+.body-copy {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  width: 273px;
+  font-family: var(--brand);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 21px;
+  letter-spacing: -0.2px;
+  /* Right-aligned: it sits to the left of the device and reads inward, toward
+     the thing it is describing. */
+  text-align: right;
+  color: var(--ink);
+  will-change: transform, opacity;
+}
+
+/**
+ * The Pura agent bar.
+ *
+ * Its width is animated by the timeline rather than set here, because the
+ * widening between the last two slides is the one beat that reads as the
+ * interface responding rather than the camera moving — and scaling a pill with
+ * centred content and two round buttons would stretch all of it.
+ */
+.agent-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 72px;
+  padding: 0 16px 0 24px;
+  border: 1px solid #fff;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  filter: drop-shadow(0 9px 10.4px rgba(0, 0, 0, 0.16));
+  will-change: transform, opacity, width;
+}
+
+.agent-bar__mark {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: block;
+}
+
+.agent-bar__label {
+  flex: 1 0 0;
+  min-width: 0;
+  font-family: var(--ui);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.5px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agent-bar__btn {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.agent-bar__btn img { display: block; }
+.agent-bar__btn:first-of-type img { width: 13px; height: 13px; }
+
 /* ------------------------------------------- wash and cue (over the device) */
 
 /**
@@ -208,6 +309,10 @@ body {
   bottom: 0;
   height: 20.5%;
   background: linear-gradient(180deg, rgba(240, 245, 250, 0) 0%, #ffffff 100%);
+  /* Figma blurs what is behind this as well as washing it out, which is what
+     stops the foot of the device reading as simply cropped. */
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
 }
 
 /**
@@ -221,13 +326,16 @@ body {
 .cue {
   position: fixed;
   left: 50%;
-  bottom: 40px;
+  /* Low and tight. Figma puts the cue at 40px with a 23px gap, which works in a
+     1920-wide frame and collides with the agent bar once the frame is scaled to
+     a real viewport — the bar is in frame pixels and the cue is not. */
+  bottom: 24px;
   z-index: 10;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 23px;
+  gap: 8px;
   margin: 0;
   padding: 8px 12px;
   border: 0;
@@ -434,45 +542,6 @@ body {
    underneath it. */
 .hero-spacer { pointer-events: none; }
 
-.after {
-  position: relative;
-  min-height: 100vh;
-  display: grid;
-  align-items: center;
-  padding: 120px clamp(24px, 7vw, 140px);
-  /* Opaque: this is what covers the fixed hero layers as it scrolls up. */
-  background: var(--page);
-}
-
-.after__inner { max-width: 44ch; }
-
-.after__kicker {
-  display: block;
-  font-family: var(--ui);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  opacity: 0.55;
-  margin-bottom: 20px;
-}
-
-.after h2 {
-  margin: 0 0 16px;
-  font-weight: 400;
-  font-size: clamp(32px, 4vw, 56px);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-}
-
-.after p {
-  margin: 0;
-  font-size: clamp(16px, 1.4vw, 20px);
-  line-height: 1.5;
-  letter-spacing: -0.01em;
-  opacity: 0.7;
-}
-
 /* ------------------------------------------------------------- responsive */
 
 @media (max-width: 1100px) {
@@ -498,10 +567,19 @@ body {
   .hero-copy h1 { font-size: 36px; }
   .hero-copy p { font-size: 16px; }
   .hero-copy { padding: 0 7%; }
+  /* The frame is narrower than these were authored for, so they are sized to
+     the frame rather than carried across at their desktop widths. */
+  .kicker { width: 360px; font-size: 27px; letter-spacing: -0.5px; }
+  /* Centred under the headline rather than right-aligned beside the phone. */
+  .body-copy { width: 300px; font-size: 13px; line-height: 18px; text-align: center; }
+  .agent-bar { height: 56px; gap: 6px; padding: 0 12px 0 18px; }
+  .agent-bar__mark { width: 26px; height: 26px; }
+  .agent-bar__label { font-size: 13px; }
+  .agent-bar__btn { width: 32px; height: 32px; }
   /* Above the store badges, and label dropped: on a phone the device reaches
      down into where the words sit, and dark ink over the app's navy card is
      unreadable. The chevron carries its own disc, so it survives alone. */
-  .cue { bottom: 64px; gap: 0; }
+  .cue { bottom: 16px; gap: 0; }
   .cue__label { display: none; }
 }
 

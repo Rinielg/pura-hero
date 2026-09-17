@@ -1,36 +1,39 @@
 /**
  * The choreography, measured straight out of Figma.
  *
- * Slides 1–6 of `Pura Website → Final Website` are six moments of one
- * continuous move, not six screens. Every number below is the position that
+ * Slides 1–8 of `Pura Website → Final Website` are eight moments of one
+ * continuous move, not eight screens. Every number below is a position that
  * slide put an element at, in the design frame's own pixels — so this file is
  * checkable against Figma by reading it, and a design change is a number
  * change rather than a re-derivation.
  *
  * Positions are CENTRES, not top-left corners. Figma reports top-left; the
- * conversion happens here, once, rather than in every consumer.
+ * conversion happens once, at extraction.
  *
- * Slide 7 is the assembled composition rather than a moment in the sequence,
- * so it is not a keyframe. It was used to confirm the resting layout and the
- * device-to-hand relationship, and it agrees with slide 2 offset by 280px.
+ * REGENERATING: `tools/extract-frames.js` is the plugin snippet that produced
+ * these numbers. Paste it into the Figma console after a design change rather
+ * than re-deriving by hand — the slides get rebuilt with new node ids often
+ * enough that nothing here should ever be matched by id.
+ *
+ * `Slide overview` on the same page is an assembly board rather than a moment
+ * in the sequence, and is deliberately ignored.
  */
 
 /** The frame every coordinate below is expressed in. */
 export const FRAME = { w: 1920, h: 1080 }
 
-const centre = (x, y, w, h) => [Math.round((x + w / 2) * 10) / 10, Math.round((y + h / 2) * 10) / 10]
+/** Slides in the sequence. Adding one in Figma means adding an entry below. */
+export const SLIDES = 8
 
 /**
  * The twelve pillar chips.
  *
- * `at` is one entry per slide 1→6. Slides 4, 5 and 6 are identical for the
- * chips — they have already collapsed to the centre and faded out by then, so
- * the last three entries repeat. Two chips read "Respiratory"; that is what the
- * design says, and `key` keeps them distinct.
+ * `at` runs slide 1→5 and then stops: by slide 5 the cloud has collapsed to the
+ * centre and faded out, and slides 6, 7 and 8 leave it there. Clamping is how
+ * "and then nothing happens" is expressed without repeating identical rows.
  *
- * Figma builds these two different ways (four as component instances at 53px
- * tall, eight as frames at 68px) but renders them identically. They are one
- * component here — the split is a Figma-file artefact, not a design intent.
+ * Two chips read "Respiratory". That is what the design says; `key` keeps them
+ * distinct.
  */
 export const CHIPS = [
   {
@@ -38,10 +41,11 @@ export const CHIPS = [
     label: 'Lab results',
     icon: 'health-report',
     at: [
-      { c: centre(295, 341, 148, 53), o: 1 },
-      { c: centre(596, 165, 148, 53), o: 1 },
-      { c: centre(713, 173, 148, 53), o: 1 },
-      { c: centre(903, 233, 148, 53), o: 0 },
+      { c: [263.1, 397.7], o: 0.6 },
+      { c: [440.1, 419.7], o: 0.6 },
+      { c: [630.1, 322.7], o: 0.6 },
+      { c: [934.1, 304.7], o: 0 },
+      { c: [977.1, 259.7], o: 0 },
     ],
   },
   {
@@ -49,10 +53,11 @@ export const CHIPS = [
     label: 'Medical history',
     icon: 'health-records',
     at: [
-      { c: centre(1024, 379, 179, 53), o: 1 },
-      { c: centre(948, 333, 179, 53), o: 1 },
-      { c: centre(1040, 212, 179, 53), o: 1 },
-      { c: centre(890, 272, 179, 53), o: 0 },
+      { c: [1318.6, 447.7], o: 1 },
+      { c: [1247.6, 431.7], o: 1 },
+      { c: [1145.6, 297.7], o: 1 },
+      { c: [1025.6, 297.7], o: 0 },
+      { c: [979.6, 298.7], o: 0 },
     ],
   },
   {
@@ -60,10 +65,11 @@ export const CHIPS = [
     label: 'Wearables',
     icon: 'wearables',
     at: [
-      { c: centre(486, 541, 151, 53), o: 1 },
-      { c: centre(579, 422, 151, 53), o: 1 },
-      { c: centre(655, 316, 151, 53), o: 0.3 },
-      { c: centre(895, 236, 151, 53), o: 0 },
+      { c: [668.6, 630.7], o: 1 },
+      { c: [825.6, 593.7], o: 1 },
+      { c: [968.6, 444.7], o: 1 },
+      { c: [968.6, 444.7], o: 0 },
+      { c: [970.6, 262.7], o: 0 },
     ],
   },
   {
@@ -71,10 +77,11 @@ export const CHIPS = [
     label: 'Liver',
     icon: 'purescore',
     at: [
-      { c: centre(306, 626, 128, 68), o: 0.6 },
-      { c: centre(776, 521, 128, 68), o: 0.6 },
-      { c: centre(847, 420, 128, 68), o: 0.6 },
-      { c: centre(847, 270, 128, 68), o: 0 },
+      { c: [287, 679], o: 0.6 },
+      { c: [504, 659], o: 0.6 },
+      { c: [733, 519], o: 0.6 },
+      { c: [833, 519], o: 0 },
+      { c: [911, 304], o: 0 },
     ],
   },
   {
@@ -82,10 +89,11 @@ export const CHIPS = [
     label: 'Renal',
     icon: 'renal',
     at: [
-      { c: centre(1370, 465, 148, 68), o: 0.6 },
-      { c: centre(1163, 370, 148, 68), o: 0.6 },
-      { c: centre(1055, 305, 148, 68), o: 0.6 },
-      { c: centre(1025, 195, 148, 68), o: 0 },
+      { c: [1549, 486], o: 0.8 },
+      { c: [1459, 475], o: 0.8 },
+      { c: [1278, 392], o: 0.8 },
+      { c: [998, 412], o: 0 },
+      { c: [1099, 229], o: 0 },
     ],
   },
   {
@@ -93,10 +101,11 @@ export const CHIPS = [
     label: 'Metabolic',
     icon: 'metabolic',
     at: [
-      { c: centre(514, 687, 167, 68), o: 1 },
-      { c: centre(871, 524, 167, 68), o: 1 },
-      { c: centre(889, 405, 167, 68), o: 1 },
-      { c: centre(889, 255, 167, 68), o: 0 },
+      { c: [564.5, 755], o: 0.8 },
+      { c: [738.5, 714], o: 0.8 },
+      { c: [883.5, 574], o: 0.8 },
+      { c: [883.5, 574], o: 0 },
+      { c: [972.5, 289], o: 0 },
     ],
   },
   {
@@ -104,10 +113,11 @@ export const CHIPS = [
     label: 'Respiratory',
     icon: 'pulmonology',
     at: [
-      { c: centre(1088, 500, 186, 68), o: 1 },
-      { c: centre(952, 427, 186, 68), o: 1 },
-      { c: centre(903, 321, 186, 68), o: 1 },
-      { c: centre(903, 171, 186, 68), o: 0 },
+      { c: [1172, 556], o: 1 },
+      { c: [1123, 533], o: 1 },
+      { c: [1063, 393], o: 1 },
+      { c: [963, 393], o: 0 },
+      { c: [996, 205], o: 0 },
     ],
   },
   {
@@ -115,10 +125,11 @@ export const CHIPS = [
     label: 'Mental Wellness',
     icon: 'brain',
     at: [
-      { c: centre(1460, 368, 187, 53), o: 1 },
-      { c: centre(1113, 227, 187, 53), o: 1 },
-      { c: centre(1071, 134, 187, 53), o: 1 },
-      { c: centre(921, 194, 187, 53), o: 0 },
+      { c: [1716.6, 362.7], o: 0.3 },
+      { c: [1568.6, 369.7], o: 0.3 },
+      { c: [1407.6, 289.7], o: 0.3 },
+      { c: [1010.6, 342.7], o: 0 },
+      { c: [1014.6, 220.7], o: 0 },
     ],
   },
   {
@@ -126,10 +137,11 @@ export const CHIPS = [
     label: 'Sleep',
     icon: 'partly-cloudy-night',
     at: [
-      { c: centre(1189, 721, 148, 68), o: 0.6 },
-      { c: centre(861, 592, 148, 68), o: 0.6 },
-      { c: centre(861, 412, 148, 68), o: 0.6 },
-      { c: centre(861, 262, 148, 68), o: 0 },
+      { c: [1263, 755], o: 0.6 },
+      { c: [1127, 731], o: 0.6 },
+      { c: [908, 653], o: 0.6 },
+      { c: [908, 653], o: 0 },
+      { c: [935, 296], o: 0 },
     ],
   },
   {
@@ -137,10 +149,11 @@ export const CHIPS = [
     label: 'Nutrition',
     icon: 'metabolic',
     at: [
-      { c: centre(844, 498, 155, 68), o: 1 },
-      { c: centre(777, 412, 155, 68), o: 1 },
-      { c: centre(832, 338, 155, 68), o: 0.6 },
-      { c: centre(872, 238, 155, 68), o: 0 },
+      { c: [892.5, 542], o: 1 },
+      { c: [935.5, 508], o: 1 },
+      { c: [935.5, 328], o: 1 },
+      { c: [935.5, 328], o: 0 },
+      { c: [949.5, 272], o: 0 },
     ],
   },
   {
@@ -148,10 +161,11 @@ export const CHIPS = [
     label: 'Respiratory',
     icon: 'pulmonology',
     at: [
-      { c: centre(1308, 599, 186, 68), o: 0.6 },
-      { c: centre(1002, 528, 186, 68), o: 0.6 },
-      { c: centre(1002, 348, 186, 68), o: 0.6 },
-      { c: centre(1002, 198, 186, 68), o: 0 },
+      { c: [1401, 633], o: 0.6 },
+      { c: [1322, 601], o: 0.6 },
+      { c: [1135, 490], o: 0.6 },
+      { c: [895, 510], o: 0 },
+      { c: [1095, 232], o: 0 },
     ],
   },
   {
@@ -159,10 +173,11 @@ export const CHIPS = [
     label: 'Cardiovascular',
     icon: 'pregnacare',
     at: [
-      { c: centre(637, 389, 203, 68), o: 0.8 },
-      { c: centre(801, 243, 203, 68), o: 0.8 },
-      { c: centre(815, 241, 203, 68), o: 0.8 },
-      { c: centre(915, 201, 203, 68), o: 0 },
+      { c: [556.5, 506], o: 0.8 },
+      { c: [676.5, 487], o: 0.8 },
+      { c: [814.5, 414], o: 0.8 },
+      { c: [914.5, 414], o: 0 },
+      { c: [1016.5, 235], o: 0 },
     ],
   },
 ]
@@ -181,101 +196,167 @@ export const MOBILE_CHIPS = new Set([
   'cardiovascular',
 ])
 
+/** Slide 4's device rect is the reference: 1440px tall renders at 1.23. */
+const sz = (rectHeight) => Math.round((rectHeight / 1440) * 1.23 * 1e4) / 1e4
 /**
- * The device, as six poses.
- *
- * `c` is the centre in frame pixels. `s` is a multiple of the model's reference
- * size. `r` is [x, y, z] rotation in degrees.
- *
- * These are NOT the Figma render's pose, and that is deliberate. Fitting the
- * reference image's silhouette gives roughly (-34, -51, -29) — accurate, and
- * turned far enough away that the app UI stops being readable. On a page whose
- * entire subject is what is on that screen, "matches the render" loses to "you
- * can read it". These poses keep the phone more face-on for the whole
- * sequence, and the screen stays legible from slide 2 to slide 6.
- *
- * The centre also sits left of where Figma puts it — about 2.7% of the viewport
- * width — which leaves the chip cloud's right-hand side visible for longer as
- * the device rises through it.
- *
- * Slide 1 is the only front-on pose, and the only one on the centre line: the
- * design shows a flat screenshot there and switches to a rendered 3/4 view from
- * slide 2 on. Rotating into that pose rather than cross-fading between two
- * images is the whole reason the device is real geometry.
+ * Slides 7 and 8 have no Device node — Figma draws a separate flat front-on
+ * mock there, 901px of SCREEN. Converting that to body height through the
+ * model's own screen-to-body ratio is what keeps the turn continuous.
  */
-const TILT = [-32, -35, -24]
-/** Horizontal offset for every rotated pose, as the other build has it. */
-const OFF_X = 960 - 0.027 * FRAME.w
+const AI_SIZE = Math.round(((901 * 163.371) / 158.259 / 630) * 1e4) / 1e4
 
+const TILT = [-32, -35, -24]
+const FACE = [0, 0, 0]
+
+/**
+ * The device, as eight poses.
+ *
+ * The arc: front-on and small at rest (1), turning into a 3/4 view as it rises
+ * through the chip cloud (2–4), settling toward the hand (5), lifting and
+ * growing again (6), then turning back to FACE-ON as the page becomes about
+ * Pura AI (7–8).
+ *
+ * That last turn is the whole argument for the device being real geometry.
+ * Figma can only swap one flat render for another; the rotation between them
+ * does not exist in the file and has to be inferred, which is exactly the kind
+ * of thing a static frame cannot express and a 3D object gets for free.
+ *
+ * Sizes derive from each slide's device rect height, so re-sizing the device in
+ * Figma carries through proportionally. The 3/4 rotation is deliberately more
+ * face-on than the reference render — legibility of the screen beats matching
+ * the picture; see the README.
+ */
 export const DEVICE_POSE = [
-  { c: [960, 0.859 * FRAME.h], s: 0.975, r: [0, 0, 0] },
-  { c: [OFF_X, 0.805 * FRAME.h], s: 1.23, r: TILT },
-  { c: [OFF_X, 0.638 * FRAME.h], s: 1.23, r: TILT },
-  { c: [OFF_X, 0.499 * FRAME.h], s: 1.23, r: TILT },
-  { c: [OFF_X, 0.486 * FRAME.h], s: 0.99, r: TILT },
-  { c: [OFF_X, 0.106 * FRAME.h], s: 0.99, r: TILT },
+  { c: [959.8, 928], s: 0.975, r: FACE },
+  { c: [905.7, 833], s: sz(1736), r: TILT },
+  { c: [905.7, 643], s: sz(1736), r: TILT },
+  { c: [905.7, 503], s: sz(1440), r: TILT },
+  { c: [905.7, 479.9], s: sz(1035), r: TILT },
+  { c: [905.7, 518.5], s: sz(1435), r: TILT },
+  { c: [960, 753.5], s: AI_SIZE, r: FACE },
+  { c: [960, 753.5], s: AI_SIZE, r: FACE },
 ]
 
 /**
- * The hand. It has no node at all before slide 4, so slides 1–3 park it below
- * the frame rather than fading it in — a hand that materialises in mid-air
- * reads as a glitch, one that rises into shot reads as the point.
+ * What the screen is showing: 0 = the Home screen, 1 = Pura AI.
  *
- * `c` is the centre of the hand image; `w` its width in design px. Slides 4→5
- * scale the hand and the device by the same 0.805, which is what makes that
- * step read as the camera pulling back rather than the phone shrinking.
+ * It crossfades across the turn to face-on, so the content changes while the
+ * device is moving rather than snapping while it is sitting still.
  */
-const HAND_BELOW = { c: [915, 1263 + 620], w: 476 }
+export const SCREEN_MIX = [0, 0, 0, 0, 0, 0, 1, 1]
+
+/**
+ * The hand.
+ *
+ * `c` is the centre of the hand IMAGE — Figma groups it with a backdrop that
+ * extends below, so the group's own centre is not the image's. It has no node
+ * before slide 4, so the early slides park it below the frame rather than
+ * fading it in: a hand that materialises in mid-air reads as a glitch, one that
+ * rises into shot reads as the point. By slide 6 it is fading out again as the
+ * device lifts away from it.
+ */
+const HAND_BELOW = { c: [915, 1883], w: 476, o: 1 }
 export const HAND_POSE = [
   HAND_BELOW,
   HAND_BELOW,
   HAND_BELOW,
-  { c: [915, 1263], w: 476 },
-  { c: [913.5, 1082], w: 383 },
-  { c: [913.5, 672], w: 383 },
+  { c: [915, 1263], w: 476, o: 1 },
+  { c: [912.4, 999.3], w: 342, o: 1 },
+  { c: [913.2, 1202.4], w: 383, o: 0.2 },
+  { c: [913.2, 1042.4], w: 383, o: 0 },
+  { c: [913.2, 1042.4], w: 383, o: 0 },
 ]
 
 /** Native size of `hand.png`, so width alone can drive it. */
 export const HAND_ASPECT = 1016 / 476
 
 /**
- * Heading and sub-heading. They travel together and leave through the top
- * between slides 1 and 2, then stay gone.
+ * The hero copy, as a y offset from its resting position and an opacity.
+ *
+ * It now FADES where it used to travel. Figma moves it only 50px between slides
+ * 1 and 2 while dropping it to 40%, so the slide-up has been replaced by a
+ * dissolve. The third entry carries the drift on rather than stopping it dead,
+ * which a pure two-state fade would.
  */
-export const HEADING_Y = [175, -105, -105, -105, -105, -105]
-
-/** The white wash across the bottom of slide 1, gone by slide 2. */
-export const OVERLAY_O = [1, 0, 0, 0, 0, 0]
+export const COPY = [
+  { y: 0, o: 1 },
+  { y: -50, o: 0.4 },
+  { y: -100, o: 0 },
+  { y: -100, o: 0 },
+  { y: -100, o: 0 },
+  { y: -100, o: 0 },
+  { y: -100, o: 0 },
+  { y: -100, o: 0 },
+]
 
 /**
- * How much scroll each step gets, relative to the others.
- *
- * Equal. An earlier version weighted step 1 more heavily because it carries the
- * largest change, and eased it — which reads well as a single gesture and badly
- * as part of a scrub, because every weighted, eased step turns its own boundary
- * into a stop and a restart. Under a finger or a wheel, one constant rate for
- * the whole sequence is what feels like a camera move rather than five
- * animations queued up.
+ * "A health companion that knows you" — the second act's headline. It arrives
+ * behind the device at 40% while the device is still tilted, then rises and
+ * resolves as the device turns to face you.
  */
-export const STEP_WEIGHTS = [1, 1, 1, 1, 1]
+export const KICKER = [
+  { y: 306, o: 0 },
+  { y: 306, o: 0 },
+  { y: 306, o: 0 },
+  { y: 306, o: 0 },
+  { y: 306, o: 0 },
+  { y: 306, o: 0.4 },
+  { y: 206, o: 1 },
+  { y: 206, o: 1 },
+]
+
+/** The supporting paragraph, which slides in from the right as it resolves. */
+export const BODY_COPY = [
+  { c: [576.5, 414.5], o: 0 },
+  { c: [576.5, 414.5], o: 0 },
+  { c: [576.5, 414.5], o: 0 },
+  { c: [576.5, 414.5], o: 0 },
+  { c: [576.5, 414.5], o: 0 },
+  { c: [576.5, 414.5], o: 0 },
+  { c: [576.5, 414.5], o: 0.4 },
+  { c: [536.5, 414.5], o: 1 },
+]
 
 /**
- * Pinned scroll distance, in CSS pixels.
+ * The Pura agent bar. It appears with the AI screen and then WIDENS — the one
+ * beat in the sequence that reads as the interface responding rather than as
+ * the camera moving.
+ */
+export const AGENT_BAR = [
+  { c: [960, 931], w: 354, o: 0 },
+  { c: [960, 931], w: 354, o: 0 },
+  { c: [960, 931], w: 354, o: 0 },
+  { c: [960, 931], w: 354, o: 0 },
+  { c: [960, 931], w: 354, o: 0 },
+  { c: [960, 931], w: 354, o: 0 },
+  { c: [960, 931], w: 354, o: 1 },
+  { c: [960, 931], w: 560, o: 1 },
+]
+
+/**
+ * The white wash across the bottom, as two stacked layers.
  *
- * 2.5 viewport heights, floored at 1800px so a short window does not turn the
- * sequence into a flick. Roughly half what a per-slide-per-screen reading would
- * give you — the sequence is one continuous move, and paying a full screen of
- * scroll for each of its six moments makes it feel padded.
+ * Figma really does stack two identical gradient rectangles on slides 7 and 8 —
+ * that is how the AI screen's foot dissolves hard enough for the agent bar to
+ * sit on nothing. One layer cannot express it, so there are two here too.
+ */
+export const WASH_A = [1, 0, 0, 0, 1, 1, 1, 1]
+export const WASH_B = [0, 0, 0, 0, 0, 0, 1, 1]
+
+/**
+ * How much scroll each step gets, relative to the others. Equal: every step is
+ * a slice of one continuous move, and weighting them makes the joins audible
+ * under a scrub.
+ */
+export const STEP_WEIGHTS = Array(SLIDES - 1).fill(1)
+
+/**
+ * Pinned scroll distance, in CSS pixels — half a viewport per step.
+ *
+ * Derived from the step count rather than fixed, so adding a slide in Figma
+ * lengthens the page by exactly one step's worth of scroll and changes nothing
+ * about how fast anything moves. The floor stops a short window turning each
+ * step into a flick.
  */
 export const scrollLength = (vh, isMobile) =>
-  isMobile ? vh * 2.6 : Math.max(1800, vh * 2.5)
-
-/**
- * The hero copy leaves by fading as it travels, over most (but not all) of the
- * first step. Figma can only express the travel; a static frame has no way to
- * say "and it is gone before the step ends".
- */
-export const COPY_EXIT = { y: -0.26, opacity: 0, duration: 0.95 }
-
-/** The white wash goes earlier still — it belongs to the resting state only. */
-export const WASH_EXIT = { duration: 0.7 }
+  STEP_WEIGHTS.length * (isMobile ? vh * 0.52 : Math.max(360, vh * 0.5))

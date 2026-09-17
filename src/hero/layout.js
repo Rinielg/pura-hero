@@ -93,6 +93,20 @@ export function projectObject([x, y], L) {
 export const projectLength = (v, L) => v * L.objScale
 
 /**
+ * Something anchored to the BOTTOM of the frame, like the agent bar.
+ *
+ * Neither of the other two projections is right for it. The chip projection
+ * carries the cloud's convergence and its downward offset, which on a phone
+ * pushes the bar into the scroll cue; the object projection scales it with the
+ * device, which is not what a piece of page furniture does. What the bar
+ * actually wants is to keep its distance from the bottom edge, proportionally.
+ */
+export const projectBottom = ([x, y], L) => [
+  L.frame[0] / 2 + (x - DESIGN_CX) * L.chipK[0],
+  L.frame[1] - (FRAME.h - y) * (L.frame[1] / FRAME.h),
+]
+
+/**
  * How many CSS pixels one frame pixel is worth.
  *
  * Cover, not contain: the stage always fills the viewport and the overflow is
