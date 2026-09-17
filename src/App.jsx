@@ -230,11 +230,32 @@ export default function App() {
               scroll driven by the vertical one. */}
           <div className="cards" ref={refs.cards}>
             {CARD_CONTENT.map((card) => (
-              <article className="card" key={card.img + card.title}>
-                <img src={`/assets/cards/${card.img}.jpg`} alt="" />
-                <span className="card__label">
-                  {card.tag} — {card.title}
-                </span>
+              <article className="card" key={card.img}>
+                <img
+                  className={card.frame ? 'card__photo is-cropped' : 'card__photo'}
+                  src={`/assets/cards/${card.img}.jpg`}
+                  alt=""
+                  style={
+                    card.frame && {
+                      width: `${card.frame.w}%`,
+                      height: `${card.frame.h}%`,
+                      left: `${card.frame.left}%`,
+                      top: `${card.frame.top}%`,
+                    }
+                  }
+                />
+                <header className="card__head">
+                  <span className="card__tag">
+                    <img src={`/assets/icons/${card.icon}.svg`} alt="" />
+                    {card.tag}
+                  </span>
+                </header>
+                <footer className="card__foot">
+                  <h3 className="card__title">{card.title}</h3>
+                  <button type="button" className="card__more" aria-label={`More about ${card.title}`}>
+                    <img src="/assets/icons/card-plus.svg" alt="" />
+                  </button>
+                </footer>
               </article>
             ))}
           </div>

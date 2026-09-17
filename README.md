@@ -110,11 +110,11 @@ The result lands within 1.5% of the reference on both axes.
 - **The backdrop travels.** From slide 10 Figma moves the gradient rectangle
   itself, which is the file saying the first act is over. The gradient layer
   translates and the page shows through beneath it — white, by design.
-- **The cards are exported as composed images.** Photo, scrim, tag chip and +
-  button are baked in, because the crop is a Figma CROP transform that is not
-  worth replicating for a prototype. The text is in the accessibility tree as a
-  visually-hidden label. If these need to be real components, that is the one
-  thing here that would have to be rebuilt.
+- **The cards are real markup over the raw photos.** Tag, title and + button are
+  live elements; the photos carry only the photograph. Three are a plain cover
+  crop and two are framed by a Figma CROP transform — a window onto the source
+  rather than a fit — so those two carry explicit width/left/top percentages
+  derived from that matrix.
 - **Copy blurs as it fades.** Figma puts `LAYER_BLUR` on every piece of text at
   the moment it drops back — 8px on a heading, 4px on a sub-heading that keeps
   its opacity. That is what makes copy read as receding rather than as being

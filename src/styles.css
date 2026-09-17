@@ -519,31 +519,111 @@ body {
   will-change: transform, opacity;
 }
 
+/**
+ * One promo card: a photo, a tag over the top scrim, a title and a + over the
+ * bottom one. Everything sized in frame pixels, so the whole card scales with
+ * the stage rather than needing a second set of numbers per breakpoint.
+ */
 .card {
   position: relative;
   flex: 1 0 0;
   aspect-ratio: 376 / 402;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   border-radius: 16px;
   overflow: hidden;
+  isolation: isolate;
 }
 
-.card img {
-  display: block;
+.card__photo {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  z-index: -1;
 }
 
-/* The card's tag, title and + button are part of the exported image — see the
-   README. This keeps the text in the accessibility tree without drawing it. */
-.card__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+/**
+ * Two of the five photos are not a cover fit. Figma frames them with a CROP
+ * transform — a window onto the source rather than a fit — and the width, left
+ * and top percentages that reproduce it come from that matrix. `inset: auto`
+ * releases the cover positioning above so those values can take over.
+ */
+.card__photo.is-cropped {
+  inset: auto;
+  object-fit: fill;
+  max-width: none;
 }
+
+.card__head {
+  padding: 20px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 100%);
+}
+
+.card__tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--brand);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: -0.25px;
+  color: #fff;
+}
+
+.card__tag img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+/* Figma's BACKGROUND_BLUR 10 is a 5px CSS backdrop blur — the radii are not the
+   same scale. The tint over it is barely there on purpose; most of what darkens
+   the foot of these cards is the photographs themselves. */
+.card__foot {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.1) 100%);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.card__title {
+  flex: 1 0 0;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--brand);
+  font-weight: 500;
+  font-size: 28px;
+  line-height: 32px;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+
+.card__more {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.18s ease;
+}
+
+.card__more:hover { transform: scale(1.08); }
+.card__more img { display: block; width: 12.5px; height: 12.5px; }
 
 /* ------------------------------------------------------------- navigation */
 
@@ -735,6 +815,10 @@ body {
   .act3-body { width: 380px; font-size: 15px; line-height: 24px; }
   .act3-cta a { height: 40px; padding: 0 18px; font-size: 13px; }
   .cards { gap: 12px; }
+  .card__head, .card__foot { padding: 14px; }
+  .card__title { font-size: 20px; line-height: 24px; }
+  .card__tag { font-size: 12px; }
+  .card__more { width: 28px; height: 28px; }
   /* Centred under the headline rather than right-aligned beside the phone. */
   .body-copy { width: 300px; font-size: 13px; line-height: 18px; text-align: center; }
   .agent-bar { height: 56px; gap: 6px; padding: 0 12px 0 18px; }

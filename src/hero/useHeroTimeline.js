@@ -161,6 +161,13 @@ export function useHeroTimeline({
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: heroRef.current,
+          // Named explicitly rather than left to ScrollTrigger to infer.
+          // Creating a ScrollSmoother makes its wrapper the default scroller,
+          // and killing it does not put that back — so a viewport resize from
+          // desktop to mobile tears down the smoother and leaves the new
+          // trigger listening to an element that no longer scrolls. The page
+          // then scrolls with nothing happening at all.
+          scroller: smoother ? wrapperRef.current : window,
           start: 'top top',
           end: 'bottom bottom',
           scrub: reduced ? true : 0.4,

@@ -268,6 +268,10 @@ export const SCREEN_MIX = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1]
  * drift it around, but on a page those few pixels of travel read as the hand
  * being dragged off rather than letting go — it should simply stop being there.
  * So the resting pose is held and only opacity moves.
+ *
+ * It goes all the way to zero in one step, and over less than half of it (see
+ * STEP_WINDOWS). Figma holds it at 20% for a slide, which on a static frame
+ * reads as "nearly gone" and in motion reads as a smudge that will not leave.
  */
 const HAND_BELOW = { c: [915, 1883], w: 476, o: 1 }
 /** Where the hand comes to rest, and where it fades from. */
@@ -278,7 +282,7 @@ export const HAND_POSE = [
   HAND_BELOW,
   { c: [915, 1263], w: 476, o: 1 },
   { ...HAND_REST, o: 1 },
-  { ...HAND_REST, o: 0.2 },
+  { ...HAND_REST, o: 0 },
   { ...HAND_REST, o: 0 },
   { ...HAND_REST, o: 0 },
   { ...HAND_REST, o: 0 },
@@ -532,13 +536,48 @@ export const CARDS = [
   { c: [808, 676], o: 1 },
 ]
 
-/** What each card says, in row order. */
+/**
+ * What each card is.
+ *
+ * `frame` is how the photo sits inside the card. Three of the five are a plain
+ * cover crop; the other two carry a Figma CROP transform, which is a window
+ * onto the source rather than a fit — so those two get explicit width/left/top
+ * percentages taken from that transform. Everything is a percentage of the card
+ * so it survives the card being any size.
+ */
 export const CARD_CONTENT = [
-  { img: 'movement', tag: 'Movement', title: 'Move with a reason' },
-  { img: 'nutrition', tag: 'Nutrition', title: 'Know what your food is doing for you' },
-  { img: 'mental-wellness', tag: 'Mental Wellness', title: 'Give your mind the same attention' },
-  { img: 'mental-wellness-2', tag: 'Mental Wellness', title: 'Give your mind the same attention' },
-  { img: 'family', tag: 'Family', title: 'Health for the whole family' },
+  {
+    img: 'movement',
+    icon: 'tag-movement',
+    tag: 'Movement',
+    title: 'Move with a reason',
+    frame: { w: 189.9, h: 99.91, left: -44.95, top: 0 },
+  },
+  {
+    img: 'nutrition',
+    icon: 'tag-nutrition',
+    tag: 'Nutrition',
+    title: 'Know what your food is doing for you',
+    frame: { w: 200.69, h: 105.59, left: -50.35, top: -5.52 },
+  },
+  {
+    img: 'mental-wellness',
+    icon: 'tag-mental-wellness',
+    tag: 'Mental Wellness',
+    title: 'Give your mind the same attention',
+  },
+  {
+    img: 'mental-wellness-2',
+    icon: 'tag-mental-wellness',
+    tag: 'Mental Wellness',
+    title: 'Give your mind the same attention',
+  },
+  {
+    img: 'family',
+    icon: 'tag-family',
+    tag: 'Family',
+    title: 'Health for the whole family',
+  },
 ]
 
 
@@ -555,15 +594,15 @@ export const STEP_WEIGHTS = Array(SLIDES - 1).fill(1)
  * Everything runs across the whole step by default, which is right for a camera
  * move — but step 5→6 is not one. There the hand lets go of the device, and
  * both happening at once reads as the phone escaping rather than being
- * released. So the hand fades over the first part of that step, and the device
- * only begins its climb once the hand has nearly gone — with a short overlap,
- * because a clean handover would be a stop and a restart.
+ * released. So the hand goes first — all the way out, over the first 40% of the
+ * step — and the device only starts climbing as it finishes, with a short
+ * overlap, because a clean handover would be a stop and a restart.
  *
  * Keyed by step index: step 4 is slide 5 → slide 6.
  */
 export const STEP_WINDOWS = {
-  hand: { 4: [0, 0.55] },
-  device: { 4: [0.45, 1] },
+  hand: { 4: [0, 0.4] },
+  device: { 4: [0.34, 1] },
 }
 
 /**
