@@ -157,6 +157,38 @@ the wrapper, so clicks never reached the button. Fixed with `.layer--interactive
 
 **If you add another control inside the sequence, it must live in that layer.**
 
+### Incoming layers appeared instead of arriving *(2026-09-18)*
+
+Reported by Riniel against Slides 16–18. Every layer that had not arrived yet was
+*parked at its first visible position*, so on the step it appeared it faded up
+**standing still** while the whole page rose 434px around it. The copy and the
+pill row looked pinned; the page read as a stack of separate sections rather
+than as one thing scrolling.
+
+`CARDS` was the only table that got it right — parked 265px below where it first
+shows, which is exactly the page's rise on that step.
+
+**The rule, now applied to every table:** a layer that has not arrived waits
+*below* its first visible pose by the distance the page rises on the step it
+arrives on. Figma cannot express this, because a layer that is not on a slide
+simply is not there — so it has to be derived from the step's own rise.
+
+| Step | Rise | Parked offset applied to |
+|---|---|---|
+| 9→10 | 221 | `ACT3_HEAD`, `ACT3_BODY` |
+| 10→11 | 265 | `ACT3_CTA`, `CARDS` (already correct) |
+| 15→16 | 135 | `ACT4_HEAD` |
+| 16→17 | 434 | `PILLS`, `CAROUSEL` |
+| 17→18 | 299 | `CAROUSEL_CTRL` |
+| 19→20 | 147 | `ACT5_HEAD` |
+| 20→21 | 181 | `TIMELINE`, `TIMELINE_DOT` |
+| 21→22 | 331 | `DAY_MEDIA` |
+
+**Guard:** diff every table's per-step y delta against the page rise. Everything
+should move by the same amount on a given step. The only legitimate exception is
+`DAY_MEDIA` on 22→23, whose centre shifts because the panel is *growing*, not
+travelling.
+
 ### The hour ruler read the wrong time *(2026-09-18)*
 
 The ruler was built with seven labels (5:00–11:00) spread evenly across its

@@ -482,15 +482,17 @@ export const BACKDROP_Y = [0, 0, 0, 0, 0, 0, 0, 0, 0, -221, -507, -652, -994, -9
  * copy on this page gets.
  */
 export const ACT3_HEAD = [
-  { c: [960.5, 908], o: 0, b: 8 },
-  { c: [960.5, 908], o: 0, b: 8 },
-  { c: [960.5, 908], o: 0, b: 8 },
-  { c: [960.5, 908], o: 0, b: 8 },
-  { c: [960.5, 908], o: 0, b: 8 },
-  { c: [960.5, 908], o: 0, b: 8 },
-  { c: [960.5, 908], o: 0, b: 8 },
-  { c: [960.5, 908], o: 0, b: 8 },
-  { c: [960.5, 908], o: 0, b: 8 },
+  // Waiting 221px below slide 10's pose — the page's own rise on that step, so
+  // the copy arrives travelling rather than appearing in place.
+  { c: [960.5, 1129], o: 0, b: 8 },
+  { c: [960.5, 1129], o: 0, b: 8 },
+  { c: [960.5, 1129], o: 0, b: 8 },
+  { c: [960.5, 1129], o: 0, b: 8 },
+  { c: [960.5, 1129], o: 0, b: 8 },
+  { c: [960.5, 1129], o: 0, b: 8 },
+  { c: [960.5, 1129], o: 0, b: 8 },
+  { c: [960.5, 1129], o: 0, b: 8 },
+  { c: [960.5, 1129], o: 0, b: 8 },
   { c: [960.5, 908], o: 0.4, b: 8 },
   { c: [960.5, 643], o: 1, b: 0 },
   { c: [960.5, 498], o: 1, b: 0 },
@@ -503,15 +505,15 @@ export const ACT3_HEAD = [
 ]
 
 export const ACT3_BODY = [
-  { c: [960, 982], o: 0, b: 8 },
-  { c: [960, 982], o: 0, b: 8 },
-  { c: [960, 982], o: 0, b: 8 },
-  { c: [960, 982], o: 0, b: 8 },
-  { c: [960, 982], o: 0, b: 8 },
-  { c: [960, 982], o: 0, b: 8 },
-  { c: [960, 982], o: 0, b: 8 },
-  { c: [960, 982], o: 0, b: 8 },
-  { c: [960, 982], o: 0, b: 8 },
+  { c: [960, 1203], o: 0, b: 8 },
+  { c: [960, 1203], o: 0, b: 8 },
+  { c: [960, 1203], o: 0, b: 8 },
+  { c: [960, 1203], o: 0, b: 8 },
+  { c: [960, 1203], o: 0, b: 8 },
+  { c: [960, 1203], o: 0, b: 8 },
+  { c: [960, 1203], o: 0, b: 8 },
+  { c: [960, 1203], o: 0, b: 8 },
+  { c: [960, 1203], o: 0, b: 8 },
   { c: [960, 982], o: 0.2, b: 8 },
   { c: [960, 717], o: 1, b: 0 },
   { c: [960, 572], o: 1, b: 0 },
@@ -632,7 +634,7 @@ export const CARD_CONTENT = [
  * new headline at 20% behind the old one at 0%. That overlap is the design's,
  * and it is what stops the page reading as a stack of separate sections.
  */
-export const ACT4_HEAD = parked(15, { c: [960.5, 971], o: 0, b: 8 }, [
+export const ACT4_HEAD = parked(15, { c: [960.5, 1106], o: 0, b: 8 }, [
   { c: [960.5, 971], o: 0.2, b: 8 },
   { c: [960.5, 537], o: 1, b: 0 },
   { c: [960.5, 238], o: 1, b: 0 },
@@ -641,7 +643,7 @@ export const ACT4_HEAD = parked(15, { c: [960.5, 971], o: 0, b: 8 }, [
   { c: [960.5, -90], o: 0, b: 8 },
 ])
 
-export const PILLS = parked(16, { c: [960, 634], o: 0, b: 8 }, [
+export const PILLS = parked(16, { c: [960, 1068], o: 0, b: 8 }, [
   { c: [960, 634], o: 1, b: 0 },
   { c: [960, 335], o: 1, b: 0 },
   { c: [960, 335], o: 1, b: 0 },
@@ -659,7 +661,7 @@ export const PILLS = parked(16, { c: [960, 634], o: 0, b: 8 }, [
  * purpose: that is the stretch where the carousel stands still and the reader
  * drives it.
  */
-export const CAROUSEL = parked(16, { c: [1668, 953], o: 0 }, [
+export const CAROUSEL = parked(16, { c: [1668, 1387], o: 0 }, [
   { c: [1668, 953], o: 1 },
   { c: [960, 654], o: 1 },
   { c: [960, 654], o: 1 },
@@ -669,7 +671,7 @@ export const CAROUSEL = parked(16, { c: [1668, 953], o: 0 }, [
   { c: [-202, -264], o: 1 },
 ])
 
-export const CAROUSEL_CTRL = parked(17, { c: [960, 932], o: 0, b: 0 }, [
+export const CAROUSEL_CTRL = parked(17, { c: [960, 1231], o: 0, b: 0 }, [
   { c: [960, 932], o: 1, b: 0 },
   { c: [960, 932], o: 1, b: 0 },
   { c: [960, 785], o: 1, b: 0 },
@@ -679,7 +681,7 @@ export const CAROUSEL_CTRL = parked(17, { c: [960, 932], o: 0, b: 0 }, [
 ])
 
 /** "See how Pura fits into one ordinary day." */
-export const ACT5_HEAD = parked(19, { c: [956, 1030], o: 0, b: 8 }, [
+export const ACT5_HEAD = parked(19, { c: [956, 1177], o: 0, b: 8 }, [
   { c: [956, 1030], o: 0.3, b: 8 },
   { c: [956, 849], o: 0.3, b: 8 },
   { c: [956, 518], o: 1, b: 0 },
@@ -691,7 +693,7 @@ export const ACT5_HEAD = parked(19, { c: [956, 1030], o: 0, b: 8 }, [
  * the hours pass under a fixed marker. Rebuilt as repeating CSS rather than the
  * 241 individual rectangles Figma draws it with.
  */
-export const TIMELINE = parked(20, { c: [5929.5, 966], o: 0, b: 4 }, [
+export const TIMELINE = parked(20, { c: [5929.5, 1147], o: 0, b: 4 }, [
   { c: [5929.5, 966], o: 0.6, b: 4 },
   { c: [5545.5, 635], o: 0.6, b: 0 },
   { c: [5328.5, 376], o: 0.6, b: 0 },
@@ -733,7 +735,7 @@ export const RULER_HOURS = [
   ['00:00', 10303.5],
 ]
 
-export const TIMELINE_DOT = parked(20, { c: [960, 924], o: 0, b: 4 }, [
+export const TIMELINE_DOT = parked(20, { c: [960, 1105], o: 0, b: 4 }, [
   { c: [960, 924], o: 0.4, b: 4 },
   { c: [960, 593], o: 1, b: 0 },
   { c: [960, 334], o: 1, b: 0 },
@@ -744,7 +746,7 @@ export const TIMELINE_DOT = parked(20, { c: [960, 924], o: 0, b: 4 }, [
  * into a 764x437 stadium, and its corner radius grows with it so the shape
  * stays a stadium the whole way rather than becoming a rounded rectangle.
  */
-export const DAY_MEDIA = parked(21, { c: [960, 755], w: 154, h: 88, r: 150, o: 0 }, [
+export const DAY_MEDIA = parked(21, { c: [960, 1086], w: 154, h: 88, r: 150, o: 0 }, [
   { c: [960, 755], w: 154, h: 88, r: 150, o: 1 },
   { c: [960, 670.5], w: 764, h: 437, r: 290, o: 1 },
 ])
