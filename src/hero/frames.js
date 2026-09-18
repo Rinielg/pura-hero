@@ -320,6 +320,20 @@ export const HAND_POSE = [
 export const HAND_FADE = [1, 1, 1, 1, 0.45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
 /** Native size of `hand.webp`, so width alone can drive it. */
+/**
+ * Whether the cue's WORDS are showing. The disc is not affected — it is the
+ * control, and it stays put for the whole sequence.
+ *
+ * "Scroll to explore" is an instruction, and it stops being true the moment the
+ * page starts answering it. The hand first rises into frame over slide 3 -> 4,
+ * so the label goes with it and comes back on the way up, which the scrub gives
+ * for free.
+ *
+ * The last entry brings it back for the final slide, where the label has
+ * changed to "Back to top" and is worth reading again.
+ */
+export const CUE_LABEL = [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+
 export const HAND_ASPECT = 942 / 500
 
 /**

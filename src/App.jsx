@@ -211,6 +211,7 @@ export default function App() {
     timelineDot: useRef(null),
     dayMedia: useRef(null),
     cue: useRef(null),
+    cueLabel: useRef(null),
   }
 
   const [viewport, setViewport] = useState(() => ({
@@ -452,7 +453,7 @@ export default function App() {
         ref={refs.cue}
         onClick={advance}
       >
-        <span className="cue__label">{finished ? 'Back to top' : 'Scroll to explore'}</span>
+        <span className="cue__label" ref={refs.cueLabel}>{finished ? 'Back to top' : 'Scroll to explore'}</span>
         <span className="cue__dot">
           <svg viewBox="0 0 20 20" width="20" height="20" fill="none" aria-hidden="true">
             <path

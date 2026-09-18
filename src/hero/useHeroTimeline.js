@@ -18,6 +18,7 @@ import {
   CAROUSEL,
   CAROUSEL_CTRL,
   CHIPS,
+  CUE_LABEL,
   COPY_HEAD,
   COPY_SUB,
   COPY_Y,
@@ -438,6 +439,13 @@ export function useHeroTimeline({
           const [x, y] = projectCards(at(CARDS, slide).c, L)
           return { x, y, opacity: at(CARDS, slide).o }
         })
+      }
+
+      // ------------------------------------------------------------- the cue
+      // Tracked rather than toggled, so scrolling back up brings the words
+      // back on its own — a scrubbed timeline runs both ways.
+      if (refs.cueLabel.current) {
+        track(refs.cueLabel.current, (slide) => ({ opacity: at(CUE_LABEL, slide) }))
       }
 
       activeTrigger = tl.scrollTrigger
