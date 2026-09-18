@@ -885,15 +885,24 @@ body {
   will-change: transform, opacity;
 }
 
-/* The white padding stands in for what Figma does structurally: the label
-   REPLACES a tick in the auto-layout row rather than sitting over it. The
-   layer's own 0.6 comes from the timeline track, so nothing is dimmed twice. */
+/* The white block stands in for what Figma does structurally: the label
+   REPLACES a tick in the auto-layout row rather than sitting over it.
+ *
+ * So the block has to be as tall as the tick it is standing in for. The ticks
+ * are drawn as a repeating gradient across the ruler's full 32px, and a mask
+ * only as tall as the text left them poking out above and below every hour.
+ *
+ * The layer's own 0.6 comes from the timeline track, so nothing is dimmed
+ * twice. */
 .ruler span {
   position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transform: translateX(-50%);
   padding: 0 14px;
-  background: #fff;
+  background: var(--page);
   font-family: var(--brand);
   font-weight: 600;
   font-size: 20px;
@@ -1037,20 +1046,8 @@ body {
 /* The route you are on, or a route inside this group. A dot rather than a
    filled pill, so it does not compete with the hover state. */
 .pnav__group.is-within > .pnav__label { font-weight: 600; }
-/* The file marks the current item with the white pill alone. The dot is an
-   addition, kept small and tucked into the same padding the chevron uses so it
-   costs the layout nothing. */
-.pnav__group.is-within > .pnav__label::after {
-  content: '';
-  position: absolute;
-  right: 7px;
-  bottom: 9px;
-  width: 4px;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--ink);
-  opacity: 0.45;
-}
+/* The file marks the current item with weight and the white pill. Nothing
+   else — no dot, no underline. */
 
 /* The chevron is drawn only in Figma's hover and active states, so it fades in
    rather than sitting there permanently. */
