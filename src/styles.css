@@ -986,8 +986,22 @@ body {
   pointer-events: auto;
 }
 
-.nav__logo { display: flex; flex: none; }
-.nav__logo img { display: block; width: 55px; height: 26px; }
+/* The logo sits ABOVE the bar's centre, and that is deliberate in the file.
+ *
+ * Figma's "Pura Logo" frame is 55x36 and holds a 55x26 wordmark at y=0.5 — ten
+ * pixels of empty space below it. The frame is what gets centred in the 56px
+ * bar (y=10..46), so the artwork lands at y=10.5..36.5: four and a half pixels
+ * higher than centring the wordmark on its own would put it.
+ *
+ * So the box is 36 tall and the art hangs from its top, rather than the art
+ * being centred directly. */
+.nav__logo {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  height: 36px;
+}
+.nav__logo img { display: block; width: 55px; height: 26px; margin-top: 0.5px; }
 
 /* ------------------------------------------------------ the pill nav
  *

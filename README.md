@@ -1,14 +1,28 @@
 # Pura — hero scroll prototype
 
-The hero transition from `Pura Website → Final Website` in Figma, built as a
-real page: slides 1–15 are fifteen moments of one scroll-driven sequence, and the
-phone in the middle of it is the three.js device from
-[pura-device-viewer](https://github.com/Rinielg/pura-device-viewer) rather than
-the flat render the design uses as a placeholder.
+The Pura website, built as a real page.
+
+`/` is the hero transition from `Pura Website → Final Website` in Figma: **26
+slides, one scroll-driven sequence**, with the three.js device from
+[pura-device-viewer](https://github.com/Rinielg/pura-device-viewer) in the middle
+of it rather than the flat render the design uses as a placeholder.
+
+Behind the navigation sit **23 more routes** — the product pillars, the company
+pages and the business pages — ordinary documents in the same visual language.
+
+Two sources feed it, and they are not interchangeable:
+
+| | Source |
+|---|---|
+| The sequence, and the navigation | Figma `Final Website` (slides 1–26) and the `Menu` frame, node `6203:71995` |
+| Everything the inner pages say | `https://pura-website-upload-1.vercel.app` — **not** pura.ai, which is the older single-page site |
 
 The sequence is still growing. New slides go into `src/hero/frames.js` as extra
 entries, not into new code: the scroll length, the step boundaries and the cue's
 notion of "one moment forward" all derive from the slide count.
+
+**Read [CONTEXT.md](CONTEXT.md) before changing anything.** It carries the
+coordinate system, the traps, and the checks worth re-running.
 
 ```bash
 npm install
@@ -157,4 +171,29 @@ The result lands within 1.5% of the reference on both axes.
   this page does.
 - **Mobile composition is a derivation, not a design.** Six of the twelve chips
   survive, the cloud converges harder, and the scroll cue drops its label. Those
-  are judgement calls made to fit — the Figma file only covers 1920×1080.
+  are judgement calls made to fit — the Figma file only covers 1920×1080. The
+  same applies to the 23 inner pages: there are no Figma frames for them, so
+  every block is built to be replaced when real designs land.
+- **The inner pages' filter pill row overflows on a phone.** ~603px of pills on a
+  375px screen even after scaling. It wants a real mobile frame or a scrollable
+  row rather than an invented one.
+- **The For Business and Support forms are `mailto:` links.** The source site
+  runs real forms; a prototype should not collect anyone's details.
+
+## Routes
+
+`/` is the sequence. Everything else is a document:
+
+```
+/health  /health/biomarkers  /health/purescore  /health/goals
+/care    /care/online-doctor /care/pharmacy     /care/lab-tests  /care/care-plans
+/well    /well/challenges    /well/fitcoins     /well/rewards
+/pura-ai
+/why-pura  /mission  /about  /trust
+/for-business  /partners
+/education  /support  /legal
+```
+
+Routes are **generated from `PAGES` in `src/site/content.js`**, so a dropdown
+entry without a page cannot silently 404. `vercel.json` carries the SPA rewrite
+that makes direct loads and refreshes work.

@@ -4,7 +4,8 @@ The running record of this prototype: what is built, why it is built that way, w
 broke and how it was fixed. Read this before continuing the build. The README covers
 how to run it; this file covers how to *reason* about it.
 
-- **Design source:** [Pura Website](https://www.figma.com/design/1ybPUzTZG9WJ2dle6NfH2U/Pura-Website), page **Final Website**, frames `Slide 1` … `Slide 23`.
+- **Design source:** [Pura Website](https://www.figma.com/design/1ybPUzTZG9WJ2dle6NfH2U/Pura-Website), page **Final Website**, frames `Slide 1` … `Slide 26`, plus the `Menu` frame (node `6203:71995`) for the navigation.
+- **Content source for the inner pages:** `https://pura-website-upload-1.vercel.app` — **not** pura.ai.
 - **Live:** https://pura-hero.vercel.app · **Repo:** https://github.com/Rinielg/pura-hero (private — it carries PureHealth brand assets)
 - **Device model:** forked from [Rinielg/pura-device-viewer](https://github.com/Rinielg/pura-device-viewer)
 
@@ -140,6 +141,40 @@ pins the viewport, but a document route has to be free to grow past it.
 
 ---
 
+## 2d. The navigation
+
+Built to the Figma `Menu` frame, node **`6203:71995`**, which draws four states:
+default, label hover, dropdown-item hover, and active/selected. The numbers are
+followed rather than approximated, and each one is checkable in the browser:
+
+| | Figma | Where it lives |
+|---|---|---|
+| Bar | 955×56, 24px left pad, 8px elsewhere, 48px gaps | `.nav__pill` |
+| Bar packing | hugs content, no `space-between` | `.nav__pill` |
+| Logo frame | 55×36 with 55×26 art at its TOP | `.nav__logo` |
+| Link row | 40px tall, 2px gap | `.pnav` |
+| Item | 40px pill, 16px sides, **min-width 80** | `.pnav__label` |
+| CTA | 130×40 | `.nav__cta` |
+| Dropdown card | 294 wide, radius 16, 20px pad | `.pnav__card` |
+| Card position | centred on its item, 4px below the BAR | `.pnav__card` |
+| Dropdown item | radius 8, 16/20 pad, 4px gap | `.pnav__item` |
+
+Two deliberate departures, both for reasons the static file cannot express:
+
+- **No chevron.** The file draws one on hover, but it is a 16px box with an 8px
+  gap, so revealing it widened the item by 24px and slid every label to its
+  right. A menu that reflows under the cursor is worse than a missing
+  affordance; `aria-haspopup`/`aria-expanded` still carry it for assistive tech.
+- **No active dot.** Added once, removed once — the file marks the current item
+  with weight and the white pill and nothing else.
+
+**Ownership of the active state is by ROUTE, with membership as a fallback**
+(`ownerOf` in `Chrome.jsx`). Pura AI's dropdown cross-links PureScore and
+Biomarkers, which live under Your Health, so membership alone lit two groups at
+once. Pages whose route sits outside their group's prefix — `/about`, `/trust`,
+`/partners`, everything under More — fall back to membership. Exactly one group
+is active on every route; there is a check for it in §8.
+
 ## 3. Where things live
 
 | File | What it owns |
@@ -184,7 +219,8 @@ Note the ordering: **6 sits above 5 on purpose.** See §5.
 | 10–16 | The whole first-act scene travels up and out. Act 3 copy arrives, then the promo card row scrolls in from the right. |
 | 17 | Everything from the first three acts leaves together (a 434px rise). "Help for every part of your health." and the filter pills arrive. |
 | 18–19 | The feature carousel. **Arrow-driven** — see §6. |
-| 20–26 | The carousel holds the centre and rises. "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel that *grows* from a 154×88 pill to 1152×659, then slides right and stands up at 26 so the phone can take the middle. |
+| 20–25 | The carousel holds the centre and rises. "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel that *grows* — 154×88, 764×437, 1058×605, 1152×659. |
+| 26 | The day resolves into the app. The panel slides right and stands up at 920×778, the **three.js device returns** at `ai(663)` showing the home screen, and the morning greeting arrives on the left. |
 | ~~20–23~~ | ~~The carousel holds the centre and rises, leaving left only at 23. "See how Pura fits into one ordinary day.", the time ruler, and the day's media panel, which *grows* rather than fades. |
 
 ### Slide numbering, and the off-by-one that will catch you
@@ -254,6 +290,32 @@ the wrapper, so clicks never reached the button. Fixed with `.layer--interactive
 `pointer-events: none`; only the buttons inside it take a click.
 
 **If you add another control inside the sequence, it must live in that layer.**
+
+### The logo is meant to sit high *(2026-09-18)*
+
+Reported as a vertical misalignment against the design, and the file explains
+it: the `Pura Logo` frame is **55×36** holding a **55×26** wordmark at y=0.5 —
+ten pixels of empty space below the art. The FRAME is what gets centred in the
+56px bar, so the artwork lands at y=10.5..36.5, four and a half pixels higher
+than centring the wordmark on its own would put it.
+
+The asset on disk is the 55×26 artwork, so the box around it carries the extra
+height and the art hangs from its top. Measure `.nav__logo` against the bar: the
+box should span 10..46 and the image 10.5..36.5.
+
+### Bringing the device back for slide 26 *(2026-09-18)*
+
+The device is **one WebGL object that exists for the whole sequence**, not
+something that mounts and unmounts, so it cannot simply appear on slide 26. It
+had also parked off the TOP of the frame when it left at slide 17, and slide 26
+wants it in the middle.
+
+`DEVICE_FADE` is the gate. It drops to zero at slide 14 — long after the device
+has left the visible frame — which makes the reposition between 17 and 18
+invisible, and comes back for 26. Without it, a phone sweeps down the screen.
+
+`SCREEN_MIX` returns to 0 over the same dead stretch, so the shader is showing
+the home screen again by the time anyone can see it.
 
 ### The Overlay needs something behind it *(2026-09-18)*
 
@@ -395,6 +457,10 @@ Each of these is a decision, not drift. Change them only on purpose.
 | `backdrop-blur` on the nav is turned up (Figma has it at 0) | A static frame has nothing moving under it. This page does. |
 | The hand starts fading earlier than the file implies | Explicit direction, with a reference frame. |
 | Greycliff CF is referenced by `local()` only | **No licensed font files are redistributed.** Shipping this publicly needs a webfont licence and a `.woff2` in `public/fonts`. |
+| No chevron on the nav items | The file's caret is a 16px box with an 8px gap, so showing it on hover reflowed the bar by 24px. |
+| No dot on the active nav item | The file uses weight and the white pill alone. |
+| The phone on slide 26 sits BELOW the Overlay | The file puts it above. The wash dissolving the device's foot is the point of slides 7–9, and one WebGL object cannot be in two layers. |
+| Slide 26's phone screen is `pura-screen.jpg` | The file's export came back at 380k characters, too large to move; it is the same home screen. |
 
 ---
 
@@ -413,6 +479,24 @@ looks frozen. Two hours were lost to that on 2026-09-17. Measure instead:
 
 To watch a tween with the pane hidden, advance `gsap.globalTimeline` by hand.
 
+**Scrub lag is not a bug.** `st.scroll()` + `st.update()` needs ~1.2s to settle
+at `scrub: 0.4`; measuring sooner reads the previous slide and looks like an
+off-by-one in the data. `tl.progress(p).render(tl.time(), false, true)` is
+synchronous but ScrollTrigger can re-assert from the scroll position, so for
+anything load-bearing use `st.scroll` and wait.
+
+### Checks worth re-running after any change
+
+| What | How | Expected |
+|---|---|---|
+| Nav geometry | measure `.nav__pill`, `.nav__logo`, `.pnav`, `.nav__cta` | 954 / box 10–46, art 10.5–36.5 / x=127 w=641 / x=816 w=130 |
+| Bar never reflows | hover all seven groups, measure the pill each time | 954 throughout |
+| One active group | walk all 16 site routes, count `.pnav__group.is-within` | exactly 1 (0 on 404) |
+| Card placement | open each dropdown, measure against the bar | gap 4, centre offset 0, width 294 |
+| Pinned wash | walk all 26 slides, read `.wash`[1]'s y | 858 on every one |
+| Blur survives minification | grep the built CSS | 13 prefixed **and** 13 standard |
+| Entry motion | diff each table's per-step y delta against the page rise | equal, except `DAY_MEDIA` 22→23 |
+
 ---
 
 ## 9. Open items
@@ -425,7 +509,9 @@ To watch a tween with the pane hidden, advance `gsap.globalTimeline` by hand.
   block in `Sections.jsx` is meant to be replaced as real frames land.
 - **The For Business form is a mailto.** The live site runs a Formidable form; a prototype
   should not collect anyone's details, so the CTA points at the address the form ends in.
-- **Slides 20–23 interactions** are still to come; Riniel is providing them.
+- **Interactions beyond the carousel arrows** are still to come; Riniel is providing them.
+- **Slides 24–26 are built but have no interactions.** 26 is currently the end of
+  the sequence.
 - **Promo cards 3 and 4** still share the line "Give your mind the same attention".
   The tags now differ (Mental Wellness / Care) and the file has it that way, so the
   build follows it — but the body copy looks like placeholder waiting to be written.
