@@ -76,19 +76,12 @@ function MenuGroup({ group, open, onOpen, onClose, onCloseNow }) {
           }
         }}
       >
+        {/* No caret. The file draws one on hover, but it is a 16px box with an
+            8px gap, so revealing it widened the item by 24px and slid every
+            label to its right along with it. A menu that reflows under the
+            cursor is worse than a missing affordance — and the affordance is
+            still there for assistive tech in aria-haspopup/aria-expanded. */}
         {label}
-        {/* Drawn in a 16x16 box, because that is the size the End Icon slot is
-            in the file. The caret itself is the same 10x6 shape, centred. */}
-        <svg className="pnav__chev" viewBox="0 0 16 16" aria-hidden="true">
-          <path
-            d="M3.5 6.25L8 10.75l4.5-4.5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
       </Label>
 
       <div className="pnav__card" role="menu" aria-label={label}>

@@ -1051,38 +1051,6 @@ body {
 
 /* The chevron is drawn only in Figma's hover and active states, so it fades in
    rather than sitting there permanently. */
-/* The chevron's metrics come from the one item in the file that actually shows
- * one. `More` in the hover state measures 89 = 16 padding + (33 text + 8 gap +
- * 16 icon) + 16 padding, against 80 with the icon hidden.
- *
- * So: a 16px icon box, an 8px gap, and the SAME 16px padding on the right as
- * on the left. It sits in the flow and collapses to nothing when hidden, which
- * is why the item grows on hover — exactly as the file's own rows do, 642 at
- * rest and 651 with a caret showing. The width is transitioned so the items to
- * its right slide rather than jump. */
-.pnav__chev {
-  flex: none;
-  width: 0;
-  height: 16px;
-  margin-left: -8px; /* cancels the flex gap while collapsed */
-  opacity: 0;
-  overflow: hidden;
-  transition: width 0.16s ease, margin 0.16s ease, opacity 0.16s ease, transform 0.16s ease;
-}
-
-.pnav__group:hover .pnav__chev,
-.pnav__group.is-open .pnav__chev,
-.pnav__group.is-within .pnav__chev {
-  width: 16px;
-  margin-left: 0;
-}
-.pnav__group:hover .pnav__chev,
-.pnav__group.is-open .pnav__chev,
-.pnav__group.is-within .pnav__chev { opacity: 0.45; }
-.pnav__group.is-open .pnav__chev { transform: rotate(180deg); }
-/* The label is centred, so its own width has to move with the chevron. */
-.pnav__label { transition: background 0.16s ease, width 0.16s ease; }
-
 /* The card: 294 wide, radius 16, 20px padding, 4px between items, and a soft
    32px shadow. It hangs from the label rather than from the bar, so a menu near
    the right edge does not run off. */
