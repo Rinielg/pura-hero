@@ -169,6 +169,9 @@ The result lands within 1.5% of the reference on both axes.
 - **The navigation blur exceeds the file.** Figma has `backdrop-blur` on the nav
   pill at radius 0. A static frame has nothing moving underneath it to blur;
   this page does.
+- **Slide 26 on a phone is hand-placed.** The copy sits beside the device in the
+  file and above it here, with the device and panel dropped to make room. The
+  numbers fit; they are not from a frame.
 - **Mobile composition is a derivation, not a design.** Six of the twelve chips
   survive, the cloud converges harder, and the scroll cue drops its label. Those
   are judgement calls made to fit — the Figma file only covers 1920×1080. The

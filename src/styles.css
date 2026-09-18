@@ -1406,6 +1406,12 @@ body {
   .cards { gap: 12px; }
   .act4-head { width: 390px; font-size: 30px; letter-spacing: -0.6px; }
   .act5-head { width: 400px; font-size: 30px; letter-spacing: -0.6px; }
+  /* Slide 26's copy is authored beside the phone. There is no beside on a
+     phone, so it is centred over it and sized to the frame. */
+  .greeting { width: 330px; align-items: center; text-align: center; }
+  .greeting p { font-size: 26px; line-height: 30px; letter-spacing: -0.8px; }
+  .greeting-body { width: 330px; font-size: 15px; line-height: 21px; text-align: center; }
+
   /* Six pills do not fit a phone; they scroll instead of wrapping, because
      wrapping would change the row's height and move everything under it. */
   .pills { gap: 8px; }

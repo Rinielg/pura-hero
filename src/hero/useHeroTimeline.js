@@ -18,6 +18,7 @@ import {
   CAROUSEL,
   CAROUSEL_CTRL,
   CHIPS,
+  FRAME,
   CUE_LABEL,
   COPY_HEAD,
   COPY_SUB,
@@ -252,14 +253,21 @@ export function useHeroTimeline({
       // --------------------------------------------------------------- device
       track(deviceProxy, (slide) => {
         const pose = at(DEVICE_POSE, slide)
-        const [fx, fy] = projectObject(pose.c, L)
+        // Slide 26 puts copy BESIDE the phone. A phone has no beside, so there
+        // the device comes down in size and drops toward the foot of the frame,
+        // which is what buys the copy a band above it. Desktop is untouched.
+        const tight = L.name === 'mobile' && slide >= 25
+        const scaled = tight
+          ? { ...pose, s: pose.s * 0.7, c: [pose.c[0], pose.c[1] + 150] }
+          : pose
+        const [fx, fy] = projectObject(scaled.c, L)
         return {
           fx,
           fy,
-          s: pose.s,
-          rx: pose.r[0],
-          ry: pose.r[1],
-          rz: pose.r[2],
+          s: scaled.s,
+          rx: scaled.r[0],
+          ry: scaled.r[1],
+          rz: scaled.r[2],
           screenMix: at(SCREEN_MIX, slide),
         }
       }, STEP_WINDOWS.device)
@@ -383,7 +391,11 @@ export function useHeroTimeline({
         gsap.set(refs.dayMedia.current, { xPercent: -50, yPercent: -50 })
         track(refs.dayMedia.current, (slide) => {
           const row = at(DAY_MEDIA, slide)
-          const [x, y] = projectChip(row.c, L)
+          // On a phone the panel drops with the device on the last slide, for
+          // the same reason: the copy that sits beside them on desktop has to
+          // sit above them here, and something has to make the room.
+          const tight = L.name === 'mobile' && slide >= 25
+          const [x, y] = projectChip(tight ? [row.c[0], row.c[1] + 150] : row.c, L)
           return {
             x,
             y,
@@ -399,12 +411,31 @@ export function useHeroTimeline({
       // It travels now. Up to slide 9 it is page furniture pinned to the bottom
       // of the frame; from slide 10 it belongs to the scene that is leaving, so
       // it leaves with it.
-      const washTrack = (el, table) =>
+      /**
+       * The wash is anchored to the FRAME'S BOTTOM, so it takes the bottom
+       * projection — not the chip cloud's.
+       *
+       * `projectChip` carries the cloud's convergence and its downward offset,
+       * which on a phone put the band's top at 777 of a 932 frame and its
+       * bottom at 999: sixty-seven pixels of it, including the whole solid end
+       * of the gradient, hanging below the frame and clipped away. What was
+       * left on screen was the weak top of the ramp, which reads as no wash at
+       * all.
+       *
+       * Its HEIGHT has to be projected too. 222 frame pixels is 222 only when
+       * the frame is 1080 tall; anywhere else the band has to shrink with the
+       * frame or it overshoots the bottom again.
+       */
+      const washH = 222 * (L.frame[1] / FRAME.h)
+      const washTrack = (el, table) => {
+        if (!el) return
+        gsap.set(el, { height: washH })
         track(el, (slide) => {
           const row = at(table, slide)
-          const [, y] = projectChip([960, row.y], L)
+          const [, y] = projectBottom([960, row.y], L)
           return { y, opacity: row.o }
         })
+      }
       washTrack(refs.washA.current, WASH_A)
       washTrack(refs.washB.current, WASH_B)
 
@@ -456,15 +487,27 @@ export function useHeroTimeline({
       // The greeting, its paragraph and the phone all belong to the flat copy
       // layer, so they take the chip cloud's convergence like everything else
       // written on the page.
-      for (const [ref, table] of [
-        [refs.greeting, GREETING],
-        [refs.greetingBody, GREETING_BODY],
+      // The mobile lift, per element. They do not share one offset: the heading
+      // is two lines and 30px tall on a phone, so the 110 frame pixels the file
+      // leaves between it and its paragraph is not enough and the paragraph has
+      // to drop a little further. Both land in the band between the ruler and
+      // the top of the shrunken device.
+      for (const [ref, table, lift] of [
+        [refs.greeting, GREETING, 140],
+        [refs.greetingBody, GREETING_BODY, 150],
       ]) {
         if (!ref.current) continue
         gsap.set(ref.current, { xPercent: -50, yPercent: -50 })
         track(ref.current, (slide) => {
           const row = at(table, slide)
-          return { ...project(row.c), opacity: row.o, filter: blur(row.b ?? 0) }
+          // The file sets this copy to the LEFT of the phone, at x=391.5 in a
+          // 1920 frame. A phone has no room beside the device, so on mobile it
+          // is centred over it instead and the widths come down in CSS —
+          // otherwise a 487px block lands at x=-141 of a 375px screen. The same
+          // call the chip cloud and the headings already make.
+          // Centred, and lifted into the band the shrunken device leaves free.
+          const c = L.name === 'mobile' ? [960, row.c[1] - lift] : row.c
+          return { ...project(c), opacity: row.o, filter: blur(row.b ?? 0) }
         })
       }
 

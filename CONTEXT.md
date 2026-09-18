@@ -291,6 +291,59 @@ the wrapper, so clicks never reached the button. Fixed with `.layer--interactive
 
 **If you add another control inside the sequence, it must live in that layer.**
 
+### The wash was using the wrong projection *(2026-09-18)*
+
+On a phone the pinned Overlay looked absent. It was not: it was using
+`projectChip`, which carries the chip cloud's convergence **and its +58px
+downward offset**. That put the band's top at 777 of a 932 frame and its bottom
+at 999 — sixty-seven pixels hanging below the frame, clipped away, and the
+clipped part was the solid end of the gradient. What survived on screen was the
+weak top of the ramp, which reads as no wash at all.
+
+The wash is anchored to the frame's BOTTOM, so it takes `projectBottom` — which
+already existed for exactly this, and which desktop leaves as the identity.
+
+**Its height has to be projected too.** 222 frame pixels is 222 only when the
+frame is 1080 tall; anywhere else the band must shrink with the frame or it
+overshoots the bottom again. `washH = 222 * (L.frame[1] / FRAME.h)`.
+
+Check: at any breakpoint, on any slide, the pinned wash's bottom should sit on
+the viewport's bottom edge.
+
+### Off-frame is not off-frame on a phone *(2026-09-18)*
+
+`chipK[1] = 0.8` compresses vertical travel on mobile, so anything parked
+*above* the frame gets dragged back toward it. The carousel, parked at y=-264
+and comfortably gone on desktop, had 41px of card text showing under the nav on
+a phone.
+
+The fix is to **fade things out as they exit** rather than relying on position
+alone: `CAROUSEL` and `CAROUSEL_CTRL` now end at opacity 0. On desktop they are
+already off-frame so the fade is invisible; on mobile it is the difference
+between gone and a strip of stray copy.
+
+Worth remembering for any future exit: a table that ends with `o: 1` at an
+off-frame position is a desktop-only assumption.
+
+### Slide 26 on a phone is a derivation *(2026-09-18)*
+
+The file sets the greeting and its paragraph BESIDE the phone, at x=391.5. A
+phone has no beside. On mobile the copy is centred and lifted into the band
+between the ruler and the device, and **the device and the photo panel both drop
+150 frame pixels and the device shrinks to 0.7** to make that band exist.
+
+Four things have to hold at 375px, and they are all measurable:
+
+| | Rule |
+|---|---|
+| greeting top | below the ruler's bottom |
+| body top | below the greeting's bottom |
+| body bottom | above the panel's top |
+| document | no horizontal overflow |
+
+Change any of the type sizes and re-check all four — the band is about 160px
+tall and the copy fills most of it.
+
 ### The logo is meant to sit high *(2026-09-18)*
 
 Reported as a vertical misalignment against the design, and the file explains
@@ -510,6 +563,9 @@ anything load-bearing use `st.scroll` and wait.
 - **The For Business form is a mailto.** The live site runs a Formidable form; a prototype
   should not collect anyone's details, so the CTA points at the address the form ends in.
 - **Interactions beyond the carousel arrows** are still to come; Riniel is providing them.
+- **Slide 26's mobile layout is hand-placed.** The lifts (140/150 frame px) and the
+  device's 0.7 shrink are numbers that fit, not numbers from a file. A real mobile
+  frame would replace them.
 - **Slides 24–26 are built but have no interactions.** 26 is currently the end of
   the sequence.
 - **Promo cards 3 and 4** still share the line "Give your mind the same attention".

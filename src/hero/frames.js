@@ -724,6 +724,10 @@ export const CAROUSEL = parked(16, { c: [1668, 1387], o: 0 }, [
   { c: [960, 326], o: 1 },
   { c: [960, -5], o: 1 },
   { c: [960, -264], o: 1 },
+  // Off-frame on desktop from here, so the fade is invisible there. On a phone
+  // the frame is shorter and the y compression (chipK 0.8) drags anything
+  // parked above it back down — 41px of card text was showing under the nav.
+  { c: [960, -264], o: 0 },
 ])
 
 export const CAROUSEL_CTRL = parked(17, { c: [960, 1231], o: 0, b: 0 }, [
@@ -733,7 +737,7 @@ export const CAROUSEL_CTRL = parked(17, { c: [960, 1231], o: 0, b: 0 }, [
   { c: [960, 604], o: 1, b: 0 },
   { c: [960, 273], o: 0.2, b: 8 },
   { c: [960, 14], o: 0.2, b: 8 },
-  { c: [960, -70], o: 0.2, b: 8 },
+  { c: [960, -70], o: 0, b: 8 },
 ])
 
 /** "See how Pura fits into one ordinary day." */
