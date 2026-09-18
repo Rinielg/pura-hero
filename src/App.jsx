@@ -11,6 +11,8 @@ import {
   CHIPS,
   HAND_ASPECT,
   MOBILE_CHIPS,
+  PHONE_ASPECT,
+  PHONE_W,
   PILL_LABELS,
   RULER_HOURS,
   scrollLength,
@@ -210,6 +212,9 @@ export default function App() {
     timeline: useRef(null),
     timelineDot: useRef(null),
     dayMedia: useRef(null),
+    greeting: useRef(null),
+    greetingBody: useRef(null),
+    phone: useRef(null),
     cue: useRef(null),
     cueLabel: useRef(null),
   }
@@ -429,6 +434,28 @@ export default function App() {
           <figure className="day-media" ref={refs.dayMedia}>
             <img src="/assets/carousel/one-day.jpg" alt="A morning walk, tracked by Pura" />
           </figure>
+
+          {/* Slide 26: the day resolves into the app. The copy on the left says
+              what the phone in the middle is showing. */}
+          <div className="greeting" ref={refs.greeting}>
+            <img src="/assets/pura-sparkle.png" alt="" width="32" height="32" />
+            <p>Good morning, your health plan has kicked off.</p>
+          </div>
+          <p className="greeting-body" ref={refs.greetingBody}>
+            Your Pura opens to one clear focus: a walk after lunch, a whole-grain swap and
+            lights out by 11.
+          </p>
+          <div
+            className="phone"
+            ref={refs.phone}
+            aria-hidden="true"
+            style={{
+              width: `${PHONE_W * layout.objScale}px`,
+              height: `${PHONE_W * PHONE_ASPECT * layout.objScale}px`,
+            }}
+          >
+            <img src="/assets/pura-screen.jpg" alt="" />
+          </div>
 
           <div className="agent-bar" ref={refs.bar}>
             <img className="agent-bar__mark" src="/assets/pura-sparkle.png" alt="" />

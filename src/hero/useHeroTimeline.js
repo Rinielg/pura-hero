@@ -24,9 +24,12 @@ import {
   COPY_Y,
   DEVICE_POSE,
   DAY_MEDIA,
+  GREETING,
+  GREETING_BODY,
   HAND_FADE,
   HAND_POSE,
   KICKER,
+  PHONE,
   PILLS,
   SCREEN_MIX,
   STEP_WEIGHTS,
@@ -438,6 +441,33 @@ export function useHeroTimeline({
         track(refs.cards.current, (slide) => {
           const [x, y] = projectCards(at(CARDS, slide).c, L)
           return { x, y, opacity: at(CARDS, slide).o }
+        })
+      }
+
+      // -------------------------------------------------- slide 26's arrival
+      // The greeting, its paragraph and the phone all belong to the flat copy
+      // layer, so they take the chip cloud's convergence like everything else
+      // written on the page.
+      for (const [ref, table] of [
+        [refs.greeting, GREETING],
+        [refs.greetingBody, GREETING_BODY],
+      ]) {
+        if (!ref.current) continue
+        gsap.set(ref.current, { xPercent: -50, yPercent: -50 })
+        track(ref.current, (slide) => {
+          const row = at(table, slide)
+          return { ...project(row.c), opacity: row.o, filter: blur(row.b ?? 0) }
+        })
+      }
+
+      // The phone is an OBJECT, not copy — it takes the device projection so it
+      // sits at the same scale the hero's phone did.
+      if (refs.phone.current) {
+        gsap.set(refs.phone.current, { xPercent: -50, yPercent: -50 })
+        track(refs.phone.current, (slide) => {
+          const row = at(PHONE, slide)
+          const [x, y] = projectObject(row.c, L)
+          return { x, y, opacity: row.o }
         })
       }
 

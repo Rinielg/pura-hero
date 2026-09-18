@@ -23,7 +23,7 @@
 export const FRAME = { w: 1920, h: 1080 }
 
 /** Slides in the sequence. Adding one in Figma means adding an entry below. */
-export const SLIDES = 23
+export const SLIDES = 26
 
 /**
  * The twelve pillar chips.
@@ -332,7 +332,10 @@ export const HAND_FADE = [1, 1, 1, 1, 0.45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
  * The last entry brings it back for the final slide, where the label has
  * changed to "Back to top" and is worth reading again.
  */
-export const CUE_LABEL = [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
+export const CUE_LABEL = [
+  1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+]
 
 export const HAND_ASPECT = 942 / 500
 
@@ -469,12 +472,26 @@ export const AGENT_BAR = [
  */
 // The last entry is slide 17, where Figma deletes the overlay. 86px of it are
 // still inside the frame at slide 16, so it leaves on the scene's own rise.
-const washY = [858, 858, 858, 858, 858, 858, 858, 858, 858, 637, 351, 206, -136, -136, -136, -136, -570]
-const washA = [1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-const washB = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+/**
+ * Only ONE of them travels now.
+ *
+ * The file used to move both washes up and out with the first act. It now keeps
+ * a second Overlay pinned to the bottom of the frame on every slide from 1 to
+ * 26 — the blur band is page furniture, not part of the scene that leaves. From
+ * slide 17 the travelling one is gone and the pinned one is all that is left,
+ * which is why the bottom of the page stays blurred for the whole scroll.
+ *
+ * Check it against the file by counting Overlay nodes per slide: one on 1-4,
+ * two on 5-12, three on 13-16 (the travelling pair plus the pinned one), and
+ * one from 17 on.
+ */
+const washAY = [858, 858, 858, 858, 858, 858, 858, 858, 858, 637, 351, 206, -136, -136, -136, -136, -570]
+const washAO = [1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+const washBO = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 
-export const WASH_A = washY.map((y, i) => ({ y, o: washA[i] }))
-export const WASH_B = washY.map((y, i) => ({ y, o: washB[i] }))
+export const WASH_A = washAY.map((y, i) => ({ y, o: washAO[i] }))
+/** Pinned: same y on every slide, for the whole sequence. */
+export const WASH_B = washBO.map((o) => ({ y: 858, o }))
 
 /**
  * The gradient backdrop's own travel.
@@ -682,7 +699,7 @@ export const CAROUSEL = parked(16, { c: [1668, 1387], o: 0 }, [
   { c: [960, 507], o: 1 },
   { c: [960, 326], o: 1 },
   { c: [960, -5], o: 1 },
-  { c: [-202, -264], o: 1 },
+  { c: [960, -264], o: 1 },
 ])
 
 export const CAROUSEL_CTRL = parked(17, { c: [960, 1231], o: 0, b: 0 }, [
@@ -692,14 +709,19 @@ export const CAROUSEL_CTRL = parked(17, { c: [960, 1231], o: 0, b: 0 }, [
   { c: [960, 604], o: 1, b: 0 },
   { c: [960, 273], o: 0.2, b: 8 },
   { c: [960, 14], o: 0.2, b: 8 },
+  { c: [960, -70], o: 0.2, b: 8 },
 ])
 
 /** "See how Pura fits into one ordinary day." */
 export const ACT5_HEAD = parked(19, { c: [956, 1177], o: 0, b: 8 }, [
-  { c: [956, 1030], o: 0.3, b: 8 },
-  { c: [956, 849], o: 0.3, b: 8 },
+  { c: [956, 1030], o: 1, b: 0 },
+  { c: [956, 849], o: 1, b: 0 },
   { c: [956, 518], o: 1, b: 0 },
   { c: [956, 259], o: 1, b: 0 },
+  // It hands over to the day itself from 24, and is gone by 26.
+  { c: [956, 175], o: 0.3, b: 4 },
+  { c: [956, 107], o: 0.1, b: 8 },
+  { c: [956, 69], o: 0, b: 8 },
 ])
 
 /**
@@ -707,10 +729,13 @@ export const ACT5_HEAD = parked(19, { c: [956, 1177], o: 0, b: 8 }, [
  * the hours pass under a fixed marker. Rebuilt as repeating CSS rather than the
  * 241 individual rectangles Figma draws it with.
  */
-export const TIMELINE = parked(20, { c: [5929.5, 1147], o: 0, b: 4 }, [
-  { c: [5929.5, 966], o: 0.6, b: 4 },
-  { c: [5545.5, 635], o: 0.6, b: 0 },
-  { c: [5328.5, 376], o: 0.6, b: 0 },
+export const TIMELINE = parked(20, { c: [6285.5, 1147], o: 0, b: 4 }, [
+  { c: [6285.5, 966], o: 0.6, b: 4 },
+  { c: [5931.5, 635], o: 0.6, b: 0 },
+  { c: [5860.5, 376], o: 0.6, b: 0 },
+  { c: [5593.5, 292], o: 0.6, b: 0 },
+  { c: [5328.5, 224], o: 0.6, b: 0 },
+  { c: [5328.5, 186], o: 0.6, b: 0 },
 ])
 
 /**
@@ -753,6 +778,9 @@ export const TIMELINE_DOT = parked(20, { c: [960, 1105], o: 0, b: 4 }, [
   { c: [960, 924], o: 0.4, b: 4 },
   { c: [960, 593], o: 1, b: 0 },
   { c: [960, 334], o: 1, b: 0 },
+  { c: [960, 250], o: 1, b: 0 },
+  { c: [960, 182], o: 1, b: 0 },
+  { c: [960, 144], o: 1, b: 0 },
 ])
 
 /**
@@ -760,9 +788,39 @@ export const TIMELINE_DOT = parked(20, { c: [960, 1105], o: 0, b: 4 }, [
  * into a 764x437 stadium, and its corner radius grows with it so the shape
  * stays a stadium the whole way rather than becoming a rounded rectangle.
  */
+/**
+ * Slide 26: the day resolves into the app.
+ *
+ * The photo panel slides right and stands up, and a phone arrives in the middle
+ * showing the same morning greeting the copy on the left is saying. Everything
+ * here is new at slide 26, so it waits 38px below its pose — the page's own
+ * rise on the 25 -> 26 step, which the ruler and the marker both confirm
+ * (224 -> 186 and 182 -> 144).
+ */
+const RISE_26 = 38
+
+export const GREETING = parked(25, { c: [391.5, 417 + RISE_26], o: 0, b: 6 }, [
+  { c: [391.5, 417], o: 1, b: 0 },
+])
+
+export const GREETING_BODY = parked(25, { c: [387.5, 527 + RISE_26], o: 0, b: 6 }, [
+  { c: [387.5, 527], o: 1, b: 0 },
+])
+
+/** The phone itself: 321x663 with a 297x638 screen at radius 40 inside it. */
+export const PHONE = parked(25, { c: [959.7, 650.7 + RISE_26], o: 0 }, [
+  { c: [959.7, 650.7], o: 1 },
+])
+export const PHONE_W = 321
+export const PHONE_ASPECT = 663 / 321
+
 export const DAY_MEDIA = parked(21, { c: [960, 1086], w: 154, h: 88, r: 150, o: 0 }, [
   { c: [960, 755], w: 154, h: 88, r: 150, o: 1 },
   { c: [960, 670.5], w: 764, h: 437, r: 290, o: 1 },
+  { c: [960, 670.5], w: 1058, h: 605, r: 160, o: 1 },
+  { c: [960, 629.5], w: 1152, h: 659, r: 150, o: 1 },
+  // Slide 26: it slides right and stands up, making room for the phone.
+  { c: [1420, 651], w: 920, h: 778, r: 60, o: 1 },
 ])
 
 /** The category pills, in order. The first is the selected one. */

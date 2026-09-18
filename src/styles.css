@@ -877,9 +877,10 @@ body {
   top: 0;
   width: 10741px;
   height: 32px;
+  /* Peach, not grey — the file recoloured the ruler with the day scene. */
   background-image: repeating-linear-gradient(
     90deg,
-    #d9d9d9 0 1px,
+    #f7cdb9 0 1px,
     transparent 1px 41px
   );
   will-change: transform, opacity;
@@ -918,7 +919,7 @@ body {
   width: 12px;
   height: 12px;
   border-radius: 999px;
-  background: #5e88a8;
+  background: #dda991;
   will-change: transform, opacity;
 }
 
@@ -1054,10 +1055,17 @@ body {
 /* The card: 294 wide, radius 16, 20px padding, 4px between items, and a soft
    32px shadow. It hangs from the label rather than from the bar, so a menu near
    the right edge does not run off. */
+/* Centred under its own item, and 4px below the bar.
+ *
+ * Both come off the file: the card sits at x=515 under an item at x=606 that is
+ * 103 wide, so the two share a centre; and the bar's bottom edge is 370 against
+ * the card's top at 374. It used to hang from the item's left edge, 14px down. */
 .pnav__card {
   position: absolute;
-  top: calc(100% + 14px);
-  left: 0;
+  /* 12 = the pill's own 8px bottom padding, which sits between the item and the
+     bar's edge, plus the 4px the file leaves below that edge. */
+  top: calc(100% + 12px);
+  left: 50%;
   width: 294px;
   padding: 20px;
   border-radius: 16px;
@@ -1065,25 +1073,25 @@ body {
   box-shadow: 0 24px 32px rgba(14, 26, 43, 0.1), 0 2px 8px rgba(14, 26, 43, 0.04);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-6px);
+  transform: translate(-50%, -6px);
   transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
 }
 .pnav__group.is-open .pnav__card {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translate(-50%, 0);
 }
-/* The last two groups hang from their right edge instead, or they overflow. */
-.pnav__group:nth-last-child(-n + 2) .pnav__card { left: auto; right: 0; }
 
 /* The gap between the label and the card would otherwise break the hover. */
+/* The 4px gap between the label and the card would otherwise break the hover
+   on the way down. */
 .pnav__card::before {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  top: -14px;
-  height: 14px;
+  top: -12px;
+  height: 12px;
 }
 
 .pnav__item {
@@ -1209,6 +1217,66 @@ body {
   /* The exported path is authored upside-down — Figma applies a vertical flip
      to it in the component, and without that the wordmark renders mirrored. */
   transform: scaleY(-1);
+}
+
+/* ------------------------------------------------------------- slide 26
+ *
+ * The day resolves into the app: copy on the left saying what the phone in the
+ * middle is showing, while the photo panel slides right and stands up.
+ * Everything is in frame pixels, like the rest of the sequence.
+ */
+.greeting {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 487px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  will-change: transform, opacity, filter;
+}
+.greeting img { display: block; width: 32px; height: 32px; }
+.greeting p {
+  margin: 0;
+  font-family: var(--brand);
+  font-weight: 500;
+  font-size: 36px;
+  line-height: 40px;
+  letter-spacing: -1.2px;
+  color: var(--ink);
+}
+
+.greeting-body {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 479px;
+  margin: 0;
+  font-family: var(--brand);
+  font-size: 20px;
+  line-height: 26px;
+  letter-spacing: -0.2px;
+  color: rgba(14, 26, 43, 0.72);
+  will-change: transform, opacity, filter;
+}
+
+/* 321x663 in the file, with a 297x638 screen at radius 40 inside it. The frame
+   is the group; the screen is inset by the difference. */
+.phone {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: grid;
+  place-items: center;
+  will-change: transform, opacity;
+}
+.phone img {
+  display: block;
+  width: 92.5%;   /* 297 / 321 */
+  height: 96.2%;  /* 638 / 663 */
+  object-fit: cover;
+  border-radius: 12.5%/6%;
+  box-shadow: 0 40px 80px rgba(14, 26, 43, 0.18);
 }
 
 /* --------------------------------------------------------- the document */

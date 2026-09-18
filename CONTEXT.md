@@ -184,7 +184,8 @@ Note the ordering: **6 sits above 5 on purpose.** See §5.
 | 10–16 | The whole first-act scene travels up and out. Act 3 copy arrives, then the promo card row scrolls in from the right. |
 | 17 | Everything from the first three acts leaves together (a 434px rise). "Help for every part of your health." and the filter pills arrive. |
 | 18–19 | The feature carousel. **Arrow-driven** — see §6. |
-| 20–23 | The carousel holds the centre and rises, leaving left only at 23. "See how Pura fits into one ordinary day.", the time ruler, and the day's media panel, which *grows* rather than fades. |
+| 20–26 | The carousel holds the centre and rises. "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel that *grows* from a 154×88 pill to 1152×659, then slides right and stands up at 26 so the phone can take the middle. |
+| ~~20–23~~ | ~~The carousel holds the centre and rises, leaving left only at 23. "See how Pura fits into one ordinary day.", the time ruler, and the day's media panel, which *grows* rather than fades. |
 
 ### Slide numbering, and the off-by-one that will catch you
 
@@ -253,6 +254,21 @@ the wrapper, so clicks never reached the button. Fixed with `.layer--interactive
 `pointer-events: none`; only the buttons inside it take a click.
 
 **If you add another control inside the sequence, it must live in that layer.**
+
+### The wash is two layers doing different jobs *(2026-09-18)*
+
+The file used to travel both Overlay rectangles up and out with the first act.
+It now keeps **one pinned to the bottom of the frame on every slide from 1 to
+26** while the other still leaves. The blur band is page furniture, not part of
+the scene that departs — which is why the bottom of the page stays blurred for
+the whole scroll instead of going sharp at slide 17.
+
+`WASH_A` travels (858 → 637 → 351 → 206 → −136 → −570). `WASH_B` is pinned at
+858 and only its opacity is tracked.
+
+**Check it against the file by counting Overlay nodes per slide:** one on 1–4,
+two on 5–12, three on 13–16 (the travelling pair plus the pinned one), and one
+from 17 on. If that count changes, the model here needs revisiting.
 
 ### Incoming layers appeared instead of arriving *(2026-09-18)*
 
