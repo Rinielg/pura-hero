@@ -51,6 +51,44 @@ reads it in `useFrame`. Nothing else talks across the boundary.
 
 ## 2b. The site around the sequence
 
+**Content source: `https://pura-website-upload-1.vercel.app`** — the current Pura
+website build. NOT pura.ai, which is the older single-page site. An earlier pass
+sourced from pura.ai and had to be redone; if you are adding a page, take its
+copy from the upload site.
+
+**Navigation spec: Figma node `6203:71995`** (page *Final Website*, frame
+*Menu*). It draws four states — default, hover, dropdown-item hover, and
+active/selected — with measurements the CSS follows exactly: bar 955×56, 24px
+left padding, 48px gaps; link row 40px tall with a 2px gap; each item a 40px
+pill with 16px side padding; dropdown card 294 wide, radius 16, 20px padding,
+items radius 8 with 16/20 padding and a 4px gap.
+
+Two labels differ between the two sources. **Figma wins for the nav**: it says
+*Your Health* where the site says *My Health*, and *Pura AI* where the site says
+*Ask Pura*.
+
+Figma draws only the Your Health dropdown. The other six are built from the
+upload site's own menu, which has the same shape. `Why Pura` is top level in
+Figma and nested under *More* on the site, so its dropdown is assembled from the
+site's More group — the items about the company rather than the product.
+
+### The shape of it
+
+`MENU` in `content.js` is the single source for the menu, the phone sheet and the
+footer. `PAGES` is the single source for page content, and **`main.jsx` generates
+routes from its keys** — so a dropdown entry without a page cannot silently
+404.
+
+Every feature page is the same template, because the source site's are: hero,
+"What is X?", three numbered steps, four proof points on a dark band, questions,
+the locked regulatory note, siblings, download. `SitePage` renders whichever of
+those a page's data actually has.
+
+**The regulatory note is reproduced verbatim** and marked in the source as a
+locked slot subject to Regulatory sign-off. Do not reword it.
+
+## 2c. Superseded: the first pass at the site
+
 The home route is no longer the whole site. `react-router-dom` v7 carries six
 more pages behind the navigation, and the **same `Nav` component renders on all
 of them** — that is the point, and it is why the nav moved out of the hero's

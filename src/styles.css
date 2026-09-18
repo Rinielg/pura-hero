@@ -941,15 +941,15 @@ body {
 
 /* The pill keeps its own width; the header is only a column so the phone sheet
    can sit under it. */
-.nav__pill { width: min(783px, 100%); }
-.nav__sheet { width: min(783px, 100%); }
+.nav__pill { width: min(986px, 100%); }
+.nav__sheet { width: min(986px, 100%); }
 
 .nav__pill {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 32px;
-  width: min(783px, 100%);
+  gap: 48px;
+  width: min(986px, 100%);
   height: 56px;
   padding: 8px 8px 8px 24px;
   border-radius: 60px;
@@ -976,106 +976,150 @@ body {
 .nav__logo { display: flex; flex: none; }
 .nav__logo img { display: block; width: 55px; height: 26px; }
 
-.nav__links {
+/* ------------------------------------------------------ the pill nav
+ *
+ * Figma node 6203:71995. The bar is 955x56 with 24px of left padding, 8px
+ * elsewhere and a 48px gap between logo, links and CTA. The link row itself is
+ * 40px tall with a 2px gap, and each item is a 40px pill with 16px of side
+ * padding — so the hover state has somewhere to land without anything moving.
+ */
+.pnav {
   display: flex;
   align-items: center;
-  gap: 25px;
+  gap: 2px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.nav__links a {
+.pnav__group { position: relative; }
+
+.pnav__label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  height: 40px;
+  margin: 0;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
   font-family: var(--brand);
   font-weight: 500;
-  font-size: 12px;
-  letter-spacing: -0.24px;
+  font-size: 14px;
+  letter-spacing: -0.2px;
+  line-height: 20px;
   color: var(--ink);
   text-decoration: none;
   white-space: nowrap;
-  opacity: 0.9;
-  transition: opacity 0.18s ease;
+  cursor: pointer;
+  transition: background 0.16s ease, box-shadow 0.16s ease;
 }
 
-.nav__links a:hover { opacity: 1; }
-
-/* The route you are on. The pill is glass, so the marker is weight and a dot
-   rather than a filled background, which would punch a hole in it. */
-.nav__links a.is-active {
-  opacity: 1;
+/* Hover and open both take the white pill Figma draws. */
+.pnav__group:hover > .pnav__label,
+.pnav__group.is-open > .pnav__label {
+  background: #fff;
   font-weight: 600;
+  box-shadow: 0 1px 2px rgba(14, 26, 43, 0.06);
 }
-.nav__links a.is-active::after {
+
+/* The route you are on, or a route inside this group. A dot rather than a
+   filled pill, so it does not compete with the hover state. */
+.pnav__group.is-within > .pnav__label { font-weight: 600; }
+.pnav__group.is-within > .pnav__label::after {
   content: '';
   width: 4px;
   height: 4px;
-  margin-left: 2px;
+  margin-left: -2px;
   border-radius: 999px;
   background: var(--ink);
 }
 
-/* "More" opens on hover and on focus-within, so it is reachable by keyboard
-   without a click handler and without any state. */
-.nav__more { position: relative; }
-.nav__more > button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: none;
-  font-family: var(--brand);
-  font-weight: 500;
-  font-size: 12px;
-  letter-spacing: -0.24px;
-  color: var(--ink);
-  opacity: 0.9;
-  cursor: pointer;
+/* The chevron is drawn only in Figma's hover and active states, so it fades in
+   rather than sitting there permanently. */
+.pnav__chev {
+  width: 10px;
+  height: 6px;
+  opacity: 0;
+  transform: translateY(-1px);
+  transition: opacity 0.16s ease, transform 0.16s ease;
 }
-.nav__more > button:hover { opacity: 1; }
-.nav__more img { opacity: 0.5; width: 7px; height: 5px; }
+.pnav__group:hover .pnav__chev,
+.pnav__group.is-open .pnav__chev,
+.pnav__group.is-within .pnav__chev { opacity: 0.45; }
+.pnav__group.is-open .pnav__chev { transform: translateY(0) rotate(180deg); }
 
-.nav__menu {
+/* The card: 294 wide, radius 16, 20px padding, 4px between items, and a soft
+   32px shadow. It hangs from the label rather than from the bar, so a menu near
+   the right edge does not run off. */
+.pnav__card {
   position: absolute;
   top: calc(100% + 14px);
-  left: 50%;
-  transform: translateX(-50%) translateY(-4px);
-  display: grid;
-  gap: 2px;
-  min-width: 190px;
-  margin: 0;
-  padding: 8px;
-  list-style: none;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  backdrop-filter: blur(24px) saturate(180%);
-  box-shadow: 0 18px 40px rgba(14, 26, 43, 0.1);
+  left: 0;
+  width: 294px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 24px 32px rgba(14, 26, 43, 0.1), 0 2px 8px rgba(14, 26, 43, 0.04);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
+  transform: translateY(-6px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
 }
-.nav__more:hover .nav__menu,
-.nav__more:focus-within .nav__menu {
+.pnav__group.is-open .pnav__card {
   opacity: 1;
   visibility: visible;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
 }
-.nav__menu a {
-  display: block;
-  padding: 9px 12px;
-  border-radius: 11px;
-  font-size: 13px;
-  opacity: 0.85;
-}
-.nav__menu a:hover { background: rgba(14, 26, 43, 0.05); opacity: 1; }
+/* The last two groups hang from their right edge instead, or they overflow. */
+.pnav__group:nth-last-child(-n + 2) .pnav__card { left: auto; right: 0; }
 
-/* The phone menu. Hidden above 820px, where the link row does the job. */
+/* The gap between the label and the card would otherwise break the hover. */
+.pnav__card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -14px;
+  height: 14px;
+}
+
+.pnav__item {
+  display: block;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  text-decoration: none;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+.pnav__item + .pnav__item { margin-top: 4px; }
+
+.pnav__item-t {
+  display: block;
+  font-family: var(--brand);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--ink);
+}
+.pnav__item small {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: rgba(14, 26, 43, 0.5);
+}
+
+/* Figma's item-hover: a faint surface. Its active/selected: a visible edge. */
+.pnav__item:hover { background: rgba(14, 26, 43, 0.035); }
+.pnav__item.is-active {
+  background: #fff;
+  border-color: rgba(14, 26, 43, 0.1);
+  box-shadow: 0 1px 3px rgba(14, 26, 43, 0.05);
+}
+
+/* The phone menu. Hidden above 980px, where the bar does the job. */
 .nav__burger { display: none; }
 .nav__sheet { display: none; }
 
@@ -1083,6 +1127,7 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
   flex: none;
   height: 40px;
   padding: 10px 16px;
@@ -1177,17 +1222,15 @@ body {
 
 /* ------------------------------------------------------------- responsive */
 
-@media (max-width: 1100px) {
-  .nav__links { gap: 18px; }
+@media (max-width: 1080px) {
   .nav__pill { gap: 20px; }
+  .pnav__label { padding: 0 11px; font-size: 13px; }
 }
 
-@media (max-width: 820px) {
+@media (max-width: 980px) {
   .nav { top: 16px; padding: 0 16px; }
+  .pnav { display: none; }
   .nav__pill { height: 52px; gap: 12px; padding: 8px 8px 8px 18px; }
-  /* Six links do not fit a phone and shrinking them to fit makes them
-     unreadable and untappable. They move into a sheet behind the burger. */
-  .nav__links { display: none; }
   .nav__cta { height: 36px; padding: 8px 14px; font-size: 13px; }
 
   .nav__pill { justify-content: flex-start; }
@@ -1233,6 +1276,27 @@ body {
   }
   .nav__sheet[hidden] { display: none; }
 
+  /* The whole tree, flattened: seven groups, each with its children. It is
+     taller than the viewport, so the sheet scrolls rather than the page. */
+  .nav__sheet {
+    max-height: calc(100dvh - 92px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .nav__sheet section + section {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(14, 26, 43, 0.08);
+  }
+  .nav__sheet h2 {
+    margin: 0;
+    padding: 10px 14px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(14, 26, 43, 0.4);
+  }
   .nav__sheet ul {
     margin: 0;
     padding: 0;
@@ -1241,21 +1305,22 @@ body {
   }
   .nav__sheet a {
     display: block;
-    padding: 13px 14px;
-    border-radius: 16px;
+    padding: 11px 14px;
+    border-radius: 14px;
     font-family: var(--brand);
-    font-size: 16px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 600;
     color: var(--ink);
     text-decoration: none;
   }
-  .nav__sheet a.is-active { background: rgba(14, 26, 43, 0.06); font-weight: 600; }
-  .nav__sheet-more {
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px solid rgba(14, 26, 43, 0.08);
+  .nav__sheet a small {
+    display: block;
+    margin-top: 1px;
+    font-size: 12.5px;
+    font-weight: 400;
+    color: rgba(14, 26, 43, 0.5);
   }
-  .nav__sheet-more a { font-size: 14px; opacity: 0.7; }
+  .nav__sheet a.is-active { background: rgba(14, 26, 43, 0.06); }
 
   .stores { right: 12px; bottom: 12px; gap: 6px; }
   .stores__badge { width: 104px; height: 35px; gap: 6px; padding: 0 6px; }
@@ -1305,7 +1370,9 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .nav__cta,
-  .nav__links a,
+  .pnav__label,
+  .pnav__card,
+  .pnav__item,
   .stores__badge,
   .cue__dot { transition: none; }
 }

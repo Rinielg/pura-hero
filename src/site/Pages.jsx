@@ -1,187 +1,109 @@
 /**
- * The six destinations behind the navigation.
+ * One page component for the whole site.
  *
- * Each one is assembled from `content.js` and the blocks in `Sections.jsx`, so
- * a page is a short, readable arrangement rather than a wall of markup. When
- * real designs land for any of these, the block is what changes — not the copy,
- * which stays in one file, and not the route, which stays here.
+ * Every inner page on the source site is the same template — hero, definition,
+ * three steps, four proof points, questions, a regulatory note, siblings, and a
+ * download call to action — so it is built once here and filled from `PAGES` in
+ * `content.js`. A page that has no `steps` simply does not render that band.
+ *
+ * The consequence worth keeping: adding a page is an entry in `content.js` and
+ * a line in `main.jsx`. No new markup.
  */
 
-import { Link } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+import { MENU, PAGES, PROOF_FOOTNOTE } from './content'
 import {
-  CARE,
-  EXTERNAL,
-  FOR_BUSINESS,
-  MY_HEALTH,
-  PAGES,
-  PURA_AI,
-  WELLNESS,
-  WHY_PURA,
-} from './content'
-import { CTABand, IconGrid, Page, PageHero, PartnerWall, Reasons, Showcase, Split } from './Sections'
+  CTABand,
+  FAQs,
+  Page,
+  PageHero,
+  Proof,
+  Reasons,
+  RelatedCards,
+  Split,
+  Steps,
+  TextBand,
+} from './Sections'
 
-/* ------------------------------------------------------------- My Health */
+/** Which menu group a path belongs to, for the "more in…" band at the foot. */
+function siblingsOf(path) {
+  const group = MENU.find((g) => g.items.some((i) => i.to === path))
+  if (!group) return null
+  return { group, items: group.items.filter((i) => i.to !== path) }
+}
 
-export function MyHealth() {
-  const [score, diabetes] = MY_HEALTH.sections
+export function SitePage() {
+  const { pathname } = useLocation()
+  const data = PAGES[pathname]
+  if (!data) return <NotFound />
+
+  const sibs = siblingsOf(pathname)
+  const hasProof = data.proof?.length
+  const footnote = hasProof && JSON.stringify(data.proof).includes('†')
+
   return (
-    <Page>
-      <PageHero kicker={MY_HEALTH.kicker} title={MY_HEALTH.title} lead={MY_HEALTH.lead} />
-      <Split
-        eyebrow={score.eyebrow}
-        title={score.title}
-        body={score.body}
-        points={score.points}
-        media={score.media}
-        mediaAlt={score.mediaAlt}
+    <Page key={pathname}>
+      <PageHero kicker={data.kicker} title={data.h1} lead={data.lead} />
+
+      {data.whatIs ? (
+        <Split
+          eyebrow="What it is"
+          title={data.whatIs.h}
+          body={data.whatIs.p}
+          media={data.media}
+          mediaAlt=""
+          flip
+        />
+      ) : data.media ? (
+        <Split eyebrow={data.kicker} title={data.h1} body={data.lead} media={data.media} flip />
+      ) : null}
+
+      {data.children?.length ? (
+        <RelatedCards
+          eyebrow="Explore"
+          title="Everything in this pillar"
+          items={data.children.map((to) => {
+            const c = PAGES[to]
+            return { to, title: c.kicker, body: c.lead, media: c.media }
+          })}
+        />
+      ) : null}
+
+      {data.steps?.length ? <Steps items={data.steps} /> : null}
+
+      {hasProof ? <Proof items={data.proof} footnote={footnote ? PROOF_FOOTNOTE : null} /> : null}
+
+      {data.reasons?.length ? <Reasons title="What makes the difference" items={data.reasons} /> : null}
+
+      {data.sections?.length ? <TextBand items={data.sections} /> : null}
+
+      {data.faqs?.length ? <FAQs items={data.faqs} /> : null}
+
+      {/* Reproduced verbatim from the source, which marks it as a locked slot
+          subject to Regulatory sign-off. Do not reword it here. */}
+      {data.note ? (
+        <section className="regnote" data-reveal>
+          <p>{data.note}</p>
+        </section>
+      ) : null}
+
+      {sibs?.items.length ? (
+        <RelatedCards
+          eyebrow={`More in ${sibs.group.label}`}
+          title="Every part connects to the next."
+          items={sibs.items.map((i) => ({ to: i.to, title: i.title, body: i.body, media: PAGES[i.to]?.media }))}
+          compact
+        />
+      ) : null}
+
+      <CTABand
+        title={data.cta?.title || `${data.kicker} lives in the app.`}
+        body={data.cta ? null : 'Download Pura to get started in minutes.'}
+        link={data.cta}
       />
-      <Showcase
-        eyebrow={diabetes.eyebrow}
-        title={diabetes.title}
-        body={diabetes.body}
-        items={diabetes.cards}
-        tall
-      />
-      <CTABand title="Start with the number that matters." body="Your health span, in one score." />
     </Page>
   )
 }
-
-/* ------------------------------------------------------------------ Care */
-
-export function Care() {
-  const [doctor, mind] = CARE.sections
-  return (
-    <Page>
-      <PageHero kicker={CARE.kicker} title={CARE.title} lead={CARE.lead} />
-      <Split
-        eyebrow={doctor.eyebrow}
-        title={doctor.title}
-        body={doctor.body}
-        media={doctor.media}
-        mediaAlt={doctor.mediaAlt}
-        flip
-      >
-        <ul className="ticks ticks--icon">
-          {doctor.items.map((it) => (
-            <li key={it.text}>
-              <img src={it.icon} alt="" loading="lazy" />
-              {it.text}
-            </li>
-          ))}
-        </ul>
-      </Split>
-      <Split eyebrow={mind.eyebrow} title={mind.title} body={mind.body} points={mind.points} />
-      <CTABand title="A clinician, without the waiting room." />
-    </Page>
-  )
-}
-
-/* -------------------------------------------------------------- Wellness */
-
-export function Wellness() {
-  const [fitness, mind] = WELLNESS.sections
-  return (
-    <Page>
-      <PageHero kicker={WELLNESS.kicker} title={WELLNESS.title} lead={WELLNESS.lead} />
-      <Showcase
-        eyebrow={fitness.eyebrow}
-        title={fitness.title}
-        body={fitness.body}
-        items={fitness.showcase}
-      />
-      <IconGrid eyebrow={mind.eyebrow} title={mind.title} body={mind.body} items={mind.items} />
-      <CTABand title="Every day adds up." body="Track it, and the days start to count for something." />
-    </Page>
-  )
-}
-
-/* --------------------------------------------------------------- Pura AI */
-
-export function PuraAI() {
-  const [ask, score] = PURA_AI.sections
-  return (
-    <Page>
-      <PageHero kicker={PURA_AI.kicker} title={PURA_AI.title} lead={PURA_AI.lead}>
-        {/* The agent bar from the brand work, as a static prop rather than the
-            live control it is inside the app. */}
-        <div className="ph__agent" aria-hidden="true">
-          <img src="/assets/pura-sparkle.png" alt="" width="18" height="18" />
-          <span>Ask Pura AI anything</span>
-          <span className="ph__agent-btn">
-            <img src="/assets/agent-plus.svg" alt="" />
-          </span>
-          <span className="ph__agent-btn">
-            <img src="/assets/agent-voice.svg" alt="" />
-          </span>
-        </div>
-      </PageHero>
-      <Split eyebrow={ask.eyebrow} title={ask.title} body={ask.body} points={ask.points} />
-      <Split
-        eyebrow={score.eyebrow}
-        title={score.title}
-        body={score.body}
-        media={score.media}
-        mediaAlt={score.mediaAlt}
-        flip
-      />
-      <CTABand title="Ask it anything about your health." />
-    </Page>
-  )
-}
-
-/* -------------------------------------------------------------- Why Pura */
-
-export function WhyPura() {
-  return (
-    <Page>
-      <PageHero kicker={WHY_PURA.kicker} title={WHY_PURA.title} lead={WHY_PURA.lead} />
-      <Reasons title="Five reasons it works" items={WHY_PURA.reasons} />
-      <PartnerWall title="Our partners" items={WHY_PURA.partners} />
-      <CTABand title="One place for your whole health." />
-    </Page>
-  )
-}
-
-/* ---------------------------------------------------------- For Business */
-
-export function ForBusiness() {
-  const [partner, longevity] = FOR_BUSINESS.sections
-  return (
-    <Page>
-      <PageHero
-        kicker={FOR_BUSINESS.kicker}
-        title={FOR_BUSINESS.title}
-        lead={FOR_BUSINESS.lead}
-      />
-      <Split
-        eyebrow={partner.eyebrow}
-        title={partner.title}
-        body={partner.body}
-        points={partner.points}
-      />
-      <Split eyebrow={longevity.eyebrow} title={longevity.title} body={longevity.body} flip>
-        <a className="btn btn--dark" href={longevity.link.href} target="_blank" rel="noreferrer">
-          {longevity.link.label}
-        </a>
-      </Split>
-      {/* The live site puts a Formidable form here. A prototype should not
-          collect anyone's details, so this is the same call to action pointed
-          at the address the form ends up in. */}
-      <section className="cta" data-reveal>
-        <h2 className="h2">Talk to us about your workforce</h2>
-        <p className="lede">{FOR_BUSINESS.lead}</p>
-        <div className="cta__row">
-          <a className="btn btn--dark" href={EXTERNAL.email}>
-            care.pura@pura.ai
-          </a>
-        </div>
-      </section>
-    </Page>
-  )
-}
-
-/* ------------------------------------------------------------- not found */
 
 export function NotFound() {
   return (
@@ -191,18 +113,15 @@ export function NotFound() {
         title="That page isn’t here."
         lead="It may not have been built yet — this is a prototype, and the site is still being assembled."
       />
-      <section className="band" data-reveal>
-        <div className="band__head">
-          <h2 className="h2">Try one of these</h2>
-        </div>
-        <ul className="ticks ticks--links">
-          {PAGES.map((p) => (
-            <li key={p.path}>
-              <Link to={p.path}>{p.label}</Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <RelatedCards
+        eyebrow="Try one of these"
+        title="Where you can go"
+        items={MENU.flatMap((g) => g.items)
+          .filter((i) => PAGES[i.to])
+          .slice(0, 8)
+          .map((i) => ({ to: i.to, title: i.title, body: i.body, media: PAGES[i.to]?.media }))}
+        compact
+      />
     </Page>
   )
 }

@@ -3,124 +3,183 @@
  * the store badges. Both are fixed, both stay put on every page, and neither is
  * touched by the hero timeline.
  *
- * The nav is now a real router nav — the same component on the home sequence
- * and on every inner page, so there is one place where the site's shape is
- * described.
+ * The navigation is built to the Figma `Menu` frame (node 6203:71995), which
+ * specifies four states — default, hover, dropdown-item hover, and
+ * active/selected — and a dropdown card hanging under the bar. Every top-level
+ * item has one.
  */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { EXTERNAL, PAGES, STORE } from '../site/content'
+import { MENU, STORE } from '../site/content'
 
-/** The live UAE listings for Pura by PureHealth. */
 export const STORE_LINKS = STORE
 
-const MORE_LINKS = [
-  { label: 'FAQs', href: EXTERNAL.faqs },
-  { label: 'Longevity Clinic', href: EXTERNAL.longevity },
-  { label: 'PureHealth Group', href: EXTERNAL.group },
-]
-
 /**
- * Fixed to the top, with a blurred backdrop.
+ * One dropdown, and the button that opens it.
  *
- * Figma has `backdrop-blur` on this pill at a radius of 0 — the control is
- * there but never turned up, because a static frame has nothing to blur. On a
- * page where a phone and a dozen chips travel underneath it, it does, so this
- * is the one place the implementation deliberately exceeds the file. See
- * `.nav__pill` in styles.css for why the fill had to come down with it.
+ * Open on hover, because that is the state Figma draws, but ALSO on focus and
+ * on click — a hover-only menu is unusable by keyboard and unreachable by
+ * touch. Closing is delayed by a beat so the diagonal move from the label down
+ * to the card does not dismiss it halfway.
  */
-export function Nav() {
-  const [open, setOpen] = useState(false)
+function MenuGroup({ group, open, onOpen, onClose, onCloseNow }) {
+  const { label, to, items } = group
   const { pathname } = useLocation()
+  const within = items.some((i) => i.to === pathname) || (to && pathname === to)
 
-  // The sheet closes when the route changes — otherwise tapping a link leaves
-  // it covering the page it just navigated to.
-  useEffect(() => setOpen(false), [pathname])
-
-  // And on Escape, because a full-screen overlay that only closes by tapping
-  // its own button is a trap for anyone on a keyboard.
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e) => e.key === 'Escape' && setOpen(false)
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open])
+  const Label = to ? Link : 'button'
+  const labelProps = to ? { to } : { type: 'button' }
 
   return (
-    <header className={open ? 'nav is-open' : 'nav'} role="banner">
+    <li
+      className={`pnav__group${open ? ' is-open' : ''}${within ? ' is-within' : ''}`}
+      onPointerEnter={onOpen}
+      onPointerLeave={onClose}
+      onFocus={onOpen}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) onCloseNow()
+      }}
+    >
+      <Label
+        {...labelProps}
+        className="pnav__label"
+        aria-expanded={open}
+        aria-haspopup="true"
+        onClick={(e) => {
+          // On touch there is no hover: the first tap opens, and only a second
+          // one follows the link.
+          if (!open && window.matchMedia('(hover: none)').matches) {
+            e.preventDefault()
+            onOpen()
+          }
+        }}
+      >
+        {label}
+        <svg className="pnav__chev" viewBox="0 0 10 6" aria-hidden="true">
+          <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </Label>
+
+      <div className="pnav__card" role="menu" aria-label={label}>
+        {items.map((item) => (
+          <NavLink
+            key={item.to + item.title}
+            to={item.to}
+            role="menuitem"
+            end
+            className={({ isActive }) => (isActive ? 'pnav__item is-active' : 'pnav__item')}
+          >
+            <span className="pnav__item-t">{item.title}</span>
+            <small>{item.body}</small>
+          </NavLink>
+        ))}
+      </div>
+    </li>
+  )
+}
+
+export function Nav() {
+  const [open, setOpen] = useState(null) // which group's dropdown is showing
+  const [sheet, setSheet] = useState(false) // the phone menu
+  const { pathname } = useLocation()
+  const timer = useRef(null)
+
+  const closeNow = useCallback(() => {
+    clearTimeout(timer.current)
+    setOpen(null)
+  }, [])
+
+  const openGroup = useCallback((key) => {
+    clearTimeout(timer.current)
+    setOpen(key)
+  }, [])
+
+  // A beat of grace, so crossing the gap between the label and the card does
+  // not count as leaving.
+  const closeSoon = useCallback(() => {
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setOpen(null), 120)
+  }, [])
+
+  useEffect(() => () => clearTimeout(timer.current), [])
+
+  // Navigating anywhere puts both menus away.
+  useEffect(() => {
+    setSheet(false)
+    closeNow()
+  }, [pathname, closeNow])
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return
+      closeNow()
+      setSheet(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [closeNow])
+
+  return (
+    <header className={sheet ? 'nav is-open' : 'nav'} role="banner">
       <nav className="nav__pill" aria-label="Main">
         <Link className="nav__logo" to="/" aria-label="Pura home">
           <img src="/assets/pura-logo.svg" alt="" width="55" height="26" />
         </Link>
 
-        <ul className="nav__links">
-          {PAGES.map(({ path, label }) => (
-            <li key={path}>
-              <NavLink to={path} className={({ isActive }) => (isActive ? 'is-active' : undefined)}>
-                {label}
-              </NavLink>
-            </li>
+        <ul className="pnav">
+          {MENU.map((group) => (
+            <MenuGroup
+              key={group.key}
+              group={group}
+              open={open === group.key}
+              onOpen={() => openGroup(group.key)}
+              onClose={closeSoon}
+              onCloseNow={closeNow}
+            />
           ))}
-
-          {/* Secondary destinations that live on the real pura.ai rather than
-              in this prototype. They open there rather than being invented. */}
-          <li className="nav__more">
-            <button type="button" aria-haspopup="true">
-              More
-              <img src="/assets/caret-down.svg" alt="" width="7" height="5" aria-hidden="true" />
-            </button>
-            <ul className="nav__menu">
-              {MORE_LINKS.map(({ label, href }) => (
-                <li key={label}>
-                  <a href={href} target="_blank" rel="noreferrer">
-                    {label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </li>
         </ul>
 
         <a className="nav__cta" href={STORE.appStore} target="_blank" rel="noreferrer">
+          <img src="/assets/pura-sparkle.png" alt="" width="14" height="14" aria-hidden="true" />
           Get the app
         </a>
 
-        {/* Below 820px the link row is hidden — six labels do not fit a phone
-            and shrinking them to fit makes them untappable. Now that those
-            links go somewhere, the phone needs its own way in. */}
+        {/* Below 980px the bar cannot hold seven labels and their cards. */}
         <button
           type="button"
           className="nav__burger"
-          aria-expanded={open}
+          aria-expanded={sheet}
           aria-controls="nav-sheet"
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          onClick={() => setOpen((v) => !v)}
+          aria-label={sheet ? 'Close menu' : 'Open menu'}
+          onClick={() => setSheet((v) => !v)}
         >
           <span />
           <span />
         </button>
       </nav>
 
-      <div className="nav__sheet" id="nav-sheet" hidden={!open}>
-        <ul>
-          {PAGES.map(({ path, label }) => (
-            <li key={path}>
-              <NavLink to={path} className={({ isActive }) => (isActive ? 'is-active' : undefined)}>
-                {label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-        <ul className="nav__sheet-more">
-          {MORE_LINKS.map(({ label, href }) => (
-            <li key={label}>
-              <a href={href} target="_blank" rel="noreferrer">
-                {label}
-              </a>
-            </li>
-          ))}
-        </ul>
+      {/* The phone menu: the same tree, flattened into one scrollable sheet. */}
+      <div className="nav__sheet" id="nav-sheet" hidden={!sheet}>
+        {MENU.map((group) => (
+          <section key={group.key}>
+            <h2>{group.label}</h2>
+            <ul>
+              {group.items.map((item) => (
+                <li key={item.to + item.title}>
+                  <NavLink
+                    to={item.to}
+                    end
+                    className={({ isActive }) => (isActive ? 'is-active' : undefined)}
+                  >
+                    {item.title}
+                    <small>{item.body}</small>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
       </div>
     </header>
   )

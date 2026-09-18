@@ -212,18 +212,146 @@ export function PartnerWall({ title, items }) {
 
 /* ------------------------------------------------------------- CTA + end */
 
-export function CTABand({ title, body }) {
+export function CTABand({ title, body, link }) {
   return (
     <section className="cta" data-reveal>
       <h2 className="h2">{title}</h2>
       {body ? <p className="lede">{body}</p> : null}
       <div className="cta__row">
-        <a className="btn btn--dark" href={STORE.appStore} target="_blank" rel="noreferrer">
-          Download on the App Store
-        </a>
-        <a className="btn btn--ghost" href={STORE.googlePlay} target="_blank" rel="noreferrer">
-          Get it on Google Play
-        </a>
+        {link ? (
+          <a className="btn btn--dark" href={link.href}>
+            {link.label}
+          </a>
+        ) : (
+          <>
+            <a className="btn btn--dark" href={STORE.appStore} target="_blank" rel="noreferrer">
+              Download on the App Store
+            </a>
+            <a className="btn btn--ghost" href={STORE.googlePlay} target="_blank" rel="noreferrer">
+              Get it on Google Play
+            </a>
+          </>
+        )}
+      </div>
+    </section>
+  )
+}
+
+/* ----------------------------------------------------- the source's bands */
+
+/** "Three steps. That's the whole thing." — numbered, 01/02/03. */
+export function Steps({ items }) {
+  return (
+    <section className="band" data-reveal>
+      <div className="band__head">
+        <p className="eyebrow">How it works</p>
+        <h2 className="h2">
+          Three steps.
+          <br />
+          <em>That’s the whole thing.</em>
+        </h2>
+      </div>
+      <ol className="steps">
+        {items.map((s) => (
+          <li className="step" key={s.n}>
+            <span className="step__n">{s.n}</span>
+            <h3 className="h4">{s.h}</h3>
+            <p>{s.p}</p>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}
+
+/** "The proof behind it." — four claims on the dark band. */
+export function Proof({ items, footnote }) {
+  return (
+    <section className="band band--dark" data-reveal>
+      <div className="band__head">
+        <p className="eyebrow eyebrow--dark">Why trust it</p>
+        <h2 className="h2">
+          The proof <em>behind it.</em>
+        </h2>
+      </div>
+      <ul className="proof">
+        {items.map((i) => (
+          <li key={i.n}>
+            <span className="proof__n">{i.n}</span>
+            <span className="proof__l">{i.l}</span>
+          </li>
+        ))}
+      </ul>
+      {footnote ? <p className="proof__note">{footnote}</p> : null}
+    </section>
+  )
+}
+
+/** Plain prose sections, for the company pages. */
+export function TextBand({ items }) {
+  return (
+    <section className="band" data-reveal>
+      <div className="prose">
+        {items.map((s) => (
+          <div key={s.h}>
+            <h2 className="h3">{s.h}</h2>
+            <p>{s.p}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+/**
+ * Cards that link somewhere — the pillar index and the "more in…" band.
+ *
+ * Details rather than an accordion library: an FAQ is disclosure, the platform
+ * has disclosure, and it stays open when someone hits ctrl-F.
+ */
+export function RelatedCards({ eyebrow, title, items, compact }) {
+  return (
+    <section className="band" data-reveal>
+      <div className="band__head">
+        {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
+        <h2 className="h2">{title}</h2>
+      </div>
+      <ul className={compact ? 'rel rel--compact' : 'rel'}>
+        {items.map((i) => (
+          <li key={i.to}>
+            <Link className="rel__card" to={i.to}>
+              {i.media && !compact ? (
+                <figure className="rel__media">
+                  <img src={i.media} alt="" loading="lazy" />
+                </figure>
+              ) : null}
+              <h3 className="h4">{i.title}</h3>
+              <p>{i.body}</p>
+              <span className="rel__go">Learn more →</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+export function FAQs({ items }) {
+  return (
+    <section className="band" data-reveal>
+      <div className="band__head band__head--center">
+        <p className="eyebrow">Good questions</p>
+        <h2 className="h2">
+          Frequently <em>asked</em>
+        </h2>
+      </div>
+      <div className="faqs">
+        {items.map((f) => (
+          <details className="faq" key={f.q}>
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
       </div>
     </section>
   )
