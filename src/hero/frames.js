@@ -259,6 +259,25 @@ export const DEVICE_POSE = [
   // itself inside the frame at slide 16, so it is carried out on the same
   // 434px rise the rest of the scene takes rather than simply switched off.
   { c: [959.9, -858.5], s: ai(823), r: FACE },
+  // Slides 18-25: parked where slide 26 wants it, one page-rise below. The jump
+  // from off the top to down here happens while DEVICE_FADE holds it at zero,
+  // so nothing sweeps across the frame to get there.
+  ...Array(8).fill({ c: [959.7, 650.7 + 38], s: ai(663), r: FACE }),
+  // Slide 26: it comes back, face on, at the size the file's phone group is.
+  { c: [959.7, 650.7], s: ai(663), r: FACE },
+]
+
+/**
+ * Whether the device is drawn at all.
+ *
+ * It exists for the whole sequence — it is one WebGL object, not something that
+ * mounts and unmounts — so this is the gate. It goes to zero at slide 14, long
+ * after the device has left the top of the frame, which makes the big
+ * repositioning between 17 and 18 invisible. It comes back for slide 26.
+ */
+export const DEVICE_FADE = [
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
 ]
 
 /**
@@ -267,7 +286,12 @@ export const DEVICE_POSE = [
  * It crossfades across the turn to face-on, so the content changes while the
  * device is moving rather than snapping while it is sitting still.
  */
-export const SCREEN_MIX = [0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+export const SCREEN_MIX = [
+  0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  // Back to the home screen for slide 26, which is what the file's phone shows.
+  // The change happens while the device is invisible.
+  0, 0, 0, 0, 0, 0, 0, 0, 0,
+]
 
 /**
  * The hand.
@@ -807,12 +831,6 @@ export const GREETING_BODY = parked(25, { c: [387.5, 527 + RISE_26], o: 0, b: 6 
   { c: [387.5, 527], o: 1, b: 0 },
 ])
 
-/** The phone itself: 321x663 with a 297x638 screen at radius 40 inside it. */
-export const PHONE = parked(25, { c: [959.7, 650.7 + RISE_26], o: 0 }, [
-  { c: [959.7, 650.7], o: 1 },
-])
-export const PHONE_W = 321
-export const PHONE_ASPECT = 663 / 321
 
 export const DAY_MEDIA = parked(21, { c: [960, 1086], w: 154, h: 88, r: 150, o: 0 }, [
   { c: [960, 755], w: 154, h: 88, r: 150, o: 1 },

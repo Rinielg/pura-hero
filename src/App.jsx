@@ -11,8 +11,6 @@ import {
   CHIPS,
   HAND_ASPECT,
   MOBILE_CHIPS,
-  PHONE_ASPECT,
-  PHONE_W,
   PILL_LABELS,
   RULER_HOURS,
   scrollLength,
@@ -214,7 +212,7 @@ export default function App() {
     dayMedia: useRef(null),
     greeting: useRef(null),
     greetingBody: useRef(null),
-    phone: useRef(null),
+    deviceLayer: useRef(null),
     cue: useRef(null),
     cueLabel: useRef(null),
   }
@@ -277,7 +275,7 @@ export default function App() {
         </div>
       </div>
 
-      <div className="device-layer" aria-hidden="true">
+      <div className="device-layer" ref={refs.deviceLayer} aria-hidden="true">
         <Scene layout={layout} stageScale={scale} quality={QUALITY} />
       </div>
 
@@ -305,6 +303,14 @@ export default function App() {
             alt=""
             style={{ width: `${handW}px`, height: `${handW * HAND_ASPECT}px` }}
           />
+
+          {/* The day's photo panel. It lives BEHIND the device and behind the
+              wash, which is the order slide 26 has: panel, then Overlay, then
+              the phone. Above the wash it had nothing to blur, and it covered
+              the device outright. */}
+          <figure className="day-media" ref={refs.dayMedia}>
+            <img src="/assets/carousel/one-day.jpg" alt="A morning walk, tracked by Pura" />
+          </figure>
         </div>
       </div>
 
@@ -431,10 +437,6 @@ export default function App() {
             ))}
           </div>
           <span className="ruler-dot" ref={refs.timelineDot} aria-hidden="true" />
-          <figure className="day-media" ref={refs.dayMedia}>
-            <img src="/assets/carousel/one-day.jpg" alt="A morning walk, tracked by Pura" />
-          </figure>
-
           {/* Slide 26: the day resolves into the app. The copy on the left says
               what the phone in the middle is showing. */}
           <div className="greeting" ref={refs.greeting}>
@@ -445,17 +447,8 @@ export default function App() {
             Your Pura opens to one clear focus: a walk after lunch, a whole-grain swap and
             lights out by 11.
           </p>
-          <div
-            className="phone"
-            ref={refs.phone}
-            aria-hidden="true"
-            style={{
-              width: `${PHONE_W * layout.objScale}px`,
-              height: `${PHONE_W * PHONE_ASPECT * layout.objScale}px`,
-            }}
-          >
-            <img src="/assets/pura-screen.jpg" alt="" />
-          </div>
+          {/* The phone on slide 26 is the three.js device, brought back by
+              DEVICE_POSE — not a picture of one. See DEVICE_FADE. */}
 
           <div className="agent-bar" ref={refs.bar}>
             <img className="agent-bar__mark" src="/assets/pura-sparkle.png" alt="" />

@@ -255,6 +255,21 @@ the wrapper, so clicks never reached the button. Fixed with `.layer--interactive
 
 **If you add another control inside the sequence, it must live in that layer.**
 
+### The Overlay needs something behind it *(2026-09-18)*
+
+The blur was live and the white gradient was correct, but the day's photo panel
+sat in the interactive front layer at z-index 6 — *above* the wash at 3. A
+`backdrop-filter` can only blur what is painted beneath it, so the Overlay had
+nothing to work on, and the panel covered the device outright.
+
+The file orders slide 26 panel → Overlay → phone, so the panel moved down to the
+back layer (z 1). Stacking is now panel 1, device 2, wash 3, copy 6.
+
+One deliberate divergence: the file puts the phone *above* the Overlay, this
+build leaves it below. The wash dissolving the device's foot is the whole point
+of slides 7–9, and the device is a single WebGL object that cannot be in two
+layers at once.
+
 ### The wash is two layers doing different jobs *(2026-09-18)*
 
 The file used to travel both Overlay rectangles up and out with the first act.

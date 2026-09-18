@@ -22,6 +22,7 @@ import {
   COPY_HEAD,
   COPY_SUB,
   COPY_Y,
+  DEVICE_FADE,
   DEVICE_POSE,
   DAY_MEDIA,
   GREETING,
@@ -29,7 +30,6 @@ import {
   HAND_FADE,
   HAND_POSE,
   KICKER,
-  PHONE,
   PILLS,
   SCREEN_MIX,
   STEP_WEIGHTS,
@@ -264,6 +264,14 @@ export function useHeroTimeline({
         }
       }, STEP_WINDOWS.device)
 
+      // The gate on the device. It is one WebGL object that exists for the
+      // whole sequence, so it is faded rather than mounted and unmounted —
+      // which is also what makes its jump from off the top to slide 26's pose
+      // invisible.
+      if (refs.deviceLayer.current) {
+        track(refs.deviceLayer.current, (slide) => ({ opacity: at(DEVICE_FADE, slide) }))
+      }
+
       // ----------------------------------------------------------------- hand
       // Laid out at its largest authored width and scaled down from there, so
       // its size animates on the compositor instead of through layout — a width
@@ -457,17 +465,6 @@ export function useHeroTimeline({
         track(ref.current, (slide) => {
           const row = at(table, slide)
           return { ...project(row.c), opacity: row.o, filter: blur(row.b ?? 0) }
-        })
-      }
-
-      // The phone is an OBJECT, not copy — it takes the device projection so it
-      // sits at the same scale the hero's phone did.
-      if (refs.phone.current) {
-        gsap.set(refs.phone.current, { xPercent: -50, yPercent: -50 })
-        track(refs.phone.current, (slide) => {
-          const row = at(PHONE, slide)
-          const [x, y] = projectObject(row.c, L)
-          return { x, y, opacity: row.o }
         })
       }
 

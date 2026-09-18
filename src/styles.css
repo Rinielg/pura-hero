@@ -1260,25 +1260,6 @@ body {
   will-change: transform, opacity, filter;
 }
 
-/* 321x663 in the file, with a 297x638 screen at radius 40 inside it. The frame
-   is the group; the screen is inset by the difference. */
-.phone {
-  position: absolute;
-  left: 0;
-  top: 0;
-  display: grid;
-  place-items: center;
-  will-change: transform, opacity;
-}
-.phone img {
-  display: block;
-  width: 92.5%;   /* 297 / 321 */
-  height: 96.2%;  /* 638 / 663 */
-  object-fit: cover;
-  border-radius: 12.5%/6%;
-  box-shadow: 0 40px 80px rgba(14, 26, 43, 0.18);
-}
-
 /* --------------------------------------------------------- the document */
 
 #smooth-wrapper {
