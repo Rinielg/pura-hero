@@ -941,15 +941,18 @@ body {
 
 /* The pill keeps its own width; the header is only a column so the phone sheet
    can sit under it. */
-.nav__pill { width: min(986px, 100%); }
+.nav__pill { width: auto; max-width: 100%; }
 .nav__sheet { width: min(986px, 100%); }
 
 .nav__pill {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* No space-between: Figma packs logo, links and CTA left-to-right with one
+     48px gap and lets the bar hug them — 24 + 55 + 48 + 642 + 48 + 130 + 8 =
+     955. Spreading them across a fixed width strands the logo on the left. */
   gap: 48px;
-  width: min(986px, 100%);
+  width: auto;
+  max-width: 100%;
   height: 56px;
   padding: 8px 8px 8px 24px;
   border-radius: 60px;
@@ -995,10 +998,16 @@ body {
 .pnav__group { position: relative; }
 
 .pnav__label {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
   height: 40px;
+  /* Figma's shortest items — Care, Pura AI, More — all measure 80 against text
+     that needs 63, 76 and 65. That is a min-width on the component, and with it
+     the row adds up to the file's 642 exactly. */
+  min-width: 80px;
+  justify-content: center;
   margin: 0;
   padding: 0 16px;
   border: 0;
@@ -1013,32 +1022,49 @@ body {
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: background 0.16s ease, box-shadow 0.16s ease;
+  transition: background 0.16s ease;
 }
 
 /* Hover and open both take the white pill Figma draws. */
+/* A fill and a weight change, and nothing else: the Button instances in the
+   Figma bar carry no effects. */
 .pnav__group:hover > .pnav__label,
 .pnav__group.is-open > .pnav__label {
   background: #fff;
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(14, 26, 43, 0.06);
 }
 
 /* The route you are on, or a route inside this group. A dot rather than a
    filled pill, so it does not compete with the hover state. */
 .pnav__group.is-within > .pnav__label { font-weight: 600; }
+/* The file marks the current item with the white pill alone. The dot is an
+   addition, kept small and tucked into the same padding the chevron uses so it
+   costs the layout nothing. */
 .pnav__group.is-within > .pnav__label::after {
   content: '';
+  position: absolute;
+  right: 7px;
+  bottom: 9px;
   width: 4px;
   height: 4px;
-  margin-left: -2px;
   border-radius: 999px;
   background: var(--ink);
+  opacity: 0.45;
 }
 
 /* The chevron is drawn only in Figma's hover and active states, so it fades in
    rather than sitting there permanently. */
+/* Taken out of the flow on purpose.
+ *
+ * In the file the End Icon sits at x=77 inside a 71px container — it overflows
+ * the label and lives in the pill's right padding, which is why a Figma item is
+ * exactly text + 16px either side. Reserving a slot for it in the flow made
+ * every item ~18px wider and the whole bar 95px wider than the design. Letting
+ * it float there keeps Figma's widths AND avoids the labels shifting sideways
+ * the moment a chevron appears. */
 .pnav__chev {
+  position: absolute;
+  right: 4px;
   width: 10px;
   height: 6px;
   opacity: 0;
@@ -1048,7 +1074,7 @@ body {
 .pnav__group:hover .pnav__chev,
 .pnav__group.is-open .pnav__chev,
 .pnav__group.is-within .pnav__chev { opacity: 0.45; }
-.pnav__group.is-open .pnav__chev { transform: translateY(0) rotate(180deg); }
+.pnav__group.is-open .pnav__chev { transform: rotate(180deg); }
 
 /* The card: 294 wide, radius 16, 20px padding, 4px between items, and a soft
    32px shadow. It hangs from the label rather than from the bar, so a menu near
@@ -1116,7 +1142,6 @@ body {
 .pnav__item.is-active {
   background: #fff;
   border-color: rgba(14, 26, 43, 0.1);
-  box-shadow: 0 1px 3px rgba(14, 26, 43, 0.05);
 }
 
 /* The phone menu. Hidden above 980px, where the bar does the job. */
@@ -1129,6 +1154,8 @@ body {
   justify-content: center;
   gap: 6px;
   flex: none;
+  /* The Button instance is 130x40 in the file. */
+  min-width: 130px;
   height: 40px;
   padding: 10px 16px;
   border-radius: 999px;
