@@ -49,6 +49,59 @@ reads it in `useFrame`. Nothing else talks across the boundary.
 
 ---
 
+## 2b. The site around the sequence
+
+The home route is no longer the whole site. `react-router-dom` v7 carries six
+more pages behind the navigation, and the **same `Nav` component renders on all
+of them** — that is the point, and it is why the nav moved out of the hero's
+mental model and into a router nav.
+
+| Route | Source on pura.ai |
+|---|---|
+| `/my-health` | PureScore + Diabetes |
+| `/care` | Online Doctor + mental health consultations |
+| `/wellness` | Fitness & Wellness + Mental Wellness |
+| `/pura-ai` | the companion itself |
+| `/why-pura` | partners, the group, the case |
+| `/for-business` | Partner With Pura + Longevity Clinic |
+
+**pura.ai is a single page.** Its "AI PureScore", "Integrated Health" and
+"Wellness" menu items are anchors, not pages; the only real sub-pages are the
+Longevity Clinic subdomain, Privacy, Terms and FAQs. So the six routes are a
+*redistribution* of five sections into a new information architecture, not a
+copy of an existing site. That mapping is a judgement and it lives at the top of
+`src/site/content.js`, where it can be argued with.
+
+Copy is reproduced as written. Where a page needed connective tissue the live
+site does not have, the line is marked `NEW` in `content.js`.
+
+### Two kinds of route
+
+`/` owns the viewport, runs ScrollSmoother and paints its own fixed layer stack,
+so it sits **outside** `SiteLayout` and renders `Nav` itself. Everything else is
+an ordinary document inside `SiteLayout`, which adds the nav and a footer.
+Wrapping the home route in the document layout would give it a second scroller.
+
+`html, body, #root` are `min-height: 100%`, not `height: 100%` — the home route
+pins the viewport, but a document route has to be free to grow past it.
+
+### Things that bit
+
+- **The partner logos are pure white artwork on transparency**, drawn for
+  pura.ai's dark band. On a white card they are invisible. The band is dark here
+  too; recolouring someone's logo is not an option.
+- **The phone had no navigation.** `.nav__links` is `display: none` below 820px,
+  which was correct when there was one page. Six routes later it is a trap, so
+  there is a burger and a glass sheet.
+- **Installing a dependency poisons a running Vite dev server.** The optimizer
+  had pre-bundled React before `react-router-dom` existed, which surfaced as
+  "Invalid hook call … more than one copy of React". `rm -rf node_modules/.vite`
+  and restart. A browser tab that saw the error stays broken; open a new one.
+- **Vercel needs an SPA rewrite** or every route but `/` 404s on refresh. It is
+  in `vercel.json`.
+
+---
+
 ## 3. Where things live
 
 | File | What it owns |
@@ -60,6 +113,12 @@ reads it in `useFrame`. Nothing else talks across the boundary.
 | `src/Device.jsx` | The three.js phone: black finish, two screens, shader crossfade. |
 | `src/styles.css` | All of it. No CSS modules, no Tailwind. |
 | `tools/extract-frames.js` | Re-read the sequence from Figma. **Not** part of the build. |
+| `src/main.jsx` | The routes. |
+| `src/site/content.js` | Every word the inner pages say, and the IA mapping. |
+| `src/site/Sections.jsx` | The blocks pages are assembled from. |
+| `src/site/Pages.jsx` | The six pages, as arrangements of those blocks. |
+| `src/site/Layout.jsx` | Nav + page + footer, for document routes. |
+| `src/site.css` | The inner pages. Adds only; never touches the hero. |
 
 ### The layer stack (z-index)
 
@@ -189,6 +248,18 @@ should move by the same amount on a given step. The only legitimate exception is
 `DAY_MEDIA` on 22→23, whose centre shifts because the panel is *growing*, not
 travelling.
 
+### The nav blur was there and did nothing *(2026-09-18)*
+
+Reported as "the background blur is gone". The declaration had never been
+removed and `backdrop-filter` was computing fine — a `grayscale(1)` test proved
+the backdrop was being sampled. The problem was the **fill**: Figma paints this
+pill white at 70%, which is opaque enough that a 20px blur makes no visible
+difference. The effect existed only in the computed style.
+
+The veil came down to 52%, the blur up to 24px, and a 1px inset hairline was
+added, because a glass edge catches light and without it the pill reads as a
+hole. The look the brief asked for is a fill decision, not a filter decision.
+
 ### The hour ruler read the wrong time *(2026-09-18)*
 
 The ruler was built with seven labels (5:00–11:00) spread evenly across its
@@ -267,6 +338,11 @@ To watch a tween with the pane hidden, advance `gsap.globalTimeline` by hand.
 - **Mobile has no design.** Slides 17–23 are projected, not designed. The filter pill row
   is ~603px on a 375px screen even after scaling with `--ps` — the ends are cut off. It
   wants either a real mobile frame or a horizontally scrollable row. Flagged, not invented.
+- **The six inner pages have no design either.** They are built in the sequence's visual
+  language from pura.ai's content, which is the only finished material that exists. Every
+  block in `Sections.jsx` is meant to be replaced as real frames land.
+- **The For Business form is a mailto.** The live site runs a Formidable form; a prototype
+  should not collect anyone's details, so the CTA points at the address the form ends in.
 - **Slides 20–23 interactions** are still to come; Riniel is providing them.
 - **Promo cards 3 and 4** still share the line "Give your mind the same attention".
   The tags now differ (Mental Wellness / Care) and the file has it that way, so the

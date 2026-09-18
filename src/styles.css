@@ -45,7 +45,9 @@
 
 * { box-sizing: border-box; }
 
-html, body, #root { height: 100%; }
+/* min-height, not height: the home route pins the viewport, but every other
+   route is an ordinary document that has to be allowed to grow past it. */
+html, body, #root { min-height: 100%; }
 
 body {
   margin: 0;
@@ -917,10 +919,16 @@ body {
   right: 0;
   z-index: 10;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 0 20px;
   pointer-events: none;
 }
+
+/* The pill keeps its own width; the header is only a column so the phone sheet
+   can sit under it. */
+.nav__pill { width: min(783px, 100%); }
+.nav__sheet { width: min(783px, 100%); }
 
 .nav__pill {
   display: flex;
@@ -931,12 +939,23 @@ body {
   height: 56px;
   padding: 8px 8px 8px 24px;
   border-radius: 60px;
-  background: rgba(255, 255, 255, 0.7);
-  /* The blur the design has a control for but never turns up — a static frame
-     has nothing moving underneath it to blur. This page does. */
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.04);
+  /* Glass, and it has to READ as glass.
+   *
+   * Figma fills this pill white at 70% and leaves its BACKGROUND_BLUR control
+   * at radius 0 — a static frame has nothing moving underneath it to blur. This
+   * page does, so the blur is turned up. But at 70% white the veil is opaque
+   * enough that a 20px blur makes no visible difference: the pill reads as a
+   * flat white lozenge and the effect is there only in the computed style.
+   *
+   * So the veil comes down to 52% and the blur goes up, which is what actually
+   * produces the look the brief asked for. The hairline is what sells it — a
+   * glass edge catches light, and without it the pill reads as a hole. */
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.55),
+    0 16px 32px rgba(0, 0, 0, 0.06);
   pointer-events: auto;
 }
 
@@ -968,7 +987,83 @@ body {
 }
 
 .nav__links a:hover { opacity: 1; }
+
+/* The route you are on. The pill is glass, so the marker is weight and a dot
+   rather than a filled background, which would punch a hole in it. */
+.nav__links a.is-active {
+  opacity: 1;
+  font-weight: 600;
+}
+.nav__links a.is-active::after {
+  content: '';
+  width: 4px;
+  height: 4px;
+  margin-left: 2px;
+  border-radius: 999px;
+  background: var(--ink);
+}
+
+/* "More" opens on hover and on focus-within, so it is reachable by keyboard
+   without a click handler and without any state. */
+.nav__more { position: relative; }
+.nav__more > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--brand);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: -0.24px;
+  color: var(--ink);
+  opacity: 0.9;
+  cursor: pointer;
+}
+.nav__more > button:hover { opacity: 1; }
 .nav__more img { opacity: 0.5; width: 7px; height: 5px; }
+
+.nav__menu {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  display: grid;
+  gap: 2px;
+  min-width: 190px;
+  margin: 0;
+  padding: 8px;
+  list-style: none;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 18px 40px rgba(14, 26, 43, 0.1);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s;
+}
+.nav__more:hover .nav__menu,
+.nav__more:focus-within .nav__menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+.nav__menu a {
+  display: block;
+  padding: 9px 12px;
+  border-radius: 11px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+.nav__menu a:hover { background: rgba(14, 26, 43, 0.05); opacity: 1; }
+
+/* The phone menu. Hidden above 820px, where the link row does the job. */
+.nav__burger { display: none; }
+.nav__sheet { display: none; }
 
 .nav__cta {
   display: inline-flex;
@@ -1077,9 +1172,76 @@ body {
   .nav { top: 16px; padding: 0 16px; }
   .nav__pill { height: 52px; gap: 12px; padding: 8px 8px 8px 18px; }
   /* Six links do not fit a phone and shrinking them to fit makes them
-     unreadable and untappable. Logo and the one action that matters stay. */
+     unreadable and untappable. They move into a sheet behind the burger. */
   .nav__links { display: none; }
   .nav__cta { height: 36px; padding: 8px 14px; font-size: 13px; }
+
+  .nav__pill { justify-content: flex-start; }
+  .nav__logo { margin-right: auto; }
+
+  .nav__burger {
+    display: grid;
+    align-content: center;
+    gap: 5px;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    margin: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(14, 26, 43, 0.06);
+    cursor: pointer;
+  }
+  .nav__burger span {
+    display: block;
+    height: 1.5px;
+    border-radius: 2px;
+    background: var(--ink);
+    transition: transform 0.22s ease, opacity 0.22s ease;
+  }
+  /* Two bars, not three: they cross into an X, so the control says what it
+     does in both states without a second icon. */
+  .is-open .nav__burger span:first-child { transform: translateY(3.25px) rotate(45deg); }
+  .is-open .nav__burger span:last-child { transform: translateY(-3.25px) rotate(-45deg); }
+
+  .nav__sheet {
+    display: block;
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 26px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    box-shadow: 0 24px 48px rgba(14, 26, 43, 0.12);
+    pointer-events: auto;
+  }
+  .nav__sheet[hidden] { display: none; }
+
+  .nav__sheet ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+  }
+  .nav__sheet a {
+    display: block;
+    padding: 13px 14px;
+    border-radius: 16px;
+    font-family: var(--brand);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .nav__sheet a.is-active { background: rgba(14, 26, 43, 0.06); font-weight: 600; }
+  .nav__sheet-more {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(14, 26, 43, 0.08);
+  }
+  .nav__sheet-more a { font-size: 14px; opacity: 0.7; }
 
   .stores { right: 12px; bottom: 12px; gap: 6px; }
   .stores__badge { width: 104px; height: 35px; gap: 6px; padding: 0 6px; }
