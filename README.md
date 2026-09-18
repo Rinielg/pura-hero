@@ -14,7 +14,7 @@ Two sources feed it, and they are not interchangeable:
 
 | | Source |
 |---|---|
-| The sequence, and the navigation | Figma `Final Website` (slides 1–26) and the `Menu` frame, node `6203:71995` |
+| The sequence, and the navigation | Figma `Final Website` (slides 1–34) and the `Menu` frame, node `6203:71995` |
 | Everything the inner pages say | `https://pura-website-upload-1.vercel.app` — **not** pura.ai, which is the older single-page site |
 
 The sequence is still growing. New slides go into `src/hero/frames.js` as extra
@@ -43,6 +43,9 @@ npm run build    # static output in dist/ — deploy that folder anywhere
 | 9–10 | The whole first act starts travelling up and out — device, wash and gradient backdrop together. What it uncovers is plain white. The second act's copy softens away as "One place for your whole health." rises from below. |
 | 11–12 | The third act resolves: headline, paragraph, two pills, and a five-card promo row entering from the right. |
 | 13–15 | Nothing moves but the card row's x. The last stretch of the page is a **horizontal** scroll driven by the vertical one. |
+| 16–19 | The first three acts leave together. "Help for every part of your health.", the filter pills, then the arrow-driven feature carousel. |
+| 20–25 | "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel growing from a 154×88 pill. The device returns at 25, rising from below the frame — and from here it draws **in front of** the wash rather than under it. |
+| 26–34 | **The day.** Five scenes joined by four transitions: a settled slide changes the photograph, the copy, the phone's screen and the hour on the ruler; the transition between two of them changes only the photograph, which splits the panel in half and reveals the next scene from the bottom. The phone stays put throughout and follows the cursor. |
 
 `Slide overview` in Figma is an assembly board rather than a moment in the
 sequence, and is deliberately ignored — it does not show the whole site.
@@ -169,6 +172,19 @@ The result lands within 1.5% of the reference on both axes.
 - **The navigation blur exceeds the file.** Figma has `backdrop-blur` on the nav
   pill at radius 0. A static frame has nothing moving underneath it to blur;
   this page does.
+- **The cursor tilt is not in the file either.** A static frame cannot express
+  it. 18° of yaw and 12° of pitch, gated to slides 26–34 by `DEVICE_TILT`, and
+  off entirely under `prefers-reduced-motion` or on a touch screen.
+- **Scene D's pillar row is dropped below 980px**, and the day's panel is centred
+  rather than parked on the right. Both are derivations — there is no mobile
+  frame for slides 26–34 any more than for the rest of the sequence.
+- **All six phone screens load up front** (~580KB), whether or not the visitor
+  reaches the day. They should be deferred until the carousel act.
+- **Never put `opacity` in a `will-change` above a `backdrop-filter`.** It makes
+  that element a backdrop root and the blur inside it silently stops sampling
+  anything — no error, and the computed style still looks correct. It cost the
+  Overlay its entire progressive blur until 2026-09-18. There is an audit for it
+  in `CONTEXT.md` §8; run it after any change that touches blur.
 - **Slide 26 on a phone is hand-placed.** The copy sits beside the device in the
   file and above it here, with the device and panel dropped to make room. The
   numbers fit; they are not from a frame.

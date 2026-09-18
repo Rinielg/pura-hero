@@ -48,6 +48,14 @@ There are four projections, and the distinction between them is the whole of `la
 `DEVICE_REF_H = 630`), `rx/ry/rz` (degrees), `screenMix`. GSAP writes it; `Device.jsx`
 reads it in `useFrame`. Nothing else talks across the boundary.
 
+**Two writers, no collision.** `tiltX`/`tiltY` are the exception: the render loop owns
+them, because they answer to the pointer rather than to scroll position. They are kept
+apart from `rx`/`ry` rather than folded into them, so scroll and pointer can each write a
+rotation without either having to know the other exists — the loop simply adds them on
+apply. `tilt` (0–1) is the gate between the two, and that one *is* GSAP's, from
+`DEVICE_TILT`. The rule generalises: **anything with two sources gets a channel each and
+a gate, never a shared slot.**
+
 ---
 
 ## 2b. The site around the sequence
@@ -220,8 +228,47 @@ Note the ordering: **6 sits above 5 on purpose.** See §5.
 | 17 | Everything from the first three acts leaves together (a 434px rise). "Help for every part of your health." and the filter pills arrive. |
 | 18–19 | The feature carousel. **Arrow-driven** — see §6. |
 | 20–25 | The carousel holds the centre and rises. "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel that *grows* — 154×88, 764×437, 1058×605, 1152×659. |
-| 26 | The day resolves into the app. The panel slides right and stands up at 920×778, the **three.js device returns** at `ai(663)` showing the home screen, and the morning greeting arrives on the left. |
+| 25 | The device comes back, rising from below the frame at (959.7, 1266.7), and **changes sides**: from here it draws in front of the Overlay rather than under it. |
+| 26 | The day resolves into the app. The panel slides right and stands up at 920×778, the device lands at `ai(663)` showing the Home screen, the morning greeting arrives flush left at x=148, and the phone starts **watching the cursor**. |
+| 27–34 | **The day**: five scenes joined by four transitions. Even slides are settled, odd slides are the reveal. See §4b. |
 | ~~20–23~~ | ~~The carousel holds the centre and rises, leaving left only at 23. "See how Pura fits into one ordinary day.", the time ruler, and the day's media panel, which *grows* rather than fades. |
+
+### 4b. The day (slides 26–34)
+
+Nine slides, one structure, and it is worth stating because every table from 26 on follows
+it:
+
+| | Settled (26, 28, 30, 32, 34) | Transition (27, 29, 31, 33) |
+|---|---|---|
+| Photograph | one scene fills the panel | two scenes, half the panel each |
+| Headline + paragraph | changes | **unchanged** |
+| Phone's screen | changes | **unchanged** |
+| Ruler | moves one hour | **unchanged** |
+| Phone itself | still | still |
+
+So a transition changes exactly one thing. That is the whole reason it reads as a reveal
+rather than as a cut, and it is why `SCREEN_SEQ` and the copy tables both hold their value
+across the odd slides instead of stepping every slide.
+
+**The panel** is a constant after 26: 920×778 at (960, 262), radius 60. Five windows are
+stacked in it, one per scene, all mounted at once.
+
+**The reveal is a shutter, not a crossfade.** Each window is a clipping box over an image
+that **never moves**. The outgoing window's top stays at the panel's top and its height
+runs 778 → 381 → 0; the incoming window's bottom stays at the panel's bottom and its
+height runs 0 → 381 → 778. They meet at half the panel each, 16px apart, which is the
+frame the file draws.
+
+The image is held still by `ih` on the row: where it is set the image keeps its full 778px
+height and the track offsets it by `PANEL_TOP − windowTop`. Work that through for any of
+the five phases and the image's top comes out at 262 every time — which is what makes the
+tween between any two of them hold it perfectly still. Let the image fill its window
+instead and it rescales as the window shrinks, which reads as a squash.
+
+`ih` is absent on scene A's early rows, and that is deliberate: while the panel is still
+growing out of a 154×88 pill the image *should* fill it. The two definitions agree exactly
+on slide 26, where the window is the panel — which is what makes the hand-off from filling
+to shuttering invisible.
 
 ### Slide numbering, and the off-by-one that will catch you
 
@@ -457,6 +504,155 @@ The veil came down to 52%, the blur up to 24px, and a 1px inset hairline was
 added, because a glass edge catches light and without it the pill reads as a
 hole. The look the brief asked for is a fill decision, not a filter decision.
 
+### The phone's screen became a list, not a mix *(2026-09-18)*
+
+The day needs six screens. The crossfade was built for two: `emissiveMap` was
+screen A, a `uScreenB` uniform was screen B, and `screenMix` ran 0 to 1 between
+them.
+
+It is now a tweened **index** into `SCREEN_URLS`, and the shader crossfades
+between `floor` and `ceil` of it. Both screens moved into uniforms
+(`uScreenA`/`uScreenB`) — `emissiveMap` is still assigned, but only to define
+`USE_EMISSIVEMAP` and give the shader its `vEmissiveMapUv`. Swapping
+`emissiveMap` per frame instead would mean a material recompile per frame;
+uniforms cost nothing.
+
+**The list's ORDER is load-bearing**, and this is the part that will bite
+whoever adds the next screen. Because the index is tweened, two consecutive
+slides more than one step apart drag the crossfade through whatever sits between
+them, and a screen that belongs to neither slide flashes up mid-scroll. The list
+runs *backwards* through the day for exactly that reason:
+
+```
+0 ui-e  1 ui-d  2 ui-c  3 ui-b  4 Home  5 Pura AI
+```
+
+which makes the whole sequence 4 → 5 → 4 → 3 → 2 → 1 → 0. Every step is ±1.
+Order it the obvious way — Home, AI, then the day — and slide 27 → 28 runs 0 → 2
+straight through Pura AI.
+
+### The device changes sides at slide 25 *(2026-09-18)*
+
+Asked for: "the device on slide 26 should sit above the overlay". It is what the
+file has had since slide 25, and the build had it backwards on every slide —
+`.device-layer` is z 2 and the wash is z 3.
+
+Up to slide 24 that is *correct* and deliberate: the wash dissolving the foot of
+the phone is what makes the resting state read as settled rather than cropped.
+From the day's first scene the phone is the subject, so it comes forward and the
+wash blurs only the photograph behind it.
+
+This cannot be a track. **A z-index has to be a whole number**, and a scrubbed
+tween would spend the whole step handing the browser fractions to throw away. It
+is a `tl.set` on a slide boundary instead — placed one slide *early*, at 24,
+where `DEVICE_FADE` still holds the device at zero and there is nothing on screen
+to see jump. Scrubbing back up restores the old value on its own; that is what
+`set` does on a timeline.
+
+### The phone watches the cursor on slide 26 *(2026-09-18)*
+
+Asked for: on 26 the device should tilt and rotate slightly with the mouse, as
+if looking at it.
+
+Slide 26 is the one place this works, and the pose is why. `DEVICE_POSE[25]` is
+`FACE` — `[0, 0, 0]`, dead front-on, at rest at the end of the sequence. Every
+other slide has the phone mid-arc on a scripted rotation, and a second hand on
+that rotation reads as a bug, not as life. So the effect is gated by a table
+(`DEVICE_TILT`, zero everywhere, 1 on 26) rather than by a page-level flag, and
+because the timeline tweens that gate like any other value, the tilt **eases in
+across the step into 26** instead of switching on.
+
+The geometry, so nobody has to re-derive the signs: the screen faces **+Z**.
+Rotating +X swings that normal **down**; rotating +Y swings it **right**. So a
+cursor below centre is a positive pitch and a cursor right of centre a positive
+yaw — no sign flips anywhere. The angle is measured from the **device's** centre
+on screen, not the viewport's, which is the angle it would really have to turn
+through; that centre falls out of the conversion the position already uses, one
+frame pixel being `stageScale` CSS pixels.
+
+Numbers: 12° of yaw and 8° of pitch at the edge of the viewport. Yaw runs
+further because a screen turning left and right reads as *looking*, while the
+same angle up and down reads as the phone falling over. Easing is
+`MathUtils.damp` at λ=5 — framerate-independent, and about a third of a second
+to close the gap, which is the line between "it is watching me" and "it is
+attached to my mouse".
+
+Nothing is attached at all under `prefers-reduced-motion`, or on anything that
+is not `(hover: hover) and (pointer: fine)` — a touch screen has no cursor to
+look at. A pointer that leaves the window sets the target to `null` rather than
+to centre, which is a distinct state: it means *unwind to face-on*, not *freeze
+at whatever angle you were at when you crossed the edge*.
+
+### The Overlay's blur had never once rendered *(2026-09-18)*
+
+Reported as "the Overlay background blur effect is not showing". Everything
+measurable said it was fine: the band was flush to the bottom on all 26 slides,
+all four `.wash__blur` bands computed their `blur(4/12/30/60px)`, opacity 1,
+nothing above them in the stacking order. Painting the band red proved it was
+compositing over the photo. The blur simply did nothing — on **every** browser
+and **every** breakpoint, since the day it was written.
+
+The cause is a rule with no error, no warning and no visible symptom in DevTools:
+
+> An element becomes a **backdrop root** if it has `opacity` below 1, a `filter`,
+> a `mask`, a `clip-path`, `isolation: isolate`, `contain: paint`, **or a
+> `will-change` naming any of those**. A descendant's `backdrop-filter` samples
+> only what is painted *inside that root* — nothing behind it.
+
+`.wash` carried `will-change: transform, opacity`. The `opacity` in that list
+made it a backdrop root, and the wash paints nothing of its own, so the four
+bands inside were blurring an empty backdrop. The white tint gradient was doing
+all the visible work, which is exactly why it read as "there but not blurring".
+
+The fix is a split of responsibilities:
+
+- **`.wash` only ever moves.** `will-change: transform`, and its opacity is
+  never animated — it stays at a hard `1`.
+- **The fade moved onto its children.** Opacity on the *same* element as a
+  `backdrop-filter` composites the already-filtered backdrop correctly, so each
+  band dims exactly as before while keeping its blur. `washTrack` now runs two
+  tracks: `{ y }` on the wash, `{ opacity }` on `Array.from(el.children)`.
+
+Two things worth keeping from the hunt:
+
+- **A scrubbed GSAP tween settles at `0.9996`, not `1`.** So "it is at rest, so
+  opacity is 1, so it is not a backdrop root" is false. If a `backdrop-filter`
+  has to survive, the ancestor's opacity must never be animated at all.
+- **The nearest backdrop root is the only one that matters, and being one is not
+  automatically a bug.** `.card` has `isolation: isolate` and therefore *is* a
+  root — but its subtree holds `.card__photo`, which is precisely what
+  `.card__foot` wants to blur. A first audit that walked every ancestor flagged
+  the card captions as broken; an A/B against the live page showed they were
+  fine. **Stop at the nearest root, then ask whether that root contains the
+  thing you meant to blur.**
+
+The audit that answers this, worth pasting into the console after any change
+that touches blur, is in §8.
+
+### Ten pages printed their hero twice *(2026-09-18)*
+
+Found during the 375px pass. `SitePage` fell back to
+`<Split eyebrow={data.kicker} title={data.h1} body={data.lead} media={data.media} />`
+for any page with no `whatIs` — which re-stated the page's own kicker, heading
+and lead directly under the hero that had just said them. Ten of the
+twenty-three pages did this. Obvious at any width; on a phone the two copies
+*are* the first screen and a half, because they stack.
+
+The picture was worth keeping and the second heading was not, so those pages now
+get `MediaBand` — the same tinted frame as `.split__media`, image only.
+
+### The store badges sat on top of every inner page *(2026-09-18)*
+
+`.stores` is `position: fixed` bottom-right. On the hero that is correct: one
+viewport, nothing scrolls under it, and the badges are part of the composition.
+On a document page at 375px they permanently covered a 220×35 strip of whatever
+happened to be at the foot of the viewport — the end of the CTA band, then the
+footer's fine print.
+
+Every inner page already ends with both store links in its CTA, so the fixed
+pair was redundant there rather than useful. `.site .stores { display: none }`
+inside the 980px query, scoped to `.site` so the hero keeps them.
+
 ### The hour ruler read the wrong time *(2026-09-18)*
 
 The ruler was built with seven labels (5:00–11:00) spread evenly across its
@@ -546,9 +742,45 @@ anything load-bearing use `st.scroll` and wait.
 | Bar never reflows | hover all seven groups, measure the pill each time | 954 throughout |
 | One active group | walk all 16 site routes, count `.pnav__group.is-within` | exactly 1 (0 on 404) |
 | Card placement | open each dropdown, measure against the bar | gap 4, centre offset 0, width 294 |
-| Pinned wash | walk all 26 slides, read `.wash`[1]'s y | 858 on every one |
+| Pinned wash | walk all 34 slides, read `.wash`[1]'s y | 858 on every one |
+| The day's hours | jump to 26/28/30/32/34, read the label under the marker | 7:00 / 9:00 / 12:00 / 14:00 / 16:00 |
+| The shutter holds the image still | tween any transition, watch a fixed point in the photograph | it does not move |
+| No screen flashes | scrub 26→34 slowly | only adjacent screens ever cross |
 | Blur survives minification | grep the built CSS | 13 prefixed **and** 13 standard |
+| **No blur is silently dead** | run the backdrop-root audit below | every row `ok` |
+| Inner pages at 375 | walk all 23 routes | 0 overflow, 0 duplicated heroes, 0 fixed badges |
 | Entry motion | diff each table's per-step y delta against the page rise | equal, except `DAY_MEDIA` 22→23 |
+
+**The backdrop-root audit.** A `backdrop-filter` that does nothing looks
+identical in DevTools to one that works, so this has to be run, not eyeballed.
+For each filtering element it walks up to the **nearest** backdrop root and
+reports whether that root actually contains anything to sample:
+
+```js
+const rootReasons = (el) => {
+  const cs = getComputedStyle(el), wc = cs.willChange || '', r = []
+  if (parseFloat(cs.opacity) < 1) r.push('opacity=' + cs.opacity)
+  if (cs.filter !== 'none') r.push('filter')
+  if (cs.maskImage && cs.maskImage !== 'none') r.push('mask')
+  if (cs.clipPath && cs.clipPath !== 'none') r.push('clip-path')
+  if (cs.isolation === 'isolate') r.push('isolation')
+  if (/opacity|filter|mask|backdrop/.test(wc)) r.push('will-change:' + wc)
+  if (/paint|content|strict/.test(cs.contain || '')) r.push('contain')
+  return r
+}
+;[...document.querySelectorAll('*')]
+  .filter((el) => (getComputedStyle(el).backdropFilter || 'none') !== 'none')
+  .map((el) => {
+    let n = el.parentElement, root = null, why = null
+    while (n) { const r = rootReasons(n); if (r.length) { root = n; why = r; break } n = n.parentElement }
+    const inside = root ? root.querySelectorAll('*').length - el.querySelectorAll('*').length - 1 : Infinity
+    return {
+      el: el.className,
+      root: root ? root.className + ' [' + why.join(',') + ']' : 'document',
+      verdict: inside <= 0 ? 'DEAD — nothing in the root to blur' : 'ok',
+    }
+  })
+```
 
 ---
 
@@ -566,8 +798,19 @@ anything load-bearing use `st.scroll` and wait.
 - **Slide 26's mobile layout is hand-placed.** The lifts (140/150 frame px) and the
   device's 0.7 shrink are numbers that fit, not numbers from a file. A real mobile
   frame would replace them.
-- **Slides 24–26 are built but have no interactions.** 26 is currently the end of
-  the sequence.
+- **Slides 24–34 have no interactions apart from the cursor tilt.** 34 is currently
+  the end of the sequence.
+- **Scene D's pillar row is hidden below 980px.** Wrapped into two rows it is ~90px
+  tall and the band between the ruler and the panel is already carrying a three-line
+  headline and a three-line paragraph, so it landed on the photograph. Dropped rather
+  than overlapped; the paragraph above it already says the same four things. A real
+  mobile frame would decide this properly.
+- **The day's panel is centred on a phone, not parked right.** At its authored x it
+  hung 149px off the edge with the subject of every photograph in the part you could
+  not see. Centred it bleeds ±55px symmetrically, which reads as full-bleed.
+- **Six screen textures load up front**, ~580KB, whether or not the visitor ever
+  reaches slide 26. Deferring the four day screens until the carousel act would be
+  the obvious fix and has not been done.
 - **Promo cards 3 and 4** still share the line "Give your mind the same attention".
   The tags now differ (Mental Wellness / Care) and the file has it that way, so the
   build follows it — but the body copy looks like placeholder waiting to be written.

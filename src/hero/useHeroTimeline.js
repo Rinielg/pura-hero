@@ -25,14 +25,15 @@ import {
   COPY_Y,
   DEVICE_FADE,
   DEVICE_POSE,
-  DAY_MEDIA,
-  GREETING,
-  GREETING_BODY,
+  DEVICE_TILT,
+  DAY_PILLS,
+  DAY_SCENES,
+  DEVICE_FRONT_FROM,
   HAND_FADE,
   HAND_POSE,
   KICKER,
   PILLS,
-  SCREEN_MIX,
+  SCREEN_SEQ,
   STEP_WEIGHTS,
   STEP_WINDOWS,
   TIMELINE,
@@ -53,6 +54,17 @@ gsap.registerPlugin(ScrollTrigger, ScrollSmoother, useGSAP)
 
 /** Eight slides are seven moves between them. */
 const STEPS = STEP_WEIGHTS.length
+
+/**
+ * The device layer's two z-indexes. Both are in `styles.css`'s stack: 2 is
+ * between the chips and the wash, 4 is above the wash and below the one
+ * interactive layer.
+ */
+const Z_DEVICE_BEHIND_WASH = 2
+const Z_DEVICE_OVER_WASH = 4
+
+/** The panel's top edge in frame pixels — the line every scene image hangs from. */
+const PANEL_TOP = 262
 
 /**
  * Easing: none, everywhere.
@@ -190,6 +202,11 @@ export function useHeroTimeline({
         },
       })
 
+      // A handle on the timeline itself, so a slide can be rendered synchronously
+      // in the console — `__tl.progress(n / 33)` — without waiting on the
+      // scrub. Scrub lag and a genuinely wrong table look identical otherwise.
+      if (import.meta.env.DEV) window.__tl = tl
+
       /**
        * Lay one element's whole journey onto the timeline.
        *
@@ -268,7 +285,13 @@ export function useHeroTimeline({
           rx: scaled.r[0],
           ry: scaled.r[1],
           rz: scaled.r[2],
-          screenMix: at(SCREEN_MIX, slide),
+          // An INDEX into SCREEN_URLS, tweened. The renderer crossfades between
+          // the two textures either side of it, so the list's order matters —
+          // see the note on SCREEN_SEQ.
+          screen: at(SCREEN_SEQ, slide),
+          // The gate on the pointer tilt, not the tilt itself: the render loop
+          // writes `tiltX`/`tiltY`, and this says how much of them counts.
+          tilt: at(DEVICE_TILT, slide),
         }
       }, STEP_WINDOWS.device)
 
@@ -278,6 +301,27 @@ export function useHeroTimeline({
       // invisible.
       if (refs.deviceLayer.current) {
         track(refs.deviceLayer.current, (slide) => ({ opacity: at(DEVICE_FADE, slide) }))
+
+        // ...and the one moment it changes sides.
+        //
+        // Up to here the wash is over the phone on purpose: it dissolves its
+        // foot, which is what makes the resting state read as settled rather
+        // than cropped. From the day's first scene the phone is the subject, so
+        // it comes forward and the wash blurs only the photograph behind it.
+        //
+        // This cannot be a track. A z-index has to be a whole number, and a
+        // scrubbed tween would spend the whole step handing the browser
+        // fractions to throw away. It is a `set` on a slide boundary instead —
+        // placed one slide EARLY, where DEVICE_FADE still holds the device at
+        // zero, so there is nothing on screen to see jump. Scrubbing back up
+        // restores the old value on its own; that is what `set` does on a
+        // timeline.
+        gsap.set(refs.deviceLayer.current, { zIndex: Z_DEVICE_BEHIND_WASH })
+        tl.set(
+          refs.deviceLayer.current,
+          { zIndex: Z_DEVICE_OVER_WASH },
+          bounds[DEVICE_FRONT_FROM - 2]
+        )
       }
 
       // ----------------------------------------------------------------- hand
@@ -385,17 +429,35 @@ export function useHeroTimeline({
         })
       }
 
-      // The day's media panel grows rather than fades, and its radius grows
-      // with it so the shape stays a stadium instead of becoming a rounded box.
-      if (refs.dayMedia.current) {
-        gsap.set(refs.dayMedia.current, { xPercent: -50, yPercent: -50 })
-        track(refs.dayMedia.current, (slide) => {
-          const row = at(DAY_MEDIA, slide)
-          // On a phone the panel drops with the device on the last slide, for
-          // the same reason: the copy that sits beside them on desktop has to
-          // sit above them here, and something has to make the room.
+      // ------------------------------------------------------------- the day
+      // Five photo panels stacked in one box.
+      //
+      // Scene A's grows rather than fades, out of a 154x88 pill, and its radius
+      // grows with it so the shape stays a stadium instead of becoming a
+      // rounded box. From slide 26 all five are shutters over the same fixed
+      // box, and the difference is `ih`: where a row carries it the image keeps
+      // its full panel height and is offset by however far the window's top has
+      // drifted from the panel's — which is exactly the offset that holds the
+      // image still while the window moves. Where `ih` is absent the image
+      // fills its window, which is what scene A needs while it is still a pill.
+      //
+      // The two agree on slide 26, where the window IS the panel. That is what
+      // makes the hand-off from filling to shuttering invisible.
+      DAY_SCENES.forEach((scene, i) => {
+        const el = refs.scenes.current[i]
+        if (!el) return
+        gsap.set(el, { xPercent: -50, yPercent: -50 })
+        track(el, (slide) => {
+          const row = at(scene.window, slide)
+          // On a phone the panel is CENTRED rather than parked on the right of
+          // the frame: there is no "right of the phone" at 375px, and left at
+          // its authored x it hung 149px off the edge with the subject of every
+          // photograph in the part you could not see. It also drops with the
+          // device, for the same reason the copy rises — something has to make
+          // the room. Both only from 25, where the panel stops being the
+          // carousel's and becomes the day's.
           const tight = L.name === 'mobile' && slide >= 25
-          const [x, y] = projectChip(tight ? [row.c[0], row.c[1] + 150] : row.c, L)
+          const [x, y] = projectChip(tight ? [960, row.c[1] + 150] : row.c, L)
           return {
             x,
             y,
@@ -405,7 +467,19 @@ export function useHeroTimeline({
             opacity: row.o,
           }
         })
-      }
+
+        // The image inside. Measured from the UNSHIFTED row, so the mobile drop
+        // above moves the window and its image together and cancels out here.
+        const img = el.querySelector('img')
+        track(img, (slide) => {
+          const row = at(scene.window, slide)
+          const top = row.c[1] - row.h / 2
+          return {
+            height: projectLength(row.ih ?? row.h, L),
+            y: projectLength(row.ih ? PANEL_TOP - top : 0, L),
+          }
+        })
+      })
 
       // ----------------------------------------------------------- white wash
       // It travels now. Up to slide 9 it is page furniture pinned to the bottom
@@ -430,11 +504,19 @@ export function useHeroTimeline({
       const washTrack = (el, table) => {
         if (!el) return
         gsap.set(el, { height: washH })
+
+        // The band MOVES. It never fades — see the note on `.wash` in
+        // styles.css: an opacity below 1 on this element would make it a
+        // backdrop root and switch off the progressive blur inside it.
         track(el, (slide) => {
-          const row = at(table, slide)
-          const [, y] = projectBottom([960, row.y], L)
-          return { y, opacity: row.o }
+          const [, y] = projectBottom([960, at(table, slide).y], L)
+          return { y }
         })
+
+        // The fade goes on the children instead. On a `backdrop-filter`
+        // element, its OWN opacity composites the already-filtered backdrop,
+        // so each band dims exactly as it used to while keeping its blur.
+        track(Array.from(el.children), (slide) => ({ opacity: at(table, slide).o }))
       }
       washTrack(refs.washA.current, WASH_A)
       washTrack(refs.washB.current, WASH_B)
@@ -492,21 +574,39 @@ export function useHeroTimeline({
       // leaves between it and its paragraph is not enough and the paragraph has
       // to drop a little further. Both land in the band between the ruler and
       // the top of the shrunken device.
-      for (const [ref, table, lift] of [
-        [refs.greeting, GREETING, 140],
-        [refs.greetingBody, GREETING_BODY, 150],
+      // The five pairs of copy, and scene D's pillar row.
+      //
+      // The mobile lift is per KIND, not per scene. They do not share one
+      // offset: a headline is two or three lines and 30px tall on a phone, so
+      // the 110 frame pixels the file leaves between it and its paragraph is
+      // not enough and the paragraph has to drop a little further. All of them
+      // land in the band between the ruler and the top of the shrunken device.
+      for (const [list, key, lift] of [
+        [refs.heads, 'headAt', 140],
+        [refs.bodies, 'bodyAt', 150],
       ]) {
-        if (!ref.current) continue
-        gsap.set(ref.current, { xPercent: -50, yPercent: -50 })
-        track(ref.current, (slide) => {
-          const row = at(table, slide)
-          // The file sets this copy to the LEFT of the phone, at x=391.5 in a
-          // 1920 frame. A phone has no room beside the device, so on mobile it
-          // is centred over it instead and the widths come down in CSS —
-          // otherwise a 487px block lands at x=-141 of a 375px screen. The same
-          // call the chip cloud and the headings already make.
-          // Centred, and lifted into the band the shrunken device leaves free.
-          const c = L.name === 'mobile' ? [960, row.c[1] - lift] : row.c
+        DAY_SCENES.forEach((scene, i) => {
+          const el = list.current[i]
+          if (!el) return
+          gsap.set(el, { xPercent: -50, yPercent: -50 })
+          track(el, (slide) => {
+            const row = at(scene[key], slide)
+            // The file sets this copy flush LEFT of the phone, at x=148 in a
+            // 1920 frame. A phone has no room beside the device, so on mobile
+            // it is centred over it instead and the widths come down in CSS —
+            // otherwise a 487px block lands at x=-141 of a 375px screen. The
+            // same call the chip cloud and the headings already make.
+            const c = L.name === 'mobile' ? [960, row.c[1] - lift] : row.c
+            return { ...project(c), opacity: row.o, filter: blur(row.b ?? 0) }
+          })
+        })
+      }
+
+      if (refs.dayPills.current) {
+        gsap.set(refs.dayPills.current, { xPercent: -50, yPercent: -50 })
+        track(refs.dayPills.current, (slide) => {
+          const row = at(DAY_PILLS, slide)
+          const c = L.name === 'mobile' ? [960, row.c[1] - 150] : row.c
           return { ...project(c), opacity: row.o, filter: blur(row.b ?? 0) }
         })
       }

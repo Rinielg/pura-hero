@@ -15,6 +15,7 @@ import { MENU, PAGES, PROOF_FOOTNOTE } from './content'
 import {
   CTABand,
   FAQs,
+  MediaBand,
   Page,
   PageHero,
   Proof,
@@ -54,9 +55,9 @@ export function SitePage() {
           mediaAlt=""
           flip
         />
-      ) : data.media ? (
-        <Split eyebrow={data.kicker} title={data.h1} body={data.lead} media={data.media} flip />
-      ) : null}
+      ) : (
+        <MediaBand media={data.media} />
+      )}
 
       {data.children?.length ? (
         <RelatedCards

@@ -10,7 +10,26 @@ import { deviceRefHeight } from './hero/useHeroTimeline'
 
 const MODEL_URL = '/models/iphone-18-pro.glb'
 /** The two things the screen shows, crossfaded across the turn to face-on. */
-const SCREEN_URLS = ['/assets/pura-screen.jpg', '/assets/pura-ai-screen.jpg']
+/**
+ * Every screen the phone shows, in the order `SCREEN_SEQ` walks them.
+ *
+ * Backwards through the day on purpose. The sequence is a tweened INDEX into
+ * this list and the shader crossfades between the two entries either side of
+ * it, so consecutive slides must be at most one step apart or the fade drags
+ * through a screen that belongs to neither. Ordered like this the whole
+ * sequence reads 4 -> 5 -> 4 -> 3 -> 2 -> 1 -> 0 and never skips.
+ */
+const SCREEN_URLS = [
+  '/assets/day/ui-e.jpg', // 0  scene E - medication delivered
+  '/assets/day/ui-d.jpg', // 1  scene D - the consultation
+  '/assets/day/ui-c.jpg', // 2  scene C - the HbA1c answer
+  '/assets/day/ui-b.jpg', // 3  scene B - the digital twin
+  '/assets/pura-screen.jpg', // 4  Home
+  '/assets/pura-ai-screen.jpg', // 5  Pura AI
+]
+
+/** Which entry the phone shows before anything has been tweened. */
+const SCREEN_DEFAULT = 4
 
 /** The colourway the hero uses. Black reads as one dark mass against the
  *  cream gradient, which makes the lit screen the brightest thing on the page —
@@ -188,21 +207,28 @@ function applyScreens(scene, textures) {
     const m = o.isMesh && o.material
     if (!m || !STOCK_WALLPAPER.has(m)) return
 
-    m.emissiveMap = textures[0]
+    // Assigning this is what defines USE_EMISSIVEMAP and gives the shader its
+    // `vEmissiveMapUv`. The screens themselves come through uniforms below, so
+    // which texture lands here only decides the first frame — but swapping
+    // `emissiveMap` per frame would mean a material recompile per frame, and
+    // uniforms cost nothing.
+    m.emissiveMap = textures[SCREEN_DEFAULT]
     m.toneMapped = SCREEN_TONE_MAPPED
 
     m.onBeforeCompile = (shader) => {
-      shader.uniforms.uScreenB = { value: textures[1] }
+      shader.uniforms.uScreenA = { value: textures[SCREEN_DEFAULT] }
+      shader.uniforms.uScreenB = { value: textures[SCREEN_DEFAULT] }
       shader.uniforms.uScreenMix = { value: 0 }
       // Supplying a uniform does not declare it. three.js only auto-declares
       // its own, so anything added here has to be prepended to the source by
       // hand or the program fails to compile with "undeclared identifier".
       shader.fragmentShader =
-        'uniform sampler2D uScreenB;\nuniform float uScreenMix;\n' + shader.fragmentShader
+        'uniform sampler2D uScreenA;\nuniform sampler2D uScreenB;\nuniform float uScreenMix;\n' +
+        shader.fragmentShader
       shader.fragmentShader = shader.fragmentShader.replace(
         '#include <emissivemap_fragment>',
         `#ifdef USE_EMISSIVEMAP
-           vec4 puraA = texture2D( emissiveMap, vEmissiveMapUv );
+           vec4 puraA = texture2D( uScreenA, vEmissiveMapUv );
            vec4 puraB = texture2D( uScreenB, vEmissiveMapUv );
            vec4 emissiveColor = mix( puraA, puraB, uScreenMix );
            #ifdef DECODE_VIDEO_TEXTURE_EMISSIVE
@@ -221,11 +247,25 @@ function applyScreens(scene, textures) {
 /** Every display material, so the mix uniform can be pushed each frame. */
 const SCREEN_MATERIALS = new Set()
 
-/** Push the crossfade value into whichever materials have compiled so far. */
-function setScreenMix(value) {
+/**
+ * Point the display at a fractional index into `textures` and push it into
+ * whichever materials have compiled so far.
+ *
+ * Only ever a crossfade between two NEIGHBOURS in the list. The index is
+ * clamped rather than wrapped, so a table that overshoots holds the last screen
+ * instead of jumping back to the first.
+ */
+function setScreen(index, textures) {
+  if (!textures || !textures.length) return
+  const i = Math.min(Math.max(index, 0), textures.length - 1)
+  const a = Math.floor(i)
+  const b = Math.min(a + 1, textures.length - 1)
   for (const m of SCREEN_MATERIALS) {
-    const u = m.userData.shader?.uniforms?.uScreenMix
-    if (u) u.value = value
+    const u = m.userData.shader?.uniforms
+    if (!u) continue
+    u.uScreenA.value = textures[a]
+    u.uScreenB.value = textures[b]
+    u.uScreenMix.value = i - a
   }
 }
 
@@ -255,6 +295,66 @@ function findDisplay(scene) {
 }
 
 /**
+ * How far the phone turns to follow the cursor, in degrees, at the edge of the
+ * viewport. Small on purpose: the phone is meant to acknowledge the pointer,
+ * not track it like a turret. Yaw runs further than pitch because a screen
+ * turning left and right reads as looking; the same angle up and down reads as
+ * the phone falling over.
+ */
+const TILT_YAW = 18
+const TILT_PITCH = 12
+
+/** How fast it catches up. Higher is snappier; this is about a third of a
+ *  second to close the gap, which is the difference between "it is watching
+ *  me" and "it is attached to my mouse". */
+const TILT_LAMBDA = 5
+
+/**
+ * The cursor's position, or null when there isn't one.
+ *
+ * `null` is a distinct state from "at the centre", because it is what says to
+ * unwind rather than to hold: a cursor that leaves the window should let the
+ * phone come back to face-on, not freeze it at whatever angle it was at when
+ * it crossed the edge.
+ *
+ * Nothing is attached at all on a touch screen or under reduced motion, so the
+ * tilt stays at zero and the render loop's damping never has anything to do.
+ */
+function usePointer() {
+  const at = useRef(null)
+
+  useEffect(() => {
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (!fine || still) return
+
+    const move = (e) => {
+      at.current = { x: e.clientX, y: e.clientY }
+    }
+    const away = () => {
+      at.current = null
+    }
+
+    // `pointerout` with no relatedTarget is the pointer leaving the window
+    // rather than moving between two elements inside it.
+    const out = (e) => {
+      if (!e.relatedTarget) away()
+    }
+
+    window.addEventListener('pointermove', move, { passive: true })
+    document.addEventListener('pointerout', out)
+    window.addEventListener('blur', away)
+    return () => {
+      window.removeEventListener('pointermove', move)
+      document.removeEventListener('pointerout', out)
+      window.removeEventListener('blur', away)
+    }
+  }, [])
+
+  return at
+}
+
+/**
  * The device.
  *
  * Its whole job on this page is to sit exactly where the DOM layer thinks it
@@ -271,6 +371,7 @@ export function Device({ layout, stageScale, anisotropy = 4 }) {
   const modelHeight = useRef(1)
   const { viewport, size, gl } = useThree()
   const [screenTexture, setScreenTexture] = useState(null)
+  const pointer = usePointer()
 
   useLayoutEffect(() => {
     adaptMaterials(scene)
@@ -330,7 +431,7 @@ export function Device({ layout, stageScale, anisotropy = 4 }) {
     return () => SCREEN_MATERIALS.clear()
   }, [scene, screenTexture])
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const g = rig.current
     if (!g) return
 
@@ -342,13 +443,39 @@ export function Device({ layout, stageScale, anisotropy = 4 }) {
       -(deviceProxy.fy - layout.frame[1] / 2) * u,
       0
     )
+
+    // --- the phone looks at the cursor ---------------------------------------
+    // Measured from the DEVICE's centre on screen, not the viewport's, so the
+    // angle is the one the phone would actually have to turn through. That
+    // centre comes out of the same conversion the position above uses: a frame
+    // pixel is `stageScale` CSS pixels, and the canvas is centred on the frame.
+    //
+    // The screen faces +Z. Rotating +X swings that normal down, and +Y swings
+    // it right — which is why a cursor BELOW centre gives a positive pitch and
+    // one to the RIGHT a positive yaw, with no sign flips.
+    const p = pointer.current
+    let wantX = 0
+    let wantY = 0
+    if (p && deviceProxy.tilt > 0.001) {
+      const cx = size.width / 2 + (deviceProxy.fx - layout.frame[0] / 2) * stageScale
+      const cy = size.height / 2 + (deviceProxy.fy - layout.frame[1] / 2) * stageScale
+      const nx = MathUtils.clamp((p.x - cx) / (size.width / 2), -1, 1)
+      const ny = MathUtils.clamp((p.y - cy) / (size.height / 2), -1, 1)
+      wantX = ny * TILT_PITCH
+      wantY = nx * TILT_YAW
+    }
+    // Framerate-independent easing, so the follow feels the same on a 60Hz
+    // panel and a 120Hz one.
+    deviceProxy.tiltX = MathUtils.damp(deviceProxy.tiltX, wantX, TILT_LAMBDA, delta)
+    deviceProxy.tiltY = MathUtils.damp(deviceProxy.tiltY, wantY, TILT_LAMBDA, delta)
+
     g.rotation.set(
-      MathUtils.degToRad(deviceProxy.rx),
-      MathUtils.degToRad(deviceProxy.ry),
+      MathUtils.degToRad(deviceProxy.rx + deviceProxy.tiltX * deviceProxy.tilt),
+      MathUtils.degToRad(deviceProxy.ry + deviceProxy.tiltY * deviceProxy.tilt),
       MathUtils.degToRad(deviceProxy.rz)
     )
     g.scale.setScalar((deviceProxy.s * deviceRefHeight(layout) * u) / modelHeight.current)
-    setScreenMix(deviceProxy.screenMix)
+    setScreen(deviceProxy.screen, screenTexture)
   })
 
   return (

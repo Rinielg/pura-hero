@@ -23,7 +23,7 @@
 export const FRAME = { w: 1920, h: 1080 }
 
 /** Slides in the sequence. Adding one in Figma means adding an entry below. */
-export const SLIDES = 26
+export const SLIDES = 34
 
 /**
  * The twelve pillar chips.
@@ -259,12 +259,18 @@ export const DEVICE_POSE = [
   // itself inside the frame at slide 16, so it is carried out on the same
   // 434px rise the rest of the scene takes rather than simply switched off.
   { c: [959.9, -858.5], s: ai(823), r: FACE },
-  // Slides 18-25: parked where slide 26 wants it, one page-rise below. The jump
+  // Slides 18-24: parked where slide 26 wants it, one page-rise below. The jump
   // from off the top to down here happens while DEVICE_FADE holds it at zero,
   // so nothing sweeps across the frame to get there.
-  ...Array(8).fill({ c: [959.7, 650.7 + 38], s: ai(663), r: FACE }),
-  // Slide 26: it comes back, face on, at the size the file's phone group is.
-  { c: [959.7, 650.7], s: ai(663), r: FACE },
+  ...Array(7).fill({ c: [959.7, 650.7 + 38], s: ai(663), r: FACE }),
+  // Slide 25: the file has it half a frame lower, rising. That entrance is the
+  // reason the landing on 26 reads as a landing rather than as an appearance.
+  { c: [959.7, 1266.7], s: ai(663), r: FACE },
+  // Slide 26: it lands, face on, at the size the file's phone group is — and
+  // there it stays for the rest of the day. Slides 27 to 34 move the
+  // photograph and the copy around it; the only thing that changes about the
+  // phone itself is what is on its screen.
+  ...Array(9).fill({ c: [959.7, 650.7], s: ai(663), r: FACE }),
 ]
 
 /**
@@ -277,20 +283,69 @@ export const DEVICE_POSE = [
  */
 export const DEVICE_FADE = [
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  // Back from slide 25, and it stays for the whole day.
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 ]
 
 /**
- * What the screen is showing: 0 = the Home screen, 1 = Pura AI.
+ * From which slide the device draws IN FRONT of the Overlay.
+ *
+ * Up to here the wash is over the phone on purpose — it dissolves its foot,
+ * which is what makes the resting state read as settled rather than cropped.
+ * From the day's first scene the phone is the SUBJECT, so it comes forward and
+ * the wash blurs only the photograph behind it. That is the order the file has
+ * had since slide 25.
+ *
+ * This is a z-index, so it cannot be tweened: a fractional z-index is not a
+ * valid value. It is a hard switch at a slide boundary instead, made one slide
+ * early, while `DEVICE_FADE` still holds the device at zero and nothing can be
+ * seen to change.
+ */
+export const DEVICE_FRONT_FROM = 25
+
+/**
+ * Where the phone is allowed to watch the cursor.
+ *
+ * Only slide 26, where it is face-on (`FACE` is [0, 0, 0]) and at rest at the
+ * end of the sequence. Everywhere else it is mid-arc under the timeline's
+ * control, and a second hand on the rotation would read as a fault rather than
+ * as life. The timeline tweens this value like any other, so the tilt eases in
+ * across the step into 26 instead of switching on.
+ */
+export const DEVICE_TILT = [
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  // Slides 26 to 34: face on, at rest, and watching the cursor.
+  1, 1, 1, 1, 1, 1, 1, 1, 1,
+]
+
+/**
+ * Which screen the phone is showing, as an INDEX into `SCREEN_URLS`.
+ *
+ * It used to be a 0-to-1 mix between two textures. The day needs six, so it is
+ * an index now and the renderer crossfades between `floor` and `ceil` of it —
+ * which means the ORDER of `SCREEN_URLS` is load-bearing. Consecutive slides
+ * must differ by at most one step, or the crossfade passes through whatever
+ * happens to sit between them and a wrong screen flashes up mid-scroll. The
+ * list is ordered backwards through the day for exactly that reason: the
+ * sequence walks 4 -> 5 -> 4 -> 3 -> 2 -> 1 -> 0 and never skips.
+ *
+ * Old meaning, for reference: 0 = the Home screen, 1 = Pura AI.
  *
  * It crossfades across the turn to face-on, so the content changes while the
  * device is moving rather than snapping while it is sitting still.
  */
-export const SCREEN_MIX = [
-  0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  // Back to the home screen for slide 26, which is what the file's phone shows.
-  // The change happens while the device is invisible.
-  0, 0, 0, 0, 0, 0, 0, 0, 0,
+export const SCREEN_SEQ = [
+  // Slides 1-6 Home, 7-17 Pura AI, then back to Home while the device is
+  // invisible and on through slide 27.
+  4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5,
+  5, 5, 5, 5,
+  4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+  // The day. Each scene brings its own screen; it changes on the SETTLED
+  // slide and holds through the transition after it, which is the rule the
+  // copy follows too — so the two can never disagree.
+  3, 3, 2, 2, 1, 1, 0,
 ]
 
 /**
@@ -358,7 +413,8 @@ export const HAND_FADE = [1, 1, 1, 1, 0.45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
  */
 export const CUE_LABEL = [
   1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 1,
 ]
 
 export const HAND_ASPECT = 942 / 500
@@ -763,7 +819,19 @@ export const TIMELINE = parked(20, { c: [6285.5, 1147], o: 0, b: 4 }, [
   { c: [5860.5, 376], o: 0.6, b: 0 },
   { c: [5593.5, 292], o: 0.6, b: 0 },
   { c: [5328.5, 224], o: 0.6, b: 0 },
-  { c: [5328.5, 186], o: 0.6, b: 0 },
+  // Slide 26 onwards the ruler is the clock for the day. Each pair of slides
+  // holds one hour under the marker: the settled slide moves it, the
+  // transition after it does not. Read off the file as the Timeline
+  // instance's own x plus half its 10,741px width.
+  { c: [4794.5, 186], o: 0.6, b: 0 },
+  { c: [4794.5, 186], o: 0.6, b: 0 },
+  { c: [3735.5, 186], o: 0.6, b: 0 },
+  { c: [3735.5, 186], o: 0.6, b: 0 },
+  { c: [2125.5, 186], o: 0.6, b: 0 },
+  { c: [2125.5, 186], o: 0.6, b: 0 },
+  { c: [1049.5, 186], o: 0.6, b: 0 },
+  { c: [1049.5, 186], o: 0.6, b: 0 },
+  { c: [15.5, 186], o: 0.6, b: 0 },
 ])
 
 /**
@@ -827,23 +895,203 @@ export const TIMELINE_DOT = parked(20, { c: [960, 1105], o: 0, b: 4 }, [
  */
 const RISE_26 = 38
 
-export const GREETING = parked(25, { c: [391.5, 417 + RISE_26], o: 0, b: 6 }, [
-  { c: [391.5, 417], o: 1, b: 0 },
-])
+/* ------------------------------------------------------------------- the day */
 
-export const GREETING_BODY = parked(25, { c: [387.5, 527 + RISE_26], o: 0, b: 6 }, [
-  { c: [387.5, 527], o: 1, b: 0 },
-])
+/**
+ * Slides 26 to 34 are five SCENES joined by four TRANSITIONS.
+ *
+ * A scene owns a photograph, a headline, a paragraph and the screen the phone
+ * is showing. A transition changes ONLY the photograph — which is why the copy
+ * on slide 27 is still slide 26's, and why the ruler holds its hour across the
+ * pair. Settled slides are the even ones (26, 28, 30, 32, 34); the odd slides
+ * between them are the transitions.
+ *
+ * The phone does not move again after slide 26. Everything that happens for the
+ * next eight slides happens either inside the panel or on its screen.
+ */
 
+/**
+ * The panel the day plays out in: one fixed box on the right of the frame.
+ * After slide 26 it never moves, so its numbers are a constant rather than a
+ * table.
+ */
+const PANEL = { cx: 1420, top: 262, bottom: 1040, w: 920, h: 778, r: 60 }
 
+/**
+ * Half the panel, which is where two photographs meet mid-transition. 778 does
+ * not halve to this: the file leaves a 16px gap between the two windows.
+ */
+const HALF = 381
+
+/**
+ * One window onto a scene's photograph.
+ *
+ * The photograph NEVER MOVES. The window is a shutter over it, and `ih` is what
+ * says so — the image keeps its full panel height whatever the window is doing,
+ * and the track offsets it by however far the window's top has drifted from the
+ * panel's. Let the image fill the window instead and it rescales as the window
+ * shrinks, which reads as a squash rather than as a reveal.
+ *
+ * Every phase below leaves the image's top at `PANEL.top`, so a tween between
+ * any two of them holds it perfectly still. That is the whole trick, and it is
+ * why none of these rows needs to carry an image offset: it is derivable.
+ */
+const shutter = (top, h) => ({
+  c: [PANEL.cx, top + h / 2],
+  w: PANEL.w,
+  h,
+  r: PANEL.r,
+  o: 1,
+  ih: PANEL.h,
+})
+
+/** Shut against the bottom of the panel: a scene that has not arrived yet. */
+const SHUT_LOW = shutter(PANEL.bottom, 0)
+/** Half open from the bottom: a scene arriving. */
+const RISING = shutter(PANEL.bottom - HALF, HALF)
+/** The whole panel: the scene being told. */
+const OPEN = shutter(PANEL.top, PANEL.h)
+/** Half open from the top: a scene being pushed out by the next one. */
+const LEAVING = shutter(PANEL.top, HALF)
+/** Shut against the top: a scene that is over. */
+const SHUT_HIGH = shutter(PANEL.top, 0)
+
+/** How far a block of copy waits below its pose, and leaves above it. */
+const COPY_RISE = RISE_26
+
+/**
+ * One block of copy's whole life, from its Figma box and the slide it belongs
+ * to.
+ *
+ * Regular enough to generate: every block waits one rise below its pose, comes
+ * up and into focus on its scene's settled slide, holds through the transition
+ * after it, then carries on up and out. Writing ten of these by hand would be
+ * ten chances to mistype a number the file states once.
+ */
+const copyTrack = ([x, y, w, h], settled) => {
+  const c = [x + w / 2, y + h / 2]
+  return parked(settled - 1, { c: [c[0], c[1] + COPY_RISE], o: 0, b: 6 }, [
+    { c, o: 1, b: 0 },
+    { c, o: 1, b: 0 },
+    { c: [c[0], c[1] - COPY_RISE], o: 0, b: 6 },
+  ])
+}
+
+/** A scene's window, from the slide it settles on. */
+const mediaTrack = (settled) =>
+  parked(settled - 2, SHUT_LOW, [RISING, OPEN, LEAVING, SHUT_HIGH])
+
+/**
+ * Slide 26: the day resolves into the app.
+ *
+ * The photo panel slides right and stands up, and a phone arrives in the middle
+ * showing the same morning greeting the copy on the left is saying. Everything
+ * here is new at slide 26, so it waits 38px below its pose — the page's own
+ * rise on the 25 -> 26 step, which the ruler and the marker both confirm
+ * (224 -> 186 and 182 -> 144).
+ *
+ * Scene A's window is this one rather than a `mediaTrack`, because it does not
+ * arrive: it is the panel the carousel act already grew, inherited and then
+ * shuttered away like the rest.
+ */
 export const DAY_MEDIA = parked(21, { c: [960, 1086], w: 154, h: 88, r: 150, o: 0 }, [
   { c: [960, 755], w: 154, h: 88, r: 150, o: 1 },
   { c: [960, 670.5], w: 764, h: 437, r: 290, o: 1 },
   { c: [960, 670.5], w: 1058, h: 605, r: 160, o: 1 },
   { c: [960, 629.5], w: 1152, h: 659, r: 150, o: 1 },
-  // Slide 26: it slides right and stands up, making room for the phone.
-  { c: [1420, 651], w: 920, h: 778, r: 60, o: 1 },
+  // Slide 26: it slides right and stands up, making room for the phone. From
+  // here it is a shutter, so it carries `ih` — which happens to equal its own
+  // height on this slide, making the handover from filling to shuttering
+  // invisible.
+  { c: [1420, 651], w: 920, h: 778, r: 60, o: 1, ih: PANEL.h },
+  LEAVING,
+  SHUT_HIGH,
 ])
+
+/**
+ * The five scenes, in order.
+ *
+ * `screen` indexes `SCREEN_URLS` — see `SCREEN_SEQ` for why that list runs
+ * backwards through the day.
+ */
+export const DAY_SCENES = [
+  {
+    key: 'a',
+    settled: 26,
+    media: '/assets/carousel/one-day.jpg',
+    alt: 'A morning walk, tracked by Pura',
+    screen: 4,
+    head: 'Good morning, your health plan has kicked off.',
+    body: 'Your Pura opens to one clear focus: a walk after lunch, a whole-grain swap and lights out by 11.',
+    headBox: [148, 357, 487, 120],
+    bodyBox: [148, 501, 479, 52],
+    window: DAY_MEDIA,
+  },
+  {
+    key: 'b',
+    settled: 28,
+    media: '/assets/day/scene-b.jpg',
+    alt: 'A digital twin of the body, with the day\u2019s signals around it',
+    screen: 3,
+    head: 'Your score moved overnight with a pattern worth discussing with your doctor.',
+    body: 'PureScore is up 8 points. One line tells her why: a better night\u2019s sleep.',
+    headBox: [148, 357, 487, 160],
+    bodyBox: [148, 541, 401, 52],
+    window: mediaTrack(28),
+  },
+  {
+    key: 'c',
+    settled: 30,
+    media: '/assets/day/scene-c.jpg',
+    alt: 'Lunch at home',
+    screen: 2,
+    head: 'Let\u2019s get your Blood sugar (HbA1c) of 6.1 back on track.',
+    body: 'She asks what her HbA1c result means. Pura explains it plainly and suggests talking to a doctor.',
+    headBox: [148, 357, 555, 120],
+    bodyBox: [148, 501, 452, 52],
+    window: mediaTrack(30),
+  },
+  {
+    key: 'd',
+    settled: 32,
+    media: '/assets/day/scene-d.jpg',
+    alt: 'A consultation on the phone, at home',
+    screen: 1,
+    head: 'Good morning, your appointment with Dr. El-Sayed has been confirmed.',
+    body: 'Book a UAE-licensed doctor from your results, get medication delivered and have follow-up tests at home.',
+    headBox: [148, 357, 487, 160],
+    bodyBox: [148, 541, 487, 52],
+    window: mediaTrack(32),
+  },
+  {
+    key: 'e',
+    settled: 34,
+    media: '/assets/day/scene-e.jpg',
+    alt: 'A doctor reviewing results',
+    screen: 0,
+    head: 'Good afternoon, your medication has been delivered. Take care of yourself.',
+    body: 'Her prescription goes to a licensed pharmacy and arrives at her door.',
+    headBox: [148, 357, 487, 160],
+    bodyBox: [148, 541, 424, 52],
+    window: mediaTrack(34),
+  },
+].map((scene) => ({
+  ...scene,
+  headAt: copyTrack(scene.headBox, scene.settled),
+  bodyAt: copyTrack(scene.bodyBox, scene.settled),
+}))
+
+/**
+ * Scene D's pillar row. It is the one scene that carries anything under its
+ * paragraph, and it follows the copy exactly — same slides, same rise.
+ */
+export const DAY_PILL_LABELS = [
+  ['Virtual consultations', 183.8],
+  ['Prescriptions', 132.8],
+  ['Care Plans', 118.7],
+  ['Home Sample test', 166.7],
+]
+export const DAY_PILLS = copyTrack([148, 633, 674, 53.5], 32)
 
 /** The category pills, in order. The first is the selected one. */
 export const PILL_LABELS = [

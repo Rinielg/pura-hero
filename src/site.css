@@ -244,6 +244,32 @@
   height: auto;
 }
 
+/* ------------------------------------------------------------- media band */
+
+/* The picture alone, on the pages that have no `whatIs` copy to sit beside it.
+   Same tinted frame as `.split__media` so the two read as one treatment. */
+.mediaband {
+  width: min(1180px, 100% - 48px);
+  margin: 0 auto;
+  padding: 44px 0 88px;
+}
+
+.mediaband figure {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 36px;
+  border-radius: 32px;
+  background: linear-gradient(150deg, #f6f1ec 0%, #eef2f6 100%);
+}
+
+.mediaband img {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+}
+
 /* ----------------------------------------------------------------- ticks */
 
 .ticks {

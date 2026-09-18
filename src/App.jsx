@@ -9,6 +9,8 @@ import {
   CAROUSEL_GEO,
   CAROUSEL_ITEMS,
   CHIPS,
+  DAY_PILL_LABELS,
+  DAY_SCENES,
   HAND_ASPECT,
   MOBILE_CHIPS,
   PILL_LABELS,
@@ -209,9 +211,12 @@ export default function App() {
     carouselCtrl: useRef(null),
     timeline: useRef(null),
     timelineDot: useRef(null),
-    dayMedia: useRef(null),
-    greeting: useRef(null),
-    greetingBody: useRef(null),
+    // One entry per scene, in DAY_SCENES order.
+    scenes: useRef([]),
+    heads: useRef([]),
+    bodies: useRef([]),
+    dayPills: useRef(null),
+
     deviceLayer: useRef(null),
     cue: useRef(null),
     cueLabel: useRef(null),
@@ -304,13 +309,27 @@ export default function App() {
             style={{ width: `${handW}px`, height: `${handW * HAND_ASPECT}px` }}
           />
 
-          {/* The day's photo panel. It lives BEHIND the device and behind the
-              wash, which is the order slide 26 has: panel, then Overlay, then
-              the phone. Above the wash it had nothing to blur, and it covered
-              the device outright. */}
-          <figure className="day-media" ref={refs.dayMedia}>
-            <img src="/assets/carousel/one-day.jpg" alt="A morning walk, tracked by Pura" />
-          </figure>
+          {/* The day's five photo panels, stacked in one box.
+              They live BEHIND the device and behind the wash, which is the
+              order the file has from slide 25 on: panel, then Overlay, then the
+              phone. Above the wash they would have nothing to blur, and they
+              would cover the device outright.
+
+              Each is a shutter over an image that never moves — see `shutter`
+              in frames.js. Only one or two are ever open, but all five stay
+              mounted: unmounting them would drop the decoded image and make
+              scrolling back up a reload. */}
+          {DAY_SCENES.map((scene, i) => (
+            <figure
+              className="day-media"
+              key={scene.key}
+              ref={(el) => {
+                refs.scenes.current[i] = el
+              }}
+            >
+              <img src={scene.media} alt={scene.alt} />
+            </figure>
+          ))}
         </div>
       </div>
 
@@ -437,16 +456,50 @@ export default function App() {
             ))}
           </div>
           <span className="ruler-dot" ref={refs.timelineDot} aria-hidden="true" />
-          {/* Slide 26: the day resolves into the app. The copy on the left says
-              what the phone in the middle is showing. */}
-          <div className="greeting" ref={refs.greeting}>
-            <img src="/assets/pura-sparkle.png" alt="" width="32" height="32" />
-            <p>Good morning, your health plan has kicked off.</p>
+          {/* Slides 26 to 34: the day, told in five scenes. The copy on the
+              left says what the phone in the middle is showing, and both change
+              on the settled slides only — the transitions between them move the
+              photograph and nothing else.
+
+              All five pairs are in the DOM at once and cross-fade past each
+              other. Swapping the text of one element instead would mean the
+              outgoing and incoming words could never overlap, and the hand-off
+              is the one moment where they have to. */}
+          {DAY_SCENES.map((scene, i) => (
+            <div
+              className="greeting"
+              key={scene.key}
+              style={{ '--gw': `${scene.headBox[2]}px` }}
+              ref={(el) => {
+                refs.heads.current[i] = el
+              }}
+            >
+              <img src="/assets/pura-sparkle.png" alt="" width="32" height="32" />
+              <p>{scene.head}</p>
+            </div>
+          ))}
+          {DAY_SCENES.map((scene, i) => (
+            <p
+              className="greeting-body"
+              key={scene.key}
+              style={{ '--gw': `${scene.bodyBox[2]}px` }}
+              ref={(el) => {
+                refs.bodies.current[i] = el
+              }}
+            >
+              {scene.body}
+            </p>
+          ))}
+
+          {/* Scene D is the only one that carries anything under its paragraph.
+              It follows the copy exactly — same slides, same rise. */}
+          <div className="day-pills" ref={refs.dayPills}>
+            {DAY_PILL_LABELS.map(([label, w]) => (
+              <span className="pill pill--static" key={label} style={{ '--pw': `${w}px` }}>
+                {label}
+              </span>
+            ))}
           </div>
-          <p className="greeting-body" ref={refs.greetingBody}>
-            Your Pura opens to one clear focus: a walk after lunch, a whole-grain swap and
-            lights out by 11.
-          </p>
           {/* The phone on slide 26 is the three.js device, brought back by
               DEVICE_POSE — not a picture of one. See DEVICE_FADE. */}
 

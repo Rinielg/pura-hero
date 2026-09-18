@@ -115,6 +115,27 @@ export function Split({ eyebrow, title, body, points, media, mediaAlt, flip, chi
   )
 }
 
+/**
+ * A page's picture, on its own.
+ *
+ * Pages with no `whatIs` still have a photograph, and it used to be handed to a
+ * `Split` whose copy was that page's own kicker, h1 and lead. Ten of the
+ * twenty-three then printed their hero twice, one band under the other, with
+ * nothing in between — obvious at any width and worst on a phone, where the two
+ * copies are the entire first screen and a half. The picture was worth keeping.
+ * The second hero was not.
+ */
+export function MediaBand({ media, alt }) {
+  if (!media) return null
+  return (
+    <section className="mediaband" data-reveal>
+      <figure>
+        <img src={media} alt={alt || ''} loading="lazy" />
+      </figure>
+    </section>
+  )
+}
+
 /* ------------------------------------------------------------- icon grid */
 
 export function IconGrid({ eyebrow, title, body, items }) {

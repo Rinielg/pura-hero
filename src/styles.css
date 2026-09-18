@@ -346,7 +346,16 @@ body {
   right: 0;
   top: 0;
   height: 222px;
-  will-change: transform, opacity;
+  /* `will-change: opacity` MUST NOT go here, and neither may an animated
+     opacity. Either one makes this element a BACKDROP ROOT, and a backdrop
+     root is where a descendant's `backdrop-filter` stops looking: the four
+     bands below would sample only what the wash itself paints, which is
+     nothing, and the whole progressive blur silently becomes a no-op. It fails
+     with no warning and no error — the element is still there, still the right
+     size, still carrying the right filter.
+     The wash therefore only ever MOVES. The fade lives on its children, where
+     opacity and backdrop-filter on the SAME element composite correctly. */
+  will-change: transform;
 }
 
 /**
@@ -934,6 +943,31 @@ body {
 
 .day-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
 
+/* Scene D's pillar row. Same pill as the category filter, but these are a
+   statement of what Care covers rather than a control, so they do not respond
+   to the pointer. */
+.day-pills {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  gap: 24px;
+  will-change: transform, opacity, filter;
+}
+
+.pill--static {
+  width: var(--pw);
+  height: 53.5px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7.6px;
+  font-size: 15.25px;
+  cursor: default;
+  pointer-events: none;
+}
+
 /* ------------------------------------------------------------- navigation */
 
 .nav {
@@ -1243,7 +1277,11 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 487px;
+  /* Each scene states its own width, because each headline is a different
+     length and they are all set flush left at x=148 in the file. The mobile
+     rule below has to be able to override it, so it travels as a custom
+     property rather than as an inline width. */
+  width: var(--gw, 487px);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1264,7 +1302,7 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 479px;
+  width: var(--gw, 479px);
   margin: 0;
   font-family: var(--brand);
   font-size: 20px;
@@ -1387,6 +1425,15 @@ body {
   }
   .nav__sheet a.is-active { background: rgba(14, 26, 43, 0.06); }
 
+  /* On a document page the badges are fixed furniture over scrolling content,
+     so at this width they permanently cover a 220x35 strip of every inner page
+     — the foot of the CTA band and the first line of the footer's fine print.
+     Every page already ends with both store links in its CTA, so the fixed pair
+     is redundant here rather than useful. The hero keeps them: it is one
+     viewport that never scrolls under them, and they are part of its
+     composition. */
+  .site .stores { display: none; }
+
   .stores { right: 12px; bottom: 12px; gap: 6px; }
   .stores__badge { width: 104px; height: 35px; gap: 6px; padding: 0 6px; }
   .stores__glyph { width: 17px; height: 20px; }
@@ -1409,6 +1456,14 @@ body {
   /* Slide 26's copy is authored beside the phone. There is no beside on a
      phone, so it is centred over it and sized to the frame. */
   .greeting { width: 330px; align-items: center; text-align: center; }
+  /* Scene D's pillar row does not survive the trip to a phone. Wrapped into two
+     centred rows it is ~90px tall, and the band between the ruler and the top
+     of the panel is already carrying a three-line headline and a three-line
+     paragraph — it landed on the photograph. It is dropped here rather than
+     overlapped, which costs little: the paragraph above it already says
+     consultations, medication and tests at home. A real mobile frame would
+     decide this properly. */
+  .day-pills { display: none; }
   .greeting p { font-size: 26px; line-height: 30px; letter-spacing: -0.8px; }
   .greeting-body { width: 330px; font-size: 15px; line-height: 21px; text-align: center; }
 
