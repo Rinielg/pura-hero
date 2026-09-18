@@ -270,7 +270,7 @@ export const DEVICE_POSE = [
   // there it stays for the rest of the day. Slides 27 to 34 move the
   // photograph and the copy around it; the only thing that changes about the
   // phone itself is what is on its screen.
-  ...Array(9).fill({ c: [959.7, 650.7], s: ai(663), r: FACE }),
+  ...Array(9).fill({ c: [959.7, 570.7], s: ai(663), r: FACE }),
 ]
 
 /**
@@ -803,9 +803,9 @@ export const ACT5_HEAD = parked(19, { c: [956, 1177], o: 0, b: 8 }, [
   { c: [956, 518], o: 1, b: 0 },
   { c: [956, 259], o: 1, b: 0 },
   // It hands over to the day itself from 24, and is gone by 26.
-  { c: [956, 175], o: 0.3, b: 4 },
-  { c: [956, 107], o: 0.1, b: 8 },
-  { c: [956, 69], o: 0, b: 8 },
+  { c: [956, 95], o: 0.3, b: 4 },
+  { c: [956, 67], o: 0, b: 8 },
+  { c: [956, -11], o: 0, b: 8 },
 ])
 
 /**
@@ -817,21 +817,21 @@ export const TIMELINE = parked(20, { c: [6285.5, 1147], o: 0, b: 4 }, [
   { c: [6285.5, 966], o: 0.6, b: 4 },
   { c: [5931.5, 635], o: 0.6, b: 0 },
   { c: [5860.5, 376], o: 0.6, b: 0 },
-  { c: [5593.5, 292], o: 0.6, b: 0 },
-  { c: [5328.5, 224], o: 0.6, b: 0 },
+  { c: [5593.5, 212], o: 0.6, b: 0 },
+  { c: [5328.5, 184], o: 0.6, b: 0 },
   // Slide 26 onwards the ruler is the clock for the day. Each pair of slides
   // holds one hour under the marker: the settled slide moves it, the
   // transition after it does not. Read off the file as the Timeline
   // instance's own x plus half its 10,741px width.
-  { c: [4794.5, 186], o: 0.6, b: 0 },
-  { c: [4794.5, 186], o: 0.6, b: 0 },
-  { c: [3735.5, 186], o: 0.6, b: 0 },
-  { c: [3735.5, 186], o: 0.6, b: 0 },
-  { c: [2125.5, 186], o: 0.6, b: 0 },
-  { c: [2125.5, 186], o: 0.6, b: 0 },
-  { c: [1049.5, 186], o: 0.6, b: 0 },
-  { c: [1049.5, 186], o: 0.6, b: 0 },
-  { c: [15.5, 186], o: 0.6, b: 0 },
+  { c: [4794.5, 106], o: 0.6, b: 0 },
+  { c: [4794.5, 106], o: 0.6, b: 0 },
+  { c: [3735.5, 106], o: 0.6, b: 0 },
+  { c: [3735.5, 106], o: 0.6, b: 0 },
+  { c: [2125.5, 106], o: 0.6, b: 0 },
+  { c: [2125.5, 106], o: 0.6, b: 0 },
+  { c: [1049.5, 106], o: 0.6, b: 0 },
+  { c: [1049.5, 106], o: 0.6, b: 0 },
+  { c: [15.5, 106], o: 0.6, b: 0 },
 ])
 
 /**
@@ -874,9 +874,11 @@ export const TIMELINE_DOT = parked(20, { c: [960, 1105], o: 0, b: 4 }, [
   { c: [960, 924], o: 0.4, b: 4 },
   { c: [960, 593], o: 1, b: 0 },
   { c: [960, 334], o: 1, b: 0 },
-  { c: [960, 250], o: 1, b: 0 },
-  { c: [960, 182], o: 1, b: 0 },
-  { c: [960, 144], o: 1, b: 0 },
+  { c: [960, 170], o: 1, b: 0 },
+  { c: [960, 142], o: 1, b: 0 },
+  // Slide 26 onward. The whole day sits 80px higher than it used to, which is
+  // the room the navigation used to take up in the file.
+  { c: [960, 64], o: 1, b: 0 },
 ])
 
 /**
@@ -915,7 +917,20 @@ const RISE_26 = 38
  * After slide 26 it never moves, so its numbers are a constant rather than a
  * table.
  */
-const PANEL = { cx: 1420, top: 262, bottom: 1040, w: 920, h: 778, r: 60 }
+const PANEL = { cx: 1420, top: 182, bottom: 960, w: 920, h: 778, r: 60 }
+
+/**
+ * The panel's top edge — the line every scene image hangs from.
+ *
+ * Exported because the timeline needs it to work out each shutter's image
+ * offset, and a second copy of the number over there is exactly the kind of
+ * thing that survives a redesign and then quietly disagrees. It moved 80px the
+ * first time the file dropped the navigation.
+ */
+export const PANEL_TOP = PANEL.top
+
+/** And its height, for the same reason. */
+export const PANEL_H = PANEL.h
 
 /**
  * Half the panel, which is where two photographs meet mid-transition. 778 does
@@ -997,13 +1012,13 @@ const mediaTrack = (settled) =>
 export const DAY_MEDIA = parked(21, { c: [960, 1086], w: 154, h: 88, r: 150, o: 0 }, [
   { c: [960, 755], w: 154, h: 88, r: 150, o: 1 },
   { c: [960, 670.5], w: 764, h: 437, r: 290, o: 1 },
-  { c: [960, 670.5], w: 1058, h: 605, r: 160, o: 1 },
-  { c: [960, 629.5], w: 1152, h: 659, r: 150, o: 1 },
+  { c: [960, 590.5], w: 1058, h: 605, r: 160, o: 1 },
+  { c: [960, 589.5], w: 1152, h: 659, r: 150, o: 1 },
   // Slide 26: it slides right and stands up, making room for the phone. From
   // here it is a shutter, so it carries `ih` — which happens to equal its own
   // height on this slide, making the handover from filling to shuttering
   // invisible.
-  { c: [1420, 651], w: 920, h: 778, r: 60, o: 1, ih: PANEL.h },
+  { c: [1420, 571], w: 920, h: 778, r: 60, o: 1, ih: PANEL.h },
   LEAVING,
   SHUT_HIGH,
 ])
@@ -1023,8 +1038,13 @@ export const DAY_SCENES = [
     screen: 4,
     head: 'Good morning, your health plan has kicked off.',
     body: 'Your Pura opens to one clear focus: a walk after lunch, a whole-grain swap and lights out by 11.',
-    headBox: [148, 357, 487, 120],
-    bodyBox: [148, 501, 479, 52],
+    // The file leaves this paragraph at y=501 while everything else on the
+    // slide — heading, panel, phone, ruler, marker — moved up 80 with the
+    // navigation. 501 minus 80 is 421, which is exactly where slide 27 puts the
+    // SAME paragraph. Followed literally it would jump 80px on the 27 step for
+    // no reason, so it is corrected here and flagged in CONTEXT.md.
+    headBox: [148, 277, 487, 120],
+    bodyBox: [148, 421, 479, 52],
     window: DAY_MEDIA,
   },
   {
@@ -1035,20 +1055,20 @@ export const DAY_SCENES = [
     screen: 3,
     head: 'Your score moved overnight with a pattern worth discussing with your doctor.',
     body: 'PureScore is up 8 points. One line tells her why: a better night\u2019s sleep.',
-    headBox: [148, 357, 487, 160],
-    bodyBox: [148, 541, 401, 52],
+    headBox: [148, 277, 487, 160],
+    bodyBox: [148, 461, 401, 52],
     window: mediaTrack(28),
   },
   {
     key: 'c',
     settled: 30,
     media: '/assets/day/scene-c.jpg',
-    alt: 'Lunch at home',
+    alt: 'Lunch at home, logged in the app',
     screen: 2,
-    head: 'Let\u2019s get your Blood sugar (HbA1c) of 6.1 back on track.',
-    body: 'She asks what her HbA1c result means. Pura explains it plainly and suggests talking to a doctor.',
-    headBox: [148, 357, 555, 120],
-    bodyBox: [148, 501, 452, 52],
+    head: 'Lunch was a solid choice today. However, your HbA1c from lab is 6.1, just nudging above normal.',
+    body: 'Tracking her calorie intake flagged her HbA1c results. Pura explains it plainly and suggests talking to a doctor.',
+    headBox: [148, 277, 555, 160],
+    bodyBox: [148, 461, 478, 52],
     window: mediaTrack(30),
   },
   {
@@ -1059,8 +1079,8 @@ export const DAY_SCENES = [
     screen: 1,
     head: 'Good morning, your appointment with Dr. El-Sayed has been confirmed.',
     body: 'Book a UAE-licensed doctor from your results, get medication delivered and have follow-up tests at home.',
-    headBox: [148, 357, 487, 160],
-    bodyBox: [148, 541, 487, 52],
+    headBox: [148, 277, 487, 160],
+    bodyBox: [148, 461, 487, 52],
     window: mediaTrack(32),
   },
   {
@@ -1071,8 +1091,8 @@ export const DAY_SCENES = [
     screen: 0,
     head: 'Good afternoon, your medication has been delivered. Take care of yourself.',
     body: 'Her prescription goes to a licensed pharmacy and arrives at her door.',
-    headBox: [148, 357, 487, 160],
-    bodyBox: [148, 541, 424, 52],
+    headBox: [148, 277, 487, 160],
+    bodyBox: [148, 461, 424, 52],
     window: mediaTrack(34),
   },
 ].map((scene) => ({
@@ -1091,7 +1111,13 @@ export const DAY_PILL_LABELS = [
   ['Care Plans', 118.7],
   ['Home Sample test', 166.7],
 ]
-export const DAY_PILLS = copyTrack([148, 633, 674, 53.5], 32)
+/**
+ * Two rows of two, not one row of four. The file's own auto-layout wraps at
+ * 478px with a 24px gap on both axes, which is why the box is 131 tall: two
+ * 53.5 rows and the gap between them.
+ */
+export const DAY_PILL_ROW_W = 478
+export const DAY_PILLS = copyTrack([148, 553, DAY_PILL_ROW_W, 131], 32)
 
 /** The category pills, in order. The first is the selected one. */
 export const PILL_LABELS = [

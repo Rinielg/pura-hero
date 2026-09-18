@@ -102,9 +102,72 @@ function MenuGroup({ group, open, onOpen, onClose, onCloseNow }) {
   )
 }
 
+/**
+ * How far the bar has to travel before a direction counts.
+ *
+ * Zero would work off a mouse wheel and be unusable on a trackpad, where the
+ * tail of a flick wobbles a pixel either way and the bar flickers in and out
+ * for half a second after you stop. Four pixels is below the smallest
+ * deliberate scroll and above the noise.
+ */
+const DIRECTION_THRESHOLD = 4
+
+/**
+ * Tuck the bar away on the way down, bring it back on the way up.
+ *
+ * Reads NATIVE scroll, not the smoothed position. On the home route
+ * ScrollSmoother lags the real scroll by design, and the bar should answer to
+ * what the hand is doing rather than to what the page has caught up with — a
+ * bar that comes back a third of a second after you flick up feels broken.
+ *
+ * `locked` holds it open: while the phone sheet is up the whole viewport is the
+ * menu, and hiding the thing you are scrolling inside is nonsense.
+ */
+function useTuckAway(locked) {
+  const [tucked, setTucked] = useState(false)
+  const last = useRef(0)
+
+  useEffect(() => {
+    if (locked) {
+      setTucked(false)
+      return
+    }
+
+    last.current = window.scrollY
+    let queued = 0
+
+    const read = () => {
+      queued = 0
+      // Clamped: macOS rubber-banding runs scrollY negative at the top, and a
+      // bounce back to zero reads as a downward scroll that hides the bar just
+      // as you arrive at the top of the page.
+      const y = Math.max(0, window.scrollY)
+      const dy = y - last.current
+      // Below the threshold, hold the mark rather than moving it — otherwise a
+      // slow drag never accumulates enough in one frame to count as anything.
+      if (Math.abs(dy) < DIRECTION_THRESHOLD) return
+      last.current = y
+      setTucked(dy > 0 && y > 0)
+    }
+
+    const onScroll = () => {
+      if (!queued) queued = requestAnimationFrame(read)
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (queued) cancelAnimationFrame(queued)
+    }
+  }, [locked])
+
+  return [tucked, setTucked]
+}
+
 export function Nav() {
   const [open, setOpen] = useState(null) // which group's dropdown is showing
   const [sheet, setSheet] = useState(false) // the phone menu
+  const [tucked, setTucked] = useTuckAway(sheet)
   const { pathname } = useLocation()
   const timer = useRef(null)
 
@@ -127,11 +190,20 @@ export function Nav() {
 
   useEffect(() => () => clearTimeout(timer.current), [])
 
-  // Navigating anywhere puts both menus away.
+  // A dropdown hanging in mid-air after its own bar has gone is worse than no
+  // dropdown, so the bar leaving takes it along.
+  useEffect(() => {
+    if (tucked) closeNow()
+  }, [tucked, closeNow])
+
+  // Navigating anywhere puts both menus away — and brings the bar back. A new
+  // page opens at the top, and arriving somewhere new with no navigation until
+  // you happen to scroll up is a dead end.
   useEffect(() => {
     setSheet(false)
     closeNow()
-  }, [pathname, closeNow])
+    setTucked(false)
+  }, [pathname, closeNow, setTucked])
 
   useEffect(() => {
     const onKey = (e) => {
@@ -144,7 +216,13 @@ export function Nav() {
   }, [closeNow])
 
   return (
-    <header className={sheet ? 'nav is-open' : 'nav'} role="banner">
+    <header
+      className={`nav${sheet ? ' is-open' : ''}${tucked ? ' is-tucked' : ''}`}
+      role="banner"
+      // Off-screen but still in the tab order, so a keyboard reaching it has to
+      // bring it back — otherwise focus lands on a link nobody can see.
+      onFocusCapture={() => setTucked(false)}
+    >
       <nav className="nav__pill" aria-label="Main">
         <Link className="nav__logo" to="/" aria-label="Pura home">
           <img src="/assets/pura-logo.svg" alt="" width="55" height="26" />

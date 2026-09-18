@@ -28,6 +28,8 @@ import {
   DEVICE_TILT,
   DAY_PILLS,
   DAY_SCENES,
+  PANEL_H,
+  PANEL_TOP,
   DEVICE_FRONT_FROM,
   HAND_FADE,
   HAND_POSE,
@@ -63,8 +65,52 @@ const STEPS = STEP_WEIGHTS.length
 const Z_DEVICE_BEHIND_WASH = 2
 const Z_DEVICE_OVER_WASH = 4
 
-/** The panel's top edge in frame pixels — the line every scene image hangs from. */
-const PANEL_TOP = 262
+/** Where the copy band starts on a phone, in FRAME pixels — clear of the ruler,
+ *  which sits at y=106 and is 32 tall. */
+const M_COPY_TOP = 170
+/** Stage pixels between a headline and its paragraph... */
+const M_COPY_GAP = 18
+/** ...and between the bottom of the copy and the top of the panel. */
+const M_PANEL_CLEAR = 26
+
+/**
+ * The phone's copy stack, measured once per layout.
+ *
+ * Returns, in STAGE pixels, where each scene's headline and paragraph sit, and
+ * in FRAME pixels how far the panel and the device have to drop to stay out of
+ * their way.
+ *
+ * Measured rather than tabled because the heights are a function of the copy,
+ * and the copy changes: on a 430px phone frame the five headlines come out
+ * 100, 130, 160, 130 and 160 tall. One constant cannot seat all five.
+ *
+ * The drop clears the TALLEST scene rather than each scene's own, or the panel
+ * would shuffle up and down as the day went by.
+ */
+function mobileStack(L, project, refs) {
+  if (L.name !== 'mobile') return null
+
+  const top = project([960, M_COPY_TOP]).y
+  // Stage pixels per frame pixel, read off the projection rather than assumed:
+  // the chip projection converges, so it is not a plain scale.
+  const perFramePx = (project([960, 100]).y - project([960, 0]).y) / 100
+
+  let lowest = top
+  const scenes = DAY_SCENES.map((_, i) => {
+    const h = refs.heads.current[i]?.offsetHeight ?? 0
+    const b = refs.bodies.current[i]?.offsetHeight ?? 0
+    lowest = Math.max(lowest, top + h + M_COPY_GAP + b)
+    return { head: top + h / 2, body: top + h + M_COPY_GAP + b / 2 }
+  })
+
+  // `project` for the object form. `projectChip` itself returns an ARRAY, and
+  // reading `.y` off it gives undefined, which turns the drop into NaN and
+  // every panel position with it — silently, because GSAP writes NaN without
+  // complaining and the layer simply stops where it was.
+  const panelTop = project([960, PANEL_TOP + PANEL_H / 2]).y - projectLength(PANEL_H, L) / 2
+  const drop = Math.max(0, (lowest + M_PANEL_CLEAR - panelTop) / perFramePx)
+  return { scenes, perFramePx, drop }
+}
 
 /**
  * Easing: none, everywhere.
@@ -252,6 +298,12 @@ export function useHeroTimeline({
         return { x, y }
       }
 
+      // Measured once, and used by the device, the panel and the copy — all
+      // three have to agree about how much room the words need.
+      const stack = mobileStack(L, project, refs)
+      const drop = stack ? stack.drop : 0
+      if (import.meta.env.DEV) window.__stack = { stack, drop, layout: L.name, frame: L.frame }
+
       // ---------------------------------------------------------------- chips
       // The -50%/-50% centring goes through GSAP rather than CSS so that GSAP
       // owns the element's transform outright. Mixing a CSS transform with
@@ -275,7 +327,7 @@ export function useHeroTimeline({
         // which is what buys the copy a band above it. Desktop is untouched.
         const tight = L.name === 'mobile' && slide >= 25
         const scaled = tight
-          ? { ...pose, s: pose.s * 0.7, c: [pose.c[0], pose.c[1] + 150] }
+          ? { ...pose, s: pose.s * 0.7, c: [pose.c[0], pose.c[1] + drop] }
           : pose
         const [fx, fy] = projectObject(scaled.c, L)
         return {
@@ -452,12 +504,17 @@ export function useHeroTimeline({
           // On a phone the panel is CENTRED rather than parked on the right of
           // the frame: there is no "right of the phone" at 375px, and left at
           // its authored x it hung 149px off the edge with the subject of every
-          // photograph in the part you could not see. It also drops with the
-          // device, for the same reason the copy rises — something has to make
-          // the room. Both only from 25, where the panel stops being the
-          // carousel's and becomes the day's.
-          const tight = L.name === 'mobile' && slide >= 25
-          const [x, y] = projectChip(tight ? [960, row.c[1] + 150] : row.c, L)
+          // photograph in the part you could not see. It also drops far enough
+          // to clear the copy, which on a phone sits above it rather than
+          // beside it.
+          //
+          // Keyed off the ROW, not off the slide number. `ih` is what marks a
+          // row as one of the day's shutters, and every scene's window then
+          // answers the same question the same way — where a `slide >= 25`
+          // test had scene A's window answering it differently from scene B's
+          // and leaving the panel 389 frame pixels high on slide 26 alone.
+          const day = L.name === 'mobile' && row.ih != null
+          const [x, y] = projectChip(day ? [960, row.c[1] + drop] : row.c, L)
           return {
             x,
             y,
@@ -576,38 +633,56 @@ export function useHeroTimeline({
       // the top of the shrunken device.
       // The five pairs of copy, and scene D's pillar row.
       //
-      // The mobile lift is per KIND, not per scene. They do not share one
-      // offset: a headline is two or three lines and 30px tall on a phone, so
-      // the 110 frame pixels the file leaves between it and its paragraph is
-      // not enough and the paragraph has to drop a little further. All of them
-      // land in the band between the ruler and the top of the shrunken device.
-      for (const [list, key, lift] of [
-        [refs.heads, 'headAt', 140],
-        [refs.bodies, 'bodyAt', 150],
+      // The file sets all of it flush LEFT of the phone, at x=148 in a 1920
+      // frame. A phone has no room beside the device, so on mobile it is
+      // centred over it instead and the widths come down in CSS — otherwise a
+      // 487px block lands at x=-141 of a 375px screen. The same call the chip
+      // cloud and the headings already make.
+      //
+      // Vertically it used to be two hand-set lifts, one for headlines and one
+      // for paragraphs. That worked while every headline was two lines. Scene
+      // C's is four on a phone, and its paragraph landed 14px inside it while
+      // the headline itself clipped the ruler. Two constants cannot describe
+      // five blocks of different lengths, and the next copy change would have
+      // broken them again.
+      //
+      // So the phone MEASURES instead. Every headline hangs from the same line
+      // under the ruler and its paragraph sits under whatever height that
+      // headline turned out to be — which is just the stacking the desktop
+      // frame does, done with the real numbers rather than assumed ones.
+      for (const [list, key, box] of [
+        [refs.heads, 'headAt', 'headBox'],
+        [refs.bodies, 'bodyAt', 'bodyBox'],
       ]) {
         DAY_SCENES.forEach((scene, i) => {
           const el = list.current[i]
           if (!el) return
           gsap.set(el, { xPercent: -50, yPercent: -50 })
+          // Where the table puts this block when it is settled. Every other row
+          // is that, plus or minus one rise, so the difference carries the
+          // entry and exit through to the measured position unchanged.
+          const settled = scene[box][1] + scene[box][3] / 2
           track(el, (slide) => {
             const row = at(scene[key], slide)
-            // The file sets this copy flush LEFT of the phone, at x=148 in a
-            // 1920 frame. A phone has no room beside the device, so on mobile
-            // it is centred over it instead and the widths come down in CSS —
-            // otherwise a 487px block lands at x=-141 of a 375px screen. The
-            // same call the chip cloud and the headings already make.
-            const c = L.name === 'mobile' ? [960, row.c[1] - lift] : row.c
-            return { ...project(c), opacity: row.o, filter: blur(row.b ?? 0) }
+            if (!stack) return { ...project(row.c), opacity: row.o, filter: blur(row.b ?? 0) }
+            const seat = stack.scenes[i][key === 'headAt' ? 'head' : 'body']
+            return {
+              x: project([960, settled]).x,
+              y: seat + (row.c[1] - settled) * stack.perFramePx,
+              opacity: row.o,
+              filter: blur(row.b ?? 0),
+            }
           })
         })
       }
 
+      // Scene D's pillar row is hidden on a phone — there is no room for it in
+      // the band — so it only ever needs the file's own position.
       if (refs.dayPills.current) {
         gsap.set(refs.dayPills.current, { xPercent: -50, yPercent: -50 })
         track(refs.dayPills.current, (slide) => {
           const row = at(DAY_PILLS, slide)
-          const c = L.name === 'mobile' ? [960, row.c[1] - 150] : row.c
-          return { ...project(c), opacity: row.o, filter: blur(row.b ?? 0) }
+          return { ...project(row.c), opacity: row.o, filter: blur(row.b ?? 0) }
         })
       }
 

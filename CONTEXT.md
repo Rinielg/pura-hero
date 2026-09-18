@@ -183,6 +183,37 @@ once. Pages whose route sits outside their group's prefix — `/about`, `/trust`
 `/partners`, everything under More — fall back to membership. Exactly one group
 is active on every route; there is a check for it in §8.
 
+### It gets out of the way
+
+The bar tucks up off the top on any downward scroll and comes back on any upward
+one, wherever you are on the page. Three things about it are load-bearing:
+
+- **It reads NATIVE scroll, not the smoothed position.** On the home route
+  ScrollSmoother lags real scroll by design, and the bar should answer to what
+  the hand is doing rather than to what the page has caught up with — a bar that
+  returns a third of a second after you flick up feels broken.
+- **It moves by `transform`, never `opacity`.** An opacity below 1 here would
+  make the header a backdrop root and kill the pill's `backdrop-filter`
+  outright — the same trap that cost the Overlay its blur. A transformed
+  ancestor is *not* a backdrop root, so moving it away is safe where fading it
+  away would not be. Verified with the bar mid-flight: the pill still computes
+  `blur(24px) saturate(1.8)` and its nearest backdrop root is the document.
+- **A 4px direction threshold.** Zero works off a wheel and is unusable on a
+  trackpad, where the tail of a flick wobbles a pixel either way and the bar
+  flickers for half a second after you stop. Below the threshold the mark is
+  *held* rather than moved, or a slow drag never accumulates enough in any one
+  frame to count as a direction.
+
+The travel is `-100%` plus 96px of clearance, not `-100%` alone: that lands the
+bar's bottom edge exactly on the viewport's top, where the pill's drop shadow
+stays behind as a grey smear across the whole width.
+
+It stays put while the phone sheet is open (hiding the thing you are scrolling
+inside is nonsense), comes back if focus reaches it from the keyboard, takes any
+open dropdown with it when it goes, and resets on every route change — a new
+page opens at the top, and arriving somewhere with no navigation until you
+happen to scroll up is a dead end.
+
 ## 3. Where things live
 
 | File | What it owns |
@@ -250,8 +281,9 @@ So a transition changes exactly one thing. That is the whole reason it reads as 
 rather than as a cut, and it is why `SCREEN_SEQ` and the copy tables both hold their value
 across the odd slides instead of stepping every slide.
 
-**The panel** is a constant after 26: 920×778 at (960, 262), radius 60. Five windows are
-stacked in it, one per scene, all mounted at once.
+**The panel** is a constant after 26: 920×778 at (960, **182**), radius 60. Five windows are
+stacked in it, one per scene, all mounted at once. `PANEL_TOP` is exported from
+`frames.js` rather than copied into the timeline — it has already moved once.
 
 **The reveal is a shutter, not a crossfade.** Each window is a clipping box over an image
 that **never moves**. The outgoing window's top stays at the panel's top and its height
@@ -503,6 +535,71 @@ difference. The effect existed only in the computed style.
 The veil came down to 52%, the blur up to 24px, and a 1px inset hairline was
 added, because a glass edge catches light and without it the pill reads as a
 hole. The look the brief asked for is a fill decision, not a filter decision.
+
+### The file dropped the navigation, and the day rose 80px *(2026-09-18)*
+
+Slides 23–34 were rebuilt on the `Final Website` page with the navigation
+removed from slide 24 onward, and everything below it moved up to take the
+space: panel 262→182, device 650.7→570.7, copy 357→277, ruler 186→106, marker
+144→64. Slides 24 and 25 were re-spaced by hand on the way (−80 and −40), so it
+is not one uniform shift and each row has to be read off the file.
+
+**The build keeps the navigation.** The file not drawing it is a statement about
+the composition, not an instruction to delete a site-wide control — and it
+happens to agree with the bar's own behaviour, since by slide 24 you have been
+scrolling down for a while and it has tucked itself away.
+
+**One correction to the file.** Slide 26's paragraph is the single element that
+did NOT get the −80: it sits at y=501 while its own heading, panel, phone, ruler
+and marker all moved. 501 − 80 = 421, which is exactly where slide 27 puts the
+*same* paragraph. Followed literally it would jump 80px on the 26→27 step for no
+reason, so the build uses 421 and says so in `DAY_SCENES`.
+
+### Two hand-set mobile lifts became a measured stack *(2026-09-18)*
+
+Scene C's headline grew to four lines on a phone. Its paragraph landed 14px
+inside it and the headline itself clipped the ruler by 7.
+
+The copy used to be placed by two constants — headlines up 140 frame px,
+paragraphs up 150 — which worked while every headline was two lines. Five
+headlines that measure 100, 130, 160, 130 and 160 stage px cannot be seated by
+one number, and the next copy change would have broken them again.
+
+`mobileStack()` measures instead, once per layout: every headline hangs from the
+same line under the ruler, its paragraph sits under whatever height that
+headline turned out to be, and the panel and device drop far enough to clear the
+**tallest** scene — not each scene's own, or the panel would shuffle up and down
+as the day went by. The drop came out at 241 frame px against the 150 that was
+there before. Per-slide, every scene now reads 31px clear of the ruler, 16px
+between headline and paragraph, and 23–93px between paragraph and panel.
+
+Two things this cost, both worth keeping:
+
+- **`projectChip` returns an ARRAY, not an object.** `projectChip(...).y` is
+  `undefined`, which made the drop `NaN` — and GSAP writes NaN into a transform
+  without complaining, so the panels simply stopped where they were and every
+  measurement I took off them was garbage. `project()` is the object form; use
+  that. A NaN in a tween is invisible until you print it.
+- **The drop is keyed off the ROW, not the slide number.** `row.ih != null` is
+  what marks a row as one of the day's shutters. A `slide >= 25` test had
+  scene A's window answering differently from scene B's on the same slide.
+
+### Promoted text layers lose their last line on a phone *(2026-09-18)*
+
+The third line of scene C's paragraph rendered with its descenders sliced off,
+about 4px above the element's own box. Not an occluder, and not clipping —
+`scrollHeight === clientHeight` and `overflow: visible`.
+
+It is a rasterisation truncation. These blocks animate transform, opacity and
+filter, so they are promoted to their own compositor layer, and inside a stage
+scaled by a fraction — 0.872 at 375px — the layer is rasterised a few pixels
+short of its box. Desktop is the identity projection and never shows it.
+
+Six pixels of `padding-bottom` on `.greeting` and `.greeting-body`, mobile only.
+Invisible — neither has a background or a border — and the measured stack picks
+the extra height up on its own. Worth recognising the shape of it: **text cut a
+few pixels above its own border box, only at a fractional scale, is the
+compositor, not your layout.**
 
 ### The phone's screen became a list, not a mix *(2026-09-18)*
 

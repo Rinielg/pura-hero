@@ -45,6 +45,7 @@ npm run build    # static output in dist/ — deploy that folder anywhere
 | 13–15 | Nothing moves but the card row's x. The last stretch of the page is a **horizontal** scroll driven by the vertical one. |
 | 16–19 | The first three acts leave together. "Help for every part of your health.", the filter pills, then the arrow-driven feature carousel. |
 | 20–25 | "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel growing from a 154×88 pill. The device returns at 25, rising from below the frame — and from here it draws **in front of** the wash rather than under it. |
+| 24–34 | The file stops drawing the navigation here and moves everything up 80px into the space. The build **keeps** the bar — it hides itself on the way down anyway. |
 | 26–34 | **The day.** Five scenes joined by four transitions: a settled slide changes the photograph, the copy, the phone's screen and the hour on the ruler; the transition between two of them changes only the photograph, which splits the panel in half and reveals the next scene from the bottom. The phone stays put throughout and follows the cursor. |
 
 `Slide overview` in Figma is an assembly board rather than a moment in the
@@ -177,7 +178,12 @@ The result lands within 1.5% of the reference on both axes.
   off entirely under `prefers-reduced-motion` or on a touch screen.
 - **Scene D's pillar row is dropped below 980px**, and the day's panel is centred
   rather than parked on the right. Both are derivations — there is no mobile
-  frame for slides 26–34 any more than for the rest of the sequence.
+  frame for slides 26–34 any more than for the rest of the sequence. The copy
+  itself is no longer a derivation: it is measured and stacked at build time,
+  so it survives a copy change.
+- **Slide 26's paragraph is moved 80px up from where the file leaves it**, to
+  match the same paragraph on slide 27. Everything else on that slide got the
+  shift when the navigation came out; this one element did not.
 - **All six phone screens load up front** (~580KB), whether or not the visitor
   reaches the day. They should be deferred until the carousel act.
 - **Never put `opacity` in a `will-change` above a `backdrop-filter`.** It makes

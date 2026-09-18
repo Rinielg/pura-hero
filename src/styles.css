@@ -951,6 +951,11 @@ body {
   left: 0;
   top: 0;
   display: flex;
+  /* Two rows of two, which is what the file's own auto-layout does: it wraps at
+     478px with a 24px gap on both axes. Four across would be 626px and would
+     run under the panel. */
+  flex-wrap: wrap;
+  width: 478px;
   gap: 24px;
   will-change: transform, opacity, filter;
 }
@@ -981,6 +986,26 @@ body {
   align-items: center;
   padding: 0 20px;
   pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/**
+ * Out of the way on the way down, back on the way up.
+ *
+ * `transform`, not `top`: animating `top` relays out a fixed bar on every
+ * frame, and this one carries a `backdrop-filter` that has to keep sampling
+ * what is passing underneath it.
+ *
+ * A transform on this element does NOT break that filter — a transformed
+ * ancestor is not a backdrop root. `opacity` here would be, which is why the
+ * bar is moved away rather than faded away. See the note on `.wash`.
+ *
+ * The 96px is clearance rather than arithmetic: `-100%` alone lands the bar's
+ * bottom edge exactly on the viewport's top, where the pill's drop shadow stays
+ * behind as a grey smear along the whole width.
+ */
+.nav.is-tucked {
+  transform: translateY(calc(-100% - 96px));
 }
 
 /* The pill keeps its own width; the header is only a column so the phone sheet
@@ -1455,6 +1480,18 @@ body {
   .act5-head { width: 400px; font-size: 30px; letter-spacing: -0.6px; }
   /* Slide 26's copy is authored beside the phone. There is no beside on a
      phone, so it is centred over it and sized to the frame. */
+  /* Six pixels of nothing under each block of copy.
+     These elements are promoted to their own compositor layer (they animate
+     transform, opacity and filter), and inside a stage scaled by a fraction —
+     0.872 here — the layer is rasterised a few pixels short of its box. The
+     last line of a three-line paragraph gets its descenders sliced off, which
+     reads as clipped text rather than as a rendering artefact. Desktop is the
+     identity projection and never shows it. The padding is invisible: neither
+     element has a background or a border, and the measured mobile stack picks
+     the extra height up on its own. */
+  .greeting,
+  .greeting-body { padding-bottom: 6px; }
+
   .greeting { width: 330px; align-items: center; text-align: center; }
   /* Scene D's pillar row does not survive the trip to a phone. Wrapped into two
      centred rows it is ~90px tall, and the band between the ruler and the top
@@ -1495,6 +1532,9 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /* The bar still gets out of the way — that is behaviour, not decoration — but
+     it does it without the slide. */
+  .nav { transition: none; }
   .nav__cta,
   .pnav__label,
   .pnav__card,
