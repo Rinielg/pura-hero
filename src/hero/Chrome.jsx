@@ -16,6 +16,27 @@ import { MENU, STORE } from '../site/content'
 export const STORE_LINKS = STORE
 
 /**
+ * Which single group owns the current page.
+ *
+ * Route first: a page belongs to the group whose route it sits under. That
+ * settles the cross-links — Pura AI's dropdown points at PureScore and
+ * Biomarkers, which live under Your Health, and membership alone would light up
+ * two groups at once.
+ *
+ * Membership is the fallback, for the pages whose route sits outside their
+ * group's prefix: /about and /trust belong to Why Pura, /partners to For
+ * Business, and everything under More has no route prefix at all. First match
+ * wins, so a page can only ever be in one place in the menu.
+ */
+function ownerOf(pathname) {
+  const byRoute = MENU.find(
+    (g) => g.to && (pathname === g.to || pathname.startsWith(`${g.to}/`))
+  )
+  if (byRoute) return byRoute.key
+  return MENU.find((g) => g.items.some((i) => i.to === pathname))?.key ?? null
+}
+
+/**
  * One dropdown, and the button that opens it.
  *
  * Open on hover, because that is the state Figma draws, but ALSO on focus and
@@ -26,7 +47,7 @@ export const STORE_LINKS = STORE
 function MenuGroup({ group, open, onOpen, onClose, onCloseNow }) {
   const { label, to, items } = group
   const { pathname } = useLocation()
-  const within = items.some((i) => i.to === pathname) || (to && pathname === to)
+  const within = ownerOf(pathname) === group.key
 
   const Label = to ? Link : 'button'
   const labelProps = to ? { to } : { type: 'button' }
@@ -56,8 +77,17 @@ function MenuGroup({ group, open, onOpen, onClose, onCloseNow }) {
         }}
       >
         {label}
-        <svg className="pnav__chev" viewBox="0 0 10 6" aria-hidden="true">
-          <path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Drawn in a 16x16 box, because that is the size the End Icon slot is
+            in the file. The caret itself is the same 10x6 shape, centred. */}
+        <svg className="pnav__chev" viewBox="0 0 16 16" aria-hidden="true">
+          <path
+            d="M3.5 6.25L8 10.75l4.5-4.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </Label>
 
