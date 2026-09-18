@@ -91,8 +91,8 @@
   background: rgba(255, 255, 255, 0.55);
   border-color: rgba(14, 26, 43, 0.14);
   color: var(--ink);
-  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 .btn--ghost:hover { background: rgba(255, 255, 255, 0.85); }
 
@@ -142,8 +142,8 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(16px) saturate(160%);
   -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
   font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -186,8 +186,8 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(18px) saturate(160%);
   -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.05);
   font-size: 15px;
   color: rgba(14, 26, 43, 0.75);

@@ -248,6 +248,19 @@ should move by the same amount on a given step. The only legitimate exception is
 `DAY_MEDIA` on 22→23, whose centre shifts because the panel is *growing*, not
 travelling.
 
+### Firefox never had any blur at all *(2026-09-18)*
+
+Found while checking the nav fix on production. The CSS minifier treats
+`backdrop-filter` and `-webkit-backdrop-filter` as the same property and keeps
+whichever it sees **last**. Every pair in the source was written standard-first,
+so the standard declaration was dropped from every build: **13 prefixed, 0
+standard** shipped. Chrome honours the prefix, so it looked right there and
+nowhere else.
+
+Fixed by putting `-webkit-` first in all twelve pairs; both now ship. There is a
+comment at the top of `styles.css` saying not to reorder them, because the
+failure is completely invisible in the browser you are testing in.
+
 ### The nav blur was there and did nothing *(2026-09-18)*
 
 Reported as "the background blur is gone". The declaration had never been
