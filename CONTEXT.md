@@ -832,6 +832,15 @@ Slides 21→23 travel from just before 5:00 to exactly 6:00; the marker landing 
   is to export the *source* image and apply its `CROP` `imageTransform` yourself.
 - A node that sits past the frame edge exports at a few pixels wide. Re-export the same
   component from a later slide where it is fully inside.
+- **`exportAsync` gives a node's RENDER bounds, not its box.** The closing act's `UI`
+  rectangle is 417×896, but its image paints only the top 629 — so the export came back
+  418×629, and forcing that into the screen's 0.466 canvas squashed the content by 30%.
+  It read as a stretched phone screen. Check `absoluteRenderBounds` against
+  `absoluteBoundingBox` before resizing anything, and fit-and-pad rather than force.
+- Nothing corrects a screen texture's aspect: the shader samples raw UV, so a texture of
+  the wrong shape is silently stretched onto the glass. `window.__screen` reports the
+  surface aspect in DEV — it is 0.4599, and the asset's own wallpaper (1024×2048) does not
+  match it either.
 - One movement tag icon exports as a 1×1 transparent pixel from its own instance in every
   format, though it renders on canvas. Exported from the same component on a later slide.
 - Figma flips the Google Play wordmark inside its component: `transform: scaleY(-1)`.

@@ -793,11 +793,16 @@ export function useHeroTimeline({
         const el = refs.closeRows.current[i]
         if (!el) return
         gsap.set(el, { xPercent: -50, yPercent: -50 })
-        track(el, (slide) => {
-          const row = at(table, slide)
-          const [x, y] = projectCards(row.c, L)
-          return { x, y, opacity: row.o }
-        })
+        track(
+          el,
+          (slide) => {
+            const row = at(table, slide)
+            const [x, y] = projectCards(row.c, L)
+            return { x, y, opacity: row.o }
+          },
+          // Held until the phone has left over the top — see STEP_WINDOWS.
+          STEP_WINDOWS.closeRows
+        )
       })
 
       // ------------------------------------------------------------- the cue

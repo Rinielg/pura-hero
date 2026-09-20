@@ -1350,6 +1350,15 @@ export const CLOSE_BADGES = parked(39, { c: [960, 1182], o: 0 }, [
  */
 export const CLOSE_TILE = { w: 425, h: 242, r: 150, gap: 24 }
 
+/**
+ * The rows wait for the phone to get out of the way.
+ *
+ * Step 38 is slide 39 -> 40, and the phone leaves over the top across it: it
+ * starts centred at 601.5 and its bottom edge only clears row A's top line
+ * about three quarters of the way through. Both rows hold their entry pose,
+ * invisible, until it has. Nothing is needed on the way in to 42 — by then the
+ * phone is long gone.
+ */
 export const CLOSE_ROW_A = parked(39, { c: [3277.5, 598], o: 0 }, [
   { c: [2567.5, 598], o: 1 },
   { c: [1857.5, 598], o: 1 },
@@ -1593,6 +1602,8 @@ export const STEP_WINDOWS = {
    * band included, leaves at the same -670.
    */
   act4Arrival: { 15: [0.75, 1] },
+  /** The closing rows wait for the phone to leave — see `CLOSE_ROW_A`. */
+  closeRows: { 38: [0.78, 1] },
 }
 
 /**

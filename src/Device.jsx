@@ -153,7 +153,19 @@ function adaptMaterials(scene) {
     const mesh = meshFor.get(m)
     if (mesh) displayArea = Math.max(displayArea, planarArea(mesh))
     if (!STOCK_WALLPAPER.has(m)) {
-      STOCK_WALLPAPER.set(m, { texture: m.emissiveMap, aspect: mesh ? surfaceAspect(mesh) : null })
+      const aspect = mesh ? surfaceAspect(mesh) : null
+      STOCK_WALLPAPER.set(m, { texture: m.emissiveMap, aspect })
+      // The shape the screen textures have to be cut to. Nothing corrects for a
+      // mismatch — the shader samples raw UV — so a texture of the wrong aspect
+      // is silently stretched onto the glass.
+      if (import.meta.env.DEV) {
+        window.__screen = {
+          surfaceAspect: aspect,
+          stock: m.emissiveMap?.image
+            ? `${m.emissiveMap.image.width}x${m.emissiveMap.image.height}`
+            : null,
+        }
+      }
     }
     m.emissiveIntensity = 1
     m.toneMapped = SCREEN_TONE_MAPPED
