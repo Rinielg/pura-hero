@@ -837,6 +837,9 @@ Slides 21→23 travel from just before 5:00 to exactly 6:00; the marker landing 
   418×629, and forcing that into the screen's 0.466 canvas squashed the content by 30%.
   It read as a stretched phone screen. Check `absoluteRenderBounds` against
   `absoluteBoundingBox` before resizing anything, and fit-and-pad rather than force.
+  In this case the fit-and-pad was only ever a reconstruction: the frame in the file is
+  placed short, and `ui-twin.jpg` is now the real 880×1912 export Riniel supplied. If that
+  node is re-exported it will come back short again — compare the aspect to 0.46 first.
 - Nothing corrects a screen texture's aspect: the shader samples raw UV, so a texture of
   the wrong shape is silently stretched onto the glass. `window.__screen` reports the
   surface aspect in DEV — it is 0.4599, and the asset's own wallpaper (1024×2048) does not
