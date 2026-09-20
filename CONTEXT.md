@@ -898,15 +898,31 @@ cannot live in it.
 
 ## 6c. The partner band (Slide 17)
 
-One box, on one slide, carried in from below the frame and out over the top —
-the same treatment the promo row gets, and for the same reason: the file draws it
-on slide 17 and nowhere else, so it has to travel rather than switch on.
+One box, on one slide. The file draws it on 17 and nowhere else, so it has to be
+carried in and out rather than switched on — but what it must **not** do is
+travel.
+
+It moves at exactly the rate the rest of the fourth act moves: −63 into slide 17
+and −670 out of it, the same two numbers the headline and the tabs take. The gap
+between it and them is then constant — 138px to the headline, 234px to the tabs,
+at every point in both steps — and it cannot cross them. What marks slides 16
+and 18 is the **opacity**, not the position.
+
+Parking it below the frame instead, which is where the carousel waits, gave it a
+765px climb against the headline's 63, and it arrived by passing straight through
+the headline and the tabs for most of the step. If a new element in an act does
+not match that act's rise, it will cross something.
 
 Everything inside it is positioned against **the band's own top-left** in frame
 pixels and scaled by one number, `--bs`. One number rather than the usual two
 projections, because the band travels as a single box: give the box the object
 scale and its contents the chip convergence and they come apart on a phone,
 exactly the way the day's two photo windows did (§4b).
+
+It sits **behind the promo row** in the stack, which is what the file's own
+choreography implies: the row slides up and left out of exactly the space the
+band occupies, so what you see is the cards clearing off the band rather than the
+band arriving on top of them.
 
 **The logo row is tiled and it drifts.** The file centres one set of eight, 1581
 wide in a 1920 band — which does not reach either edge, and a row that has to

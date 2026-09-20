@@ -565,6 +565,18 @@ export default function App() {
             <a href="#top">How it works</a>
           </div>
 
+          {/* Slide 17 only, and BEFORE the promo row so the cards paint over
+              it. That is the order the file's own choreography implies: the row
+              slides up and left out of exactly the space the band takes, so what
+              should be seen is the cards clearing off the band rather than the
+              band arriving on top of them. */}
+          <Partners
+            scale={layout.cardScale}
+            frameW={layout.frame[0]}
+            innerRef={refs.partners}
+            rowRef={refs.partnerRow}
+          />
+
           {/* Five cards, wider than the frame on purpose: slides 13 to 15 change
               nothing but this row's x, so the end of the page is a horizontal
               scroll driven by the vertical one. */}
@@ -599,16 +611,6 @@ export default function App() {
               </article>
             ))}
           </div>
-
-          {/* Slide 17 only. First among the fourth act's children so it paints
-              under them, though at the positions the file gives nothing in this
-              act ever overlaps it. */}
-          <Partners
-            scale={layout.cardScale}
-            frameW={layout.frame[0]}
-            innerRef={refs.partners}
-            rowRef={refs.partnerRow}
-          />
 
           <h2 className="act4-head" ref={refs.act4Head}>
             Help for every part of your health.

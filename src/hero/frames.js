@@ -781,13 +781,23 @@ export const PILLS = parked(16, { c: [960, 1068], o: 0, b: 8 }, [
 /**
  * "Built by PureHealth", on slide 17 and nowhere else.
  *
- * The file draws it on that one slide, so like the promo row it has to be
- * carried in and out rather than switched on: parked flush below the frame
- * while the third act is still leaving, up into place for 17, and on up and out
- * over the step into 18 — the same 670px rise everything else in the fourth act
- * takes across that step.
+ * The file draws it on that one slide, so it has to be carried in and out
+ * rather than switched on. What it must NOT do is travel: it moves at exactly
+ * the rate the rest of the fourth act moves — -63 into slide 17 and -670 out of
+ * it, the same two numbers the headline and the tabs take — so the gap between
+ * it and them never changes and it cannot cross them.
+ *
+ * Parking it below the frame instead, which is where the carousel waits, meant
+ * a 765px climb against the headline's 63. It arrived by passing straight
+ * through the headline and the tabs, for most of the step.
+ *
+ * So what marks slides 16 and 18 is the OPACITY, not the position. The band is
+ * revealed rather than flown in — which is also what the file's own
+ * choreography does with it: the promo row slides up and left out of exactly
+ * the space the band occupies, so the band is behind the cards in the stack and
+ * they clear off it.
  */
-export const PARTNERS = parked(16, { c: [960, 1294.5], o: 0 }, [
+export const PARTNERS = parked(16, { c: [960, 592.5], o: 0 }, [
   { c: [960, 529.5], o: 1 },
   { c: [960, -140.5], o: 0 },
 ])
