@@ -20,18 +20,19 @@ const MODEL_URL = '/models/iphone-18-pro.glb'
  * sequence reads 4 -> 5 -> 4 -> 3 -> 2 -> 1 -> 0 and never skips.
  */
 const SCREEN_URLS = [
-  '/assets/day/ui-f.jpg', // 0  scene F - winding down
-  '/assets/day/ui-e.jpg', // 1  scene E - medication delivered
-  '/assets/day/ui-d.jpg', // 2  scene D - the consultation
-  '/assets/day/ui-c.jpg', // 3  scene C - the HbA1c answer
-  '/assets/day/ui-b.jpg', // 4  scene B - the digital twin
-  '/assets/day/ui-a.jpg', // 5  scene A - the morning plan
-  '/assets/pura-screen.jpg', // 6  Home
-  '/assets/pura-ai-screen.jpg', // 7  Pura AI
+  '/assets/day/ui-twin.jpg', // 0  the close - Digital Twin
+  '/assets/day/ui-f.jpg', // 1  scene F - winding down
+  '/assets/day/ui-e.jpg', // 2  scene E - medication delivered
+  '/assets/day/ui-d.jpg', // 3  scene D - the consultation
+  '/assets/day/ui-c.jpg', // 4  scene C - the HbA1c answer
+  '/assets/day/ui-b.jpg', // 5  scene B - the digital twin
+  '/assets/day/ui-a.jpg', // 6  scene A - the morning plan
+  '/assets/pura-screen.jpg', // 7  Home
+  '/assets/pura-ai-screen.jpg', // 8  Pura AI
 ]
 
 /** Which entry the phone shows before anything has been tweened. */
-const SCREEN_DEFAULT = 6
+const SCREEN_DEFAULT = 7
 
 /** The colourway the hero uses. Black reads as one dark mass against the
  *  cream gradient, which makes the lit screen the brightest thing on the page —

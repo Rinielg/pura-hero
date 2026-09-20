@@ -889,6 +889,74 @@ body {
   opacity: 0.8;
 }
 
+/* ------------------------------------------------------------- the close */
+
+/* The closing act's top scrim: white at the frame's top edge, gone by 298.
+   Figma blurs the backdrop here too; skipped for the reason on `.partners`. */
+.wash-top {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 298px;
+  background: linear-gradient(to bottom, #fff, rgb(255 255 255 / 0));
+  will-change: opacity;
+}
+
+.twin-head,
+.close-head {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: 0;
+  text-align: center;
+  font-family: var(--brand);
+  font-weight: 400;
+  color: var(--ink);
+  will-change: transform, opacity, filter;
+}
+
+.twin-head {
+  width: 965px;
+  font-size: 48px;
+  line-height: 58px;
+  letter-spacing: -0.96px;
+}
+
+.close-head {
+  width: 642px;
+  font-size: 44px;
+  line-height: 53px;
+  letter-spacing: -0.88px;
+}
+
+.close-badges {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  gap: 8px;
+  will-change: transform, opacity;
+}
+
+/* Five 425x242 stadiums on a 24px gap — 2219 against a 1920 frame, so both ends
+   are always off screen. `flex: none` because the row is wider than anything it
+   could be laid out inside. */
+.close-row {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  will-change: transform, opacity;
+}
+
+.close-row img {
+  display: block;
+  flex: none;
+  object-fit: cover;
+}
+
 .carousel-ctrl {
   position: absolute;
   left: 0;
@@ -1657,6 +1725,13 @@ body {
      consultations, medication and tests at home. A real mobile frame would
      decide this properly. */
   .day-pills { display: none; }
+
+  /* The closing act. Both headlines are set to a desktop measure — 965 and 642
+     against a 430 frame — so they get the phone's own, and the type comes down
+     with them. The photo rows need nothing: their tiles take the card scale, so
+     they shrink with the row that carries them. */
+  .twin-head { width: 330px; font-size: 26px; line-height: 30px; letter-spacing: -0.5px; }
+  .close-head { width: 330px; font-size: 24px; line-height: 28px; letter-spacing: -0.5px; }
   .greeting p { font-size: 26px; line-height: 30px; letter-spacing: -0.8px; }
   .greeting-body { width: 330px; font-size: 15px; line-height: 21px; text-align: center; }
 

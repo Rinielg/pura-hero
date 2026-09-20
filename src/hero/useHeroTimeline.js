@@ -11,7 +11,13 @@ import {
   ACT4_HEAD,
   ACT5_HEAD,
   AGENT_BAR,
+  BACKDROP_FADE,
   BACKDROP_Y,
+  CLOSE_BADGES,
+  CLOSE_HEAD,
+  CLOSE_ROW_A,
+  CLOSE_ROW_B,
+  DAY_LIFT,
   BODY_COPY,
   CARDS,
   CARD_ROW_W,
@@ -37,6 +43,8 @@ import {
   KICKER,
   PARTNERS,
   PARTNER_DRIFT,
+  TWIN_HEAD,
+  WASH_TOP,
   PILLS,
   SCREEN_SEQ,
   STEP_WEIGHTS,
@@ -542,14 +550,14 @@ export function useHeroTimeline({
        * plain projection. Of the three heights a shutter ever has, only the
        * half needs replacing: 0 and the full panel project to themselves.
        */
-      const window_ = (row) => {
+      const window_ = (row, slide) => {
         if (row.ih == null) return null
         const h = row.h === PANEL_HALF ? panel.half : projectLength(row.h, L)
-        return {
-          h,
-          edge: row.edge,
-          top: row.edge === 'top' ? panel.top : panel.top + panel.h - h,
-        }
+        // The day ends by rising off the top as one piece, and the panel is
+        // tiled into a box rather than moved by its row — so the lift is
+        // applied to the box. Zero until slide 37.
+        const top = panel.top + projectLength(at(DAY_LIFT, slide), L)
+        return { h, edge: row.edge, top: row.edge === 'top' ? top : top + panel.h - h }
       }
 
       // Six photo panels stacked in one box.
@@ -571,7 +579,7 @@ export function useHeroTimeline({
         gsap.set(el, { xPercent: -50, yPercent: -50 })
         track(el, (slide) => {
           const row = at(scene.window, slide)
-          const w = window_(row)
+          const w = window_(row, slide)
           return {
             // On a phone the panel is CENTRED rather than parked on the right
             // of the frame: there is no "right of the phone" at 375px, and left
@@ -601,7 +609,7 @@ export function useHeroTimeline({
         const img = el.querySelector('img')
         track(img, (slide) => {
           const row = at(scene.window, slide)
-          const w = window_(row)
+          const w = window_(row, slide)
           if (!w) return { height: projectLength(row.h, L), y: 0 }
           return { height: panel.h, y: w.edge === 'top' ? 0 : -(panel.h - w.h) }
         })
@@ -652,6 +660,7 @@ export function useHeroTimeline({
       // on, which is the file saying the first act is over. Plain white sits
       // behind it, so translating the layer is the whole effect.
       track(refs.backdrop.current, (slide) => ({
+        opacity: at(BACKDROP_FADE, slide),
         y: projectChip([960, 540 + at(BACKDROP_Y, slide)], L)[1] - L.frame[1] / 2,
       }))
 
@@ -755,6 +764,41 @@ export function useHeroTimeline({
           return { ...project(row.c), opacity: row.o, filter: blur(row.b ?? 0) }
         })
       }
+
+      // ----------------------------------------------------------- the close
+      // The top scrim the closing act adds, so the returned gradient does not
+      // run up under the navigation. Opacity only — it is pinned to the top of
+      // the frame and never moves.
+      if (refs.washTop.current) {
+        track(refs.washTop.current, (slide) => ({ opacity: at(WASH_TOP, slide).o }))
+      }
+
+      for (const [ref, table] of [
+        [refs.twinHead, TWIN_HEAD],
+        [refs.closeHead, CLOSE_HEAD],
+        [refs.closeBadges, CLOSE_BADGES],
+      ]) {
+        if (!ref.current) continue
+        gsap.set(ref.current, { xPercent: -50, yPercent: -50 })
+        track(ref.current, (slide) => {
+          const row = at(table, slide)
+          return { ...project(row.c), opacity: row.o, filter: blur(row.b ?? 0) }
+        })
+      }
+
+      // The two photo rows. Wider than the frame and travelling in opposite
+      // directions, so they take the card projection like the promo row and the
+      // ruler rather than the chip cloud's convergence.
+      ;[CLOSE_ROW_A, CLOSE_ROW_B].forEach((table, i) => {
+        const el = refs.closeRows.current[i]
+        if (!el) return
+        gsap.set(el, { xPercent: -50, yPercent: -50 })
+        track(el, (slide) => {
+          const row = at(table, slide)
+          const [x, y] = projectCards(row.c, L)
+          return { x, y, opacity: row.o }
+        })
+      })
 
       // ------------------------------------------------------------- the cue
       // Tracked rather than toggled, so scrolling back up brings the words

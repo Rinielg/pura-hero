@@ -3,7 +3,7 @@ import gsap from 'gsap'
 import { Scene } from './Scene'
 import { Backdrop } from './Backdrop'
 import { QUALITY } from './config'
-import { AppStores, Nav } from './hero/Chrome'
+import { AppStores, Nav, StoreBadges } from './hero/Chrome'
 import {
   CARD_CONTENT,
   CAROUSEL_GEO,
@@ -23,6 +23,8 @@ import {
   PARTNER_SETS,
   PARTNER_SET_W,
   PILL_LABELS,
+  CLOSE_ROWS,
+  CLOSE_TILE,
   RULER_HOURS,
   scrollLength,
 } from './hero/frames'
@@ -337,6 +339,11 @@ export default function App() {
     act5Head: useRef(null),
     partners: useRef(null),
     partnerRow: useRef(null),
+    twinHead: useRef(null),
+    closeHead: useRef(null),
+    closeBadges: useRef(null),
+    closeRows: useRef([]),
+    washTop: useRef(null),
     pills: useRef(null),
     carousel: useRef(null),
     carouselCtrl: useRef(null),
@@ -564,6 +571,10 @@ export default function App() {
         <div className="stage" style={stageStyle}>
           <Wash ref={refs.washA} />
           <Wash ref={refs.washB} />
+          {/* The closing act brings the gradient back full-frame, and this is
+              what keeps it off the navigation: a white scrim on the top 298 of
+              the frame. Pinned — only its opacity is on the timeline. */}
+          <span className="wash-top" ref={refs.washTop} />
         </div>
       </div>
 
@@ -745,6 +756,53 @@ export default function App() {
           </div>
           {/* The phone on slide 26 is the three.js device, brought back by
               DEVICE_POSE — not a picture of one. See DEVICE_FADE. */}
+
+          {/* ------------------------------------------------- the close */}
+          <h2 className="twin-head" ref={refs.twinHead}>
+            With a digital twin that gives you a clearer picture of how the plan is
+            working.
+          </h2>
+
+          {/* Two rows of stadium photographs travelling opposite ways. Five
+              tiles each, 2219 wide against a 1920 frame, so both ends are
+              always off screen — the file draws them that way and they never
+              travel far enough to open a gap. */}
+          {CLOSE_ROWS.map(([key, imgs], i) => (
+            <div
+              className="close-row"
+              key={key}
+              ref={(el) => {
+                refs.closeRows.current[i] = el
+              }}
+              // The row's POSITION takes the card projection, so its tiles
+              // take the card scale too — the two have to agree or the row
+              // travels at one rate and fills at another. Same rule as the
+              // partner band and the day's panel.
+              style={{ gap: `${CLOSE_TILE.gap * layout.cardScale}px` }}
+              aria-hidden="true"
+            >
+              {imgs.map((img) => (
+                <img
+                  key={img}
+                  src={`/assets/close/close-${img}.jpg`}
+                  alt=""
+                  style={{
+                    width: `${CLOSE_TILE.w * layout.cardScale}px`,
+                    height: `${CLOSE_TILE.h * layout.cardScale}px`,
+                    borderRadius: `${CLOSE_TILE.r * layout.cardScale}px`,
+                  }}
+                />
+              ))}
+            </div>
+          ))}
+
+          <h2 className="close-head" ref={refs.closeHead}>
+            Pura knows your body like you do.
+          </h2>
+
+          <div className="close-badges" ref={refs.closeBadges}>
+            <StoreBadges />
+          </div>
 
           <div className="agent-bar" ref={refs.bar}>
             <img className="agent-bar__mark" src="/assets/pura-sparkle.png" alt="" />

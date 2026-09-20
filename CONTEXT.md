@@ -4,7 +4,7 @@ The running record of this prototype: what is built, why it is built that way, w
 broke and how it was fixed. Read this before continuing the build. The README covers
 how to run it; this file covers how to *reason* about it.
 
-- **Design source:** [Pura Website](https://www.figma.com/design/1ybPUzTZG9WJ2dle6NfH2U/Pura-Website), page **Final Website**, frames `Slide 1` … `Slide 36`, plus the `Carousel Selection 2`–`6` frames for the tabbed band, plus the `Menu` frame (node `6203:71995`) for the navigation.
+- **Design source:** [Pura Website](https://www.figma.com/design/1ybPUzTZG9WJ2dle6NfH2U/Pura-Website), page **Final Website**, frames `Slide 1` … `Slide 42`, plus the `Carousel Selection 2`–`6` frames for the tabbed band, plus the `Menu` frame (node `6203:71995`) for the navigation.
 - **Content source for the inner pages:** `https://pura-website-upload-1.vercel.app` — **not** pura.ai.
 - **Live:** https://pura-hero.vercel.app · **Repo:** https://github.com/Rinielg/pura-hero (private — it carries PureHealth brand assets)
 - **Device model:** forked from [Rinielg/pura-device-viewer](https://github.com/Rinielg/pura-device-viewer)
@@ -13,12 +13,12 @@ how to run it; this file covers how to *reason* about it.
 
 ## 1. What the thing is
 
-One scroll-driven sequence. Thirty-six Figma slides are thirty-six *moments*, and
+One scroll-driven sequence. Forty-two Figma slides are forty-two *moments*, and
 scrolling scrubs a single GSAP timeline between them. There is no second section: the
 page is the sequence, plus fixed page furniture (nav, store badges, scroll cue).
 
 `Slide overview` in the Figma file is an assembly board, **not** a moment. Ignore it.
-Everything comes from `Slide 1` … `Slide 36`, in numeric order.
+Everything comes from `Slide 1` … `Slide 42`, in numeric order.
 
 ---
 
@@ -310,6 +310,7 @@ Note the ordering: **6 sits above 5 on purpose.** See §5.
 | 25 | The device comes back, rising from below the frame at (959.7, 1266.7), and **changes sides**: from here it draws in front of the Overlay rather than under it. |
 | 26 | The day resolves into the app. The panel slides right and stands up at **812×778 centred on x=1366**, the device lands at `ai(663)` showing the day's first screen, the morning greeting arrives flush left at x=148, and the phone starts **watching the cursor**. |
 | 27–36 | **The day**: six scenes joined by five transitions. Even slides are settled, odd slides are the reveal. See §4b. |
+| 37–42 | **The close.** The day rises off the top as one piece (420, then 486 — see `DAY_LIFT`), the gradient fades back full-frame under a new top scrim, the phone grows from 321×663 to 451×931 for the Digital Twin, and the page ends on two rows of stadium photographs travelling in opposite directions under "Pura knows your body like you do." |
 | ~~20–23~~ | ~~The carousel holds the centre and rises, leaving left only at 23. "See how Pura fits into one ordinary day.", the time ruler, and the day's media panel, which *grows* rather than fades. |
 
 ### 4b. The day (slides 26–36)
@@ -1146,8 +1147,8 @@ const rootReasons = (el) => {
 - **The day's panel is centred on a phone, not parked right.** At its authored x it
   hung 149px off the edge with the subject of every photograph in the part you could
   not see. Centred it bleeds ±55px symmetrically, which reads as full-bleed.
-- **Eight screen textures load up front** — the day's six plus Home and Pura AI — ~1.1MB and
-  about 60MB of GPU memory, whether or
+- **Nine screen textures load up front** — the day's six, the closing act's Digital Twin,
+  Home and Pura AI — ~1.2MB and about 68MB of GPU memory, whether or
   not the visitor ever reaches slide 26. Deferring the four day screens until the carousel
   act is the obvious fix and has not been done.
 - **The performance pass was built, then rolled back.** `a5cf93d` put the WebGL scene on

@@ -14,7 +14,7 @@ Two sources feed it, and they are not interchangeable:
 
 | | Source |
 |---|---|
-| The sequence | Figma `Final Website` (slides 1–36), the `Carousel Selection 2`–`6` frames |
+| The sequence | Figma `Final Website` (slides 1–42), the `Carousel Selection 2`–`6` frames |
 | The navigation | Figma `Menu MVP` for what ships; the `Menu` frame, node `6203:71995`, for the full one that is kept behind `NAVIGATION` in `config.js` |
 | Everything the inner pages say | `https://pura-website-upload-1.vercel.app` — **not** pura.ai, which is the older single-page site |
 
@@ -47,6 +47,7 @@ npm run build    # static output in dist/ — deploy that folder anywhere
 | 16–19 | The first three acts leave together. Slide 17 is the **partner band** — "Built by PureHealth" over eight logos that drift sideways as you scroll — and then "Help for every part of your health." and the **tabbed** feature carousel: six tabs over six decks of cards, with arrows that page the row. |
 | 20–25 | "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel growing from a 154×88 pill. The device returns at 25, rising from below the frame — and from here it draws **in front of** the wash rather than under it. |
 | 24–36 | The file stops drawing the navigation here and moves everything up 80px into the space. The build **keeps** the bar — it hides itself on the way down anyway. |
+| 37–42 | **The close.** The day rises off the top as one piece, the gradient comes back full-frame, the phone grows for the Digital Twin and then leaves, and the page ends on two rows of photographs travelling opposite ways under the last line. |
 | 26–36 | **The day.** Six scenes joined by five transitions: a settled slide changes the photograph, the greeting, the phone's screen and the hour on the ruler; the transition between two of them changes only the photograph, which splits the panel in half and reveals the next scene from the bottom. The phone stays put throughout and follows the cursor. The day runs 7:00 to 23:00 on the ruler. |
 
 `Slide overview` in Figma is an assembly board rather than a moment in the
@@ -192,7 +193,7 @@ The result lands within 1.5% of the reference on both axes.
   frame for slides 26–36 any more than for the rest of the sequence. The copy
   itself is no longer a derivation: it is measured and stacked at build time,
   so it survives a copy change.
-- **All eight phone screens load up front** (~1.1MB, ~60MB of GPU memory),
+- **All nine phone screens load up front** (~1.2MB, ~68MB of GPU memory),
   whether or not the visitor reaches the day. They should be deferred until the
   carousel act. This got worse with the rebuild: the day now has six distinct
   screens rather than four, and its first one is no longer the Home screen.

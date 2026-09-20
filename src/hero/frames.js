@@ -23,7 +23,7 @@
 export const FRAME = { w: 1920, h: 1080 }
 
 /** Slides in the sequence. Adding one in Figma means adding an entry below. */
-export const SLIDES = 36
+export const SLIDES = 42
 
 /**
  * `n` slides holding the same value.
@@ -269,10 +269,13 @@ export const DEVICE_POSE = [
   // itself inside the frame at slide 16, so it is carried out on the same
   // 434px rise the rest of the scene takes rather than simply switched off.
   { c: [959.9, -858.5], s: ai(823), r: FACE },
-  // Slides 18-24: parked where slide 26 wants it, one page-rise below. The jump
-  // from off the top to down here happens while DEVICE_FADE holds it at zero,
-  // so nothing sweeps across the frame to get there.
-  ...hold(7, { c: [959.7, 650.7 + 38], s: ai(663), r: FACE }),
+  // Slides 18-24: parked BELOW the frame, not above the day's panel.
+  //
+  // It used to wait one page-rise ABOVE slide 25's entrance, which meant the
+  // step into 25 faded it up while carrying it 578px DOWNWARD across the
+  // photograph — it appeared over the panel and then slid down to its entrance.
+  // Waiting below means the only thing it ever does is rise.
+  ...hold(7, { c: [959.7, 1600], s: ai(663), r: FACE }),
   // Slide 25: the file has it half a frame lower, rising. That entrance is the
   // reason the landing on 26 reads as a landing rather than as an appearance.
   { c: [959.7, 1266.7], s: ai(663), r: FACE },
@@ -280,7 +283,15 @@ export const DEVICE_POSE = [
   // there it stays for the rest of the day. Slides 27 to 36 move the
   // photograph and the copy around it; the only thing that changes about the
   // phone itself is what is on its screen.
-  ...hold(11, { c: [959.7, 570.7], s: ai(663), r: FACE }),
+  ...hold(12, { c: [959.7, 570.7], s: ai(663), r: FACE }), // 26-37
+  // The closing act. It grows — the file's phone group goes from 321x663 to
+  // 451x931 — drops to make room for the headline above it, rises to centre,
+  // and then leaves over the top.
+  { c: [959.7, 898.5], s: ai(931), r: FACE }, // 38
+  { c: [959.7, 601.5], s: ai(931), r: FACE }, // 39
+  { c: [959.7, -176.5], s: ai(931), r: FACE }, // 40
+  { c: [959.7, -176.5], s: ai(931), r: FACE }, // 41
+  { c: [959.7, -176.5], s: ai(931), r: FACE }, // 42
 ]
 
 /**
@@ -294,8 +305,9 @@ export const DEVICE_POSE = [
 export const DEVICE_FADE = [
   ...hold(13, 1), // 1-13
   ...hold(11, 0), // 14-24
-  // Back from slide 25, and it stays for the whole day.
-  ...hold(12, 1), // 25-36
+  // Back from slide 25, and it stays for the day and the closing act.
+  ...hold(17, 1), // 25-41
+  0, // 42: the phone has left; the closing rows are the whole frame
 ]
 
 /**
@@ -325,8 +337,8 @@ export const DEVICE_FRONT_FROM = 25
  */
 export const DEVICE_TILT = [
   ...hold(25, 0), // 1-25
-  // Slides 26 to 36: face on, at rest, and watching the cursor.
-  ...hold(11, 1),
+  // Slides 26 to 42: face on, at rest, and watching the cursor.
+  ...hold(17, 1),
 ]
 
 /**
@@ -338,28 +350,30 @@ export const DEVICE_TILT = [
  * must differ by at most one step, or the crossfade passes through whatever
  * happens to sit between them and a wrong screen flashes up mid-scroll. The
  * list is ordered backwards through the day for exactly that reason: the
- * sequence walks 6 -> 7 -> 6 -> 5 -> 4 -> 3 -> 2 -> 1 -> 0 and never skips.
+ * sequence walks 7 -> 8 -> 7 -> 6 -> 5 -> 4 -> 3 -> 2 -> 1 -> 0 and never skips.
  *
- * The list is: the day's six screens in reverse (f, e, d, c, b, a), then the
- * Home screen and Pura AI. Reversed because the day is the long walk and it
- * has to be the contiguous run.
+ * The list is: the closing act's Digital Twin, then the day's six screens in
+ * reverse (f, e, d, c, b, a), then Home and Pura AI. Reversed because the day
+ * is the long walk and has to be the contiguous run, and the twin goes on the
+ * end it walks toward.
  *
  * It crossfades across the turn to face-on, so the content changes while the
  * device is moving rather than snapping while it is sitting still.
  */
 export const SCREEN_SEQ = [
-  ...hold(6, 6), // 1-6    the Home screen
-  ...hold(11, 7), // 7-17  Pura AI
-  6, // 18       one step back down, so 7 -> 5 never skips 6
-  ...hold(9, 5), // 19-27  the day's first screen, arriving while nothing shows
+  ...hold(6, 7), // 1-6    the Home screen
+  ...hold(11, 8), // 7-17  Pura AI
+  7, // 18       one step back down, so 8 -> 6 never skips 7
+  ...hold(9, 6), // 19-27  the day's first screen, arriving while nothing shows
   // The day. Each scene brings its own screen; it changes on the SETTLED
   // slide and holds through the transition after it, which is the rule the
   // copy follows too — so the two can never disagree.
-  4, 4, // 28-29
-  3, 3, // 30-31
-  2, 2, // 32-33
-  1, 1, // 34-35
-  0, //    36
+  5, 5, // 28-29
+  4, 4, // 30-31
+  3, 3, // 32-33
+  2, 2, // 34-35
+  1, 1, // 36-37
+  ...hold(5, 0), // 38-42  the Digital Twin screen the closing act is about
 ]
 
 /**
@@ -425,7 +439,7 @@ export const HAND_FADE = [1, 1, 1, 1, 0.45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
  * The last entry brings it back for the final slide, where the label has
  * changed to "Back to top" and is worth reading again.
  */
-export const CUE_LABEL = [...hold(3, 1), ...hold(32, 0), 1]
+export const CUE_LABEL = [...hold(3, 1), ...hold(38, 0), 1]
 
 export const HAND_ASPECT = 942 / 500
 
@@ -591,7 +605,30 @@ export const WASH_B = washBO.map((o) => ({ y: 858, o }))
  * white — so the backdrop layer translates and the page shows through beneath
  * it, exactly as the design has it.
  */
-export const BACKDROP_Y = [0, 0, 0, 0, 0, 0, 0, 0, 0, -221, -507, -652, -994, -994, -994, -994, -1428]
+export const BACKDROP_Y = [
+  0, 0, 0, 0, 0, 0, 0, 0, 0, -221, -507, -652, -994, -994, -994, -994, -1428,
+  ...hold(19, -1428), // 18-36: gone, and the page under it is white
+  // Slide 37 puts it back where it started. That is a 1428px jump, and it is
+  // invisible because `BACKDROP_FADE` is still zero here — the fade up happens
+  // on the NEXT step, with the gradient already in place. Travelling and fading
+  // on the same step would sweep it down the frame.
+  0,
+]
+
+/**
+ * Whether the gradient is drawn at all.
+ *
+ * It travels away over the first act and the file simply stops drawing it from
+ * slide 18 — what the page shows under it is white. Slide 38 brings it back for
+ * the closing act, full frame, as a fade rather than a move.
+ */
+export const BACKDROP_FADE = [...hold(17, 1), ...hold(20, 0), 1]
+
+/**
+ * The top scrim the closing act adds: white at the frame's top edge, gone by
+ * 298. It is what keeps the returned gradient off the navigation.
+ */
+export const WASH_TOP = parked(37, { o: 0 }, [{ o: 1 }])
 
 /* ------------------------------------------------------------ the third act */
 
@@ -950,6 +987,9 @@ export const TIMELINE = parked(20, { c: [5929.5, 1147], o: 0, b: 4 }, [
   { c: [15.5, 106], o: 0.6, b: 0 },
   { c: [15.5, 106], o: 0.6, b: 0 },
   { c: [-3470.5, 106], o: 0.6, b: 0 },
+  // The day leaves as one piece: everything on it rises 420 on the step into
+  // 37, and the ruler holds there while the copy and the panel carry on up.
+  { c: [-3470.5, -314], o: 0.6, b: 0 },
 ])
 
 /**
@@ -1004,6 +1044,8 @@ export const TIMELINE_DOT = parked(20, { c: [960, 1105], o: 0, b: 4 }, [
   // Slide 26 onward. The whole day sits 80px higher than it used to, which is
   // the room the navigation used to take up in the file.
   { c: [960, 64], o: 1, b: 0 },
+  ...hold(10, { c: [960, 64], o: 1, b: 0 }), // 27-36
+  { c: [960, -356], o: 1, b: 0 }, // 37: up with the rest of the day
 ])
 
 /**
@@ -1122,14 +1164,29 @@ const COPY_RISE = RISE_26
  * after it, then carries on up and out. Writing ten of these by hand would be
  * ten chances to mistype a number the file states once.
  */
-const copyTrack = ([x, y, w, h], settled) => {
+const copyTrack = ([x, y, w, h], settled, exit) => {
   const c = [x + w / 2, y + h / 2]
+  // The LAST scene does not dissolve where the others do. The day ends by
+  // rising off the top as one piece — copy, panel and ruler together — so that
+  // scene passes the lifts it takes instead, and stays at full strength.
+  const tail = exit
+    ? exit.map((dy) => ({ c: [c[0], c[1] + dy], o: 1, b: 0 }))
+    : [{ c, o: 1, b: 0 }, { c: [c[0], c[1] - COPY_RISE], o: 0, b: 6 }]
   return parked(settled - 1, { c: [c[0], c[1] + COPY_RISE], o: 0, b: 6 }, [
     { c, o: 1, b: 0 },
-    { c, o: 1, b: 0 },
-    { c: [c[0], c[1] - COPY_RISE], o: 0, b: 6 },
+    ...tail,
   ])
 }
+
+/**
+ * How far the day's panel has risen off its box, per slide.
+ *
+ * The panel is TILED into a box measured once per layout, so it cannot simply
+ * be moved by a row the way the copy is. This is the offset that box takes, and
+ * it is the same two lifts the copy and the ruler take: 420 on the step into
+ * 37, another 486 into 38.
+ */
+export const DAY_LIFT = parked(36, 0, [-420, -906])
 
 /** A scene's window, from the slide it settles on. */
 const mediaTrack = (settled) =>
@@ -1231,15 +1288,18 @@ export const DAY_SCENES = [
     screen: 0,
     head: 'Lights out by 11. Prioritise a smooth wind down to help you recharge.',
     headBox: [148, 320, 424, 160],
+    // The day's last scene leaves upward rather than shuttering away — see
+    // `copyTrack` and `DAY_LIFT`.
+    exit: [-420, -906],
     window: mediaTrack(36),
   },
 ].map((scene) => ({
   ...scene,
-  headAt: copyTrack(scene.headBox, scene.settled),
+  headAt: copyTrack(scene.headBox, scene.settled, scene.exit),
   // Only scene A carries a paragraph now. The rest say it all in the greeting,
   // and a `bodyAt` of null is what tells the timeline and the phone's measured
   // stack there is nothing under the headline to seat.
-  bodyAt: scene.bodyBox ? copyTrack(scene.bodyBox, scene.settled) : null,
+  bodyAt: scene.bodyBox ? copyTrack(scene.bodyBox, scene.settled, scene.exit) : null,
 }))
 
 export const DAY_PILL_LABELS = [
@@ -1253,6 +1313,60 @@ export const DAY_PILL_LABELS = [
 export const DAY_PILL_ROW_W = 539
 export const DAY_PILL_GAP = 8
 export const DAY_PILLS = copyTrack([148, 469, DAY_PILL_ROW_W, 39], 32)
+
+/* -------------------------------------------------- the close (37 to 42) */
+
+/**
+ * "With a digital twin that gives you a clearer picture of how the plan is
+ * working." Slides 38 and 39, over the phone as it grows.
+ */
+export const TWIN_HEAD = parked(37, { c: [960.5, 588], o: 0, b: 6 }, [
+  { c: [960.5, 291], o: 1, b: 0 },
+  { c: [960.5, -6], o: 1, b: 0 },
+  { c: [960.5, -303], o: 0, b: 6 },
+])
+
+/** "Pura knows your body like you do." — the last line on the page. */
+export const CLOSE_HEAD = parked(39, { c: [959, 1116.5], o: 0, b: 6 }, [
+  { c: [959, 820.5], o: 1, b: 0 },
+  { c: [959, 820.5], o: 1, b: 0 },
+  { c: [959, 524.5], o: 1, b: 0 },
+])
+
+/** The two store badges under it. They resolve a slide after the headline. */
+export const CLOSE_BADGES = parked(39, { c: [960, 1182], o: 0 }, [
+  { c: [960, 886], o: 0.3 },
+  { c: [960, 886], o: 1 },
+  { c: [960, 590], o: 1 },
+])
+
+/**
+ * Two rows of stadium photographs, travelling in OPPOSITE directions.
+ *
+ * Each is five 425x242 tiles on a 24px gap — 2219 wide against a 1920 frame, so
+ * a row is always wider than the screen and its ends are always off it. They
+ * are not tiled the way the partner logos are: the file draws five and the row
+ * never has to cover a gap, because it never travels far enough to open one.
+ */
+export const CLOSE_TILE = { w: 425, h: 242, r: 150, gap: 24 }
+
+export const CLOSE_ROW_A = parked(39, { c: [3277.5, 598], o: 0 }, [
+  { c: [2567.5, 598], o: 1 },
+  { c: [1857.5, 598], o: 1 },
+  { c: [745.5, 302], o: 1 },
+])
+
+export const CLOSE_ROW_B = parked(39, { c: [-1232, 1103], o: 0 }, [
+  { c: [-585, 1103], o: 0.3 },
+  { c: [62, 1103], o: 1 },
+  { c: [1175, 807], o: 1 },
+])
+
+/** What is in each row, top then bottom, left to right. */
+export const CLOSE_ROWS = [
+  ['a', ['a1', 'a2', 'a3', 'a4', 'a5']],
+  ['b', ['b1', 'b2', 'b3', 'b4', 'b5']],
+]
 
 /** The category pills, in order. The first is the selected one. */
 export const PILL_LABELS = [

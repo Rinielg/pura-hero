@@ -341,10 +341,17 @@ export function Nav() {
   )
 }
 
-/** Fixed to the bottom-right, above everything, for the whole page. */
-export function AppStores() {
+/**
+ * The two store badges.
+ *
+ * Used twice: as fixed page furniture bottom-right, and again inside the
+ * closing act, where the file puts a pair under the last line. Same markup both
+ * times — only the box around them differs — so there is one place to change a
+ * badge and one place the store URLs are read.
+ */
+export function StoreBadges() {
   return (
-    <div className="stores">
+    <>
       <a
         className="stores__badge"
         href={STORE.appStore}
@@ -382,6 +389,15 @@ export function AppStores() {
           />
         </span>
       </a>
+    </>
+  )
+}
+
+/** Fixed to the bottom-right, above everything, for the whole page. */
+export function AppStores() {
+  return (
+    <div className="stores">
+      <StoreBadges />
     </div>
   )
 }
