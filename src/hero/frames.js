@@ -23,7 +23,17 @@
 export const FRAME = { w: 1920, h: 1080 }
 
 /** Slides in the sequence. Adding one in Figma means adding an entry below. */
-export const SLIDES = 34
+export const SLIDES = 36
+
+/**
+ * `n` slides holding the same value.
+ *
+ * Every full-length table below has to be exactly `SLIDES` long, and a miscount
+ * does not fail — it shifts everything after it by one slide and looks like a
+ * choreography bug. Counting is what this is for; `assertLengths` at the foot
+ * of the file checks the result.
+ */
+const hold = (n, v) => Array(n).fill(v)
 
 /**
  * The twelve pillar chips.
@@ -262,15 +272,15 @@ export const DEVICE_POSE = [
   // Slides 18-24: parked where slide 26 wants it, one page-rise below. The jump
   // from off the top to down here happens while DEVICE_FADE holds it at zero,
   // so nothing sweeps across the frame to get there.
-  ...Array(7).fill({ c: [959.7, 650.7 + 38], s: ai(663), r: FACE }),
+  ...hold(7, { c: [959.7, 650.7 + 38], s: ai(663), r: FACE }),
   // Slide 25: the file has it half a frame lower, rising. That entrance is the
   // reason the landing on 26 reads as a landing rather than as an appearance.
   { c: [959.7, 1266.7], s: ai(663), r: FACE },
   // Slide 26: it lands, face on, at the size the file's phone group is — and
-  // there it stays for the rest of the day. Slides 27 to 34 move the
+  // there it stays for the rest of the day. Slides 27 to 36 move the
   // photograph and the copy around it; the only thing that changes about the
   // phone itself is what is on its screen.
-  ...Array(9).fill({ c: [959.7, 570.7], s: ai(663), r: FACE }),
+  ...hold(11, { c: [959.7, 570.7], s: ai(663), r: FACE }),
 ]
 
 /**
@@ -282,10 +292,10 @@ export const DEVICE_POSE = [
  * repositioning between 17 and 18 invisible. It comes back for slide 26.
  */
 export const DEVICE_FADE = [
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  ...hold(13, 1), // 1-13
+  ...hold(11, 0), // 14-24
   // Back from slide 25, and it stays for the whole day.
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  ...hold(12, 1), // 25-36
 ]
 
 /**
@@ -314,10 +324,9 @@ export const DEVICE_FRONT_FROM = 25
  * across the step into 26 instead of switching on.
  */
 export const DEVICE_TILT = [
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  // Slides 26 to 34: face on, at rest, and watching the cursor.
-  1, 1, 1, 1, 1, 1, 1, 1, 1,
+  ...hold(25, 0), // 1-25
+  // Slides 26 to 36: face on, at rest, and watching the cursor.
+  ...hold(11, 1),
 ]
 
 /**
@@ -329,23 +338,28 @@ export const DEVICE_TILT = [
  * must differ by at most one step, or the crossfade passes through whatever
  * happens to sit between them and a wrong screen flashes up mid-scroll. The
  * list is ordered backwards through the day for exactly that reason: the
- * sequence walks 4 -> 5 -> 4 -> 3 -> 2 -> 1 -> 0 and never skips.
+ * sequence walks 6 -> 7 -> 6 -> 5 -> 4 -> 3 -> 2 -> 1 -> 0 and never skips.
  *
- * Old meaning, for reference: 0 = the Home screen, 1 = Pura AI.
+ * The list is: the day's six screens in reverse (f, e, d, c, b, a), then the
+ * Home screen and Pura AI. Reversed because the day is the long walk and it
+ * has to be the contiguous run.
  *
  * It crossfades across the turn to face-on, so the content changes while the
  * device is moving rather than snapping while it is sitting still.
  */
 export const SCREEN_SEQ = [
-  // Slides 1-6 Home, 7-17 Pura AI, then back to Home while the device is
-  // invisible and on through slide 27.
-  4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5,
-  5, 5, 5, 5,
-  4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+  ...hold(6, 6), // 1-6    the Home screen
+  ...hold(11, 7), // 7-17  Pura AI
+  6, // 18       one step back down, so 7 -> 5 never skips 6
+  ...hold(9, 5), // 19-27  the day's first screen, arriving while nothing shows
   // The day. Each scene brings its own screen; it changes on the SETTLED
   // slide and holds through the transition after it, which is the rule the
   // copy follows too — so the two can never disagree.
-  3, 3, 2, 2, 1, 1, 0,
+  4, 4, // 28-29
+  3, 3, // 30-31
+  2, 2, // 32-33
+  1, 1, // 34-35
+  0, //    36
 ]
 
 /**
@@ -411,11 +425,7 @@ export const HAND_FADE = [1, 1, 1, 1, 0.45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
  * The last entry brings it back for the final slide, where the label has
  * changed to "Back to top" and is worth reading again.
  */
-export const CUE_LABEL = [
-  1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 1,
-]
+export const CUE_LABEL = [...hold(3, 1), ...hold(32, 0), 1]
 
 export const HAND_ASPECT = 942 / 500
 
@@ -742,11 +752,12 @@ export const CARD_CONTENT = [
  * "Help for every part of your health." and the category pills under it.
  *
  * The fourth act arrives while the third is still leaving — slide 16 has the
- * new headline at 20% behind the old one at 0%. That overlap is the design's,
- * and it is what stops the page reading as a stack of separate sections.
+ * new headline already at full strength behind the old one at 0%. That overlap
+ * is the design's, and it is what stops the page reading as a stack of separate
+ * sections. The file used to bring it in at 20%; it now arrives resolved.
  */
 export const ACT4_HEAD = parked(15, { c: [960.5, 1106], o: 0, b: 8 }, [
-  { c: [960.5, 971], o: 0.2, b: 8 },
+  { c: [960.5, 971], o: 1, b: 0 },
   { c: [960.5, 537], o: 1, b: 0 },
   { c: [960.5, 238], o: 1, b: 0 },
   { c: [960.5, 238], o: 1, b: 0 },
@@ -793,18 +804,25 @@ export const CAROUSEL_CTRL = parked(17, { c: [960, 1231], o: 0, b: 0 }, [
   { c: [960, 604], o: 1, b: 0 },
   { c: [960, 273], o: 0.2, b: 8 },
   { c: [960, 14], o: 0.2, b: 8 },
-  { c: [960, -70], o: 0, b: 8 },
+  // The file keeps this at 20% for the rest of the page. Off the top of a
+  // 1920x1080 frame that is invisible, but a phone's frame is shorter and the
+  // y compression drags anything parked above it back down — so it is taken to
+  // zero here for the same reason the carousel itself is. See CAROUSEL.
+  { c: [960, -66], o: 0, b: 8 },
 ])
 
 /** "See how Pura fits into one ordinary day." */
 export const ACT5_HEAD = parked(19, { c: [956, 1177], o: 0, b: 8 }, [
-  { c: [956, 1030], o: 1, b: 0 },
-  { c: [956, 849], o: 1, b: 0 },
+  // It now announces itself twice as quietly on the way in as it used to: the
+  // file holds it at 30% for two slides while the carousel is still the
+  // subject, and only resolves it once the carousel has started to leave.
+  { c: [956, 1030], o: 0.3, b: 4 },
+  { c: [956, 849], o: 0.3, b: 4 },
   { c: [956, 518], o: 1, b: 0 },
   { c: [956, 259], o: 1, b: 0 },
   // It hands over to the day itself from 24, and is gone by 26.
   { c: [956, 95], o: 0.3, b: 4 },
-  { c: [956, 67], o: 0, b: 8 },
+  { c: [956, 27], o: 0, b: 8 },
   { c: [956, -11], o: 0, b: 8 },
 ])
 
@@ -813,12 +831,16 @@ export const ACT5_HEAD = parked(19, { c: [956, 1177], o: 0, b: 8 }, [
  * the hours pass under a fixed marker. Rebuilt as repeating CSS rather than the
  * 241 individual rectangles Figma draws it with.
  */
-export const TIMELINE = parked(20, { c: [6285.5, 1147], o: 0, b: 4 }, [
-  { c: [6285.5, 966], o: 0.6, b: 4 },
-  { c: [5931.5, 635], o: 0.6, b: 0 },
+export const TIMELINE = parked(20, { c: [5929.5, 1147], o: 0, b: 4 }, [
+  { c: [5929.5, 966], o: 0.6, b: 4 },
+  // FOLLOWED LITERALLY, AND IT IS ODD: the file puts slide 22's ruler 196px to
+  // the RIGHT of slide 21's, which under a scrub is the clock running backwards
+  // for one step before it carries on. Every other step decreases. Flagged in
+  // CONTEXT.md; the fix is a nudge in Figma, not a correction here.
+  { c: [6125.5, 635], o: 0.6, b: 0 },
   { c: [5860.5, 376], o: 0.6, b: 0 },
   { c: [5593.5, 212], o: 0.6, b: 0 },
-  { c: [5328.5, 184], o: 0.6, b: 0 },
+  { c: [5328.5, 144], o: 0.6, b: 0 },
   // Slide 26 onwards the ruler is the clock for the day. Each pair of slides
   // holds one hour under the marker: the settled slide moves it, the
   // transition after it does not. Read off the file as the Timeline
@@ -829,9 +851,13 @@ export const TIMELINE = parked(20, { c: [6285.5, 1147], o: 0, b: 4 }, [
   { c: [3735.5, 106], o: 0.6, b: 0 },
   { c: [2125.5, 106], o: 0.6, b: 0 },
   { c: [2125.5, 106], o: 0.6, b: 0 },
+  // The file has slide 32 six pixels higher than its neighbours. Held level
+  // here: a one-slide jog up and back is a twitch, not a move. Flagged too.
   { c: [1049.5, 106], o: 0.6, b: 0 },
   { c: [1049.5, 106], o: 0.6, b: 0 },
   { c: [15.5, 106], o: 0.6, b: 0 },
+  { c: [15.5, 106], o: 0.6, b: 0 },
+  { c: [-3470.5, 106], o: 0.6, b: 0 },
 ])
 
 /**
@@ -844,8 +870,15 @@ export const TIMELINE = parked(20, { c: [6285.5, 1147], o: 0, b: 4 }, [
  * which matters here — the marker sits still and the ruler moves under it, so
  * a label in the wrong place tells the wrong time.
  *
- * The ruler runs 5:00 to midnight. Slides 21 to 23 travel from just before
- * 5:00 to exactly 6:00.
+ * The ruler runs 5:00 to midnight, and the marker sits at frame x 960. An
+ * hour is therefore `960 - (TIMELINE.c[0] - 5370.5)` looked up below, which is
+ * the arithmetic to check a ruler position with:
+ *
+ *   slide 23 -> 470 (5:00)    slide 30 -> 4205 (12:00)
+ *   slide 26 -> 1536 (7:00)   slide 32 -> 5281 (14:00)
+ *   slide 28 -> 2595 (9:00)   slide 34 -> 6315 (16:00)
+ *                             slide 36 -> 9801 (23:00), which is what "lights
+ *                                         out by 11" on that slide says.
  */
 export const RULER_HOURS = [
   ['5:00', 471],
@@ -875,7 +908,7 @@ export const TIMELINE_DOT = parked(20, { c: [960, 1105], o: 0, b: 4 }, [
   { c: [960, 593], o: 1, b: 0 },
   { c: [960, 334], o: 1, b: 0 },
   { c: [960, 170], o: 1, b: 0 },
-  { c: [960, 142], o: 1, b: 0 },
+  { c: [960, 102], o: 1, b: 0 },
   // Slide 26 onward. The whole day sits 80px higher than it used to, which is
   // the room the navigation used to take up in the file.
   { c: [960, 64], o: 1, b: 0 },
@@ -900,16 +933,16 @@ const RISE_26 = 38
 /* ------------------------------------------------------------------- the day */
 
 /**
- * Slides 26 to 34 are five SCENES joined by four TRANSITIONS.
+ * Slides 26 to 36 are six SCENES joined by five TRANSITIONS.
  *
- * A scene owns a photograph, a headline, a paragraph and the screen the phone
- * is showing. A transition changes ONLY the photograph — which is why the copy
- * on slide 27 is still slide 26's, and why the ruler holds its hour across the
- * pair. Settled slides are the even ones (26, 28, 30, 32, 34); the odd slides
- * between them are the transitions.
+ * A scene owns a photograph, a headline, the screen the phone is showing and —
+ * for the first one only — a paragraph. A transition changes ONLY the
+ * photograph, which is why the copy on slide 27 is still slide 26's and why the
+ * ruler holds its hour across the pair. Settled slides are the even ones (26,
+ * 28, 30, 32, 34, 36); the odd slides between them are the transitions.
  *
  * The phone does not move again after slide 26. Everything that happens for the
- * next eight slides happens either inside the panel or on its screen.
+ * next ten slides happens either inside the panel or on its screen.
  */
 
 /**
@@ -917,7 +950,7 @@ const RISE_26 = 38
  * After slide 26 it never moves, so its numbers are a constant rather than a
  * table.
  */
-const PANEL = { cx: 1420, top: 182, bottom: 960, w: 920, h: 778, r: 60 }
+const PANEL = { cx: 1366, top: 182, bottom: 960, w: 812, h: 778, r: 60 }
 
 /**
  * The panel's top edge — the line every scene image hangs from.
@@ -1013,38 +1046,35 @@ export const DAY_MEDIA = parked(21, { c: [960, 1086], w: 154, h: 88, r: 150, o: 
   { c: [960, 755], w: 154, h: 88, r: 150, o: 1 },
   { c: [960, 670.5], w: 764, h: 437, r: 290, o: 1 },
   { c: [960, 590.5], w: 1058, h: 605, r: 160, o: 1 },
-  { c: [960, 589.5], w: 1152, h: 659, r: 150, o: 1 },
+  { c: [960, 549.5], w: 1152, h: 659, r: 150, o: 1 },
   // Slide 26: it slides right and stands up, making room for the phone. From
   // here it is a shutter, so it carries `ih` — which happens to equal its own
   // height on this slide, making the handover from filling to shuttering
-  // invisible.
-  { c: [1420, 571], w: 920, h: 778, r: 60, o: 1, ih: PANEL.h },
+  // invisible. `OPEN` IS that pose, which is the point: one constant describes
+  // both the end of the growth and the start of the day.
+  OPEN,
   LEAVING,
   SHUT_HIGH,
 ])
 
 /**
- * The five scenes, in order.
+ * The six scenes, in order.
  *
  * `screen` indexes `SCREEN_URLS` — see `SCREEN_SEQ` for why that list runs
- * backwards through the day.
+ * backwards through the day. `bodyBox` is optional: the file gives only the
+ * first scene a paragraph.
  */
 export const DAY_SCENES = [
   {
     key: 'a',
     settled: 26,
-    media: '/assets/carousel/one-day.jpg',
+    media: '/assets/day/scene-a.jpg',
     alt: 'A morning walk, tracked by Pura',
-    screen: 4,
+    screen: 5,
     head: 'Good morning, your health plan has kicked off.',
     body: 'Your Pura opens to one clear focus: a walk after lunch, a whole-grain swap and lights out by 11.',
-    // The file leaves this paragraph at y=501 while everything else on the
-    // slide — heading, panel, phone, ruler, marker — moved up 80 with the
-    // navigation. 501 minus 80 is 421, which is exactly where slide 27 puts the
-    // SAME paragraph. Followed literally it would jump 80px on the 27 step for
-    // no reason, so it is corrected here and flagged in CONTEXT.md.
-    headBox: [148, 277, 487, 120],
-    bodyBox: [148, 421, 479, 52],
+    headBox: [148, 320, 487, 120],
+    bodyBox: [148, 464, 479, 52],
     window: DAY_MEDIA,
   },
   {
@@ -1052,11 +1082,9 @@ export const DAY_SCENES = [
     settled: 28,
     media: '/assets/day/scene-b.jpg',
     alt: 'A digital twin of the body, with the day\u2019s signals around it',
-    screen: 3,
+    screen: 4,
     head: 'Your score moved overnight with a pattern worth discussing with your doctor.',
-    body: 'PureScore is up 8 points. One line tells her why: a better night\u2019s sleep.',
-    headBox: [148, 277, 487, 160],
-    bodyBox: [148, 461, 401, 52],
+    headBox: [148, 320, 487, 160],
     window: mediaTrack(28),
   },
   {
@@ -1064,11 +1092,9 @@ export const DAY_SCENES = [
     settled: 30,
     media: '/assets/day/scene-c.jpg',
     alt: 'Lunch at home, logged in the app',
-    screen: 2,
+    screen: 3,
     head: 'Lunch was a solid choice today. However, your HbA1c from lab is 6.1, just nudging above normal.',
-    body: 'Tracking her calorie intake flagged her HbA1c results. Pura explains it plainly and suggests talking to a doctor.',
-    headBox: [148, 277, 555, 160],
-    bodyBox: [148, 461, 478, 52],
+    headBox: [148, 320, 555, 160],
     window: mediaTrack(30),
   },
   {
@@ -1076,48 +1102,55 @@ export const DAY_SCENES = [
     settled: 32,
     media: '/assets/day/scene-d.jpg',
     alt: 'A consultation on the phone, at home',
-    screen: 1,
+    screen: 2,
     head: 'Good morning, your appointment with Dr. El-Sayed has been confirmed.',
-    body: 'Book a UAE-licensed doctor from your results, get medication delivered and have follow-up tests at home.',
     headBox: [148, 277, 487, 160],
-    bodyBox: [148, 461, 487, 52],
     window: mediaTrack(32),
   },
   {
     key: 'e',
     settled: 34,
     media: '/assets/day/scene-e.jpg',
-    alt: 'A doctor reviewing results',
-    screen: 0,
+    alt: 'Medication delivered to the door',
+    screen: 1,
     head: 'Good afternoon, your medication has been delivered. Take care of yourself.',
-    body: 'Her prescription goes to a licensed pharmacy and arrives at her door.',
-    headBox: [148, 277, 487, 160],
-    bodyBox: [148, 461, 424, 52],
+    headBox: [148, 320, 487, 160],
     window: mediaTrack(34),
+  },
+  {
+    key: 'f',
+    settled: 36,
+    media: '/assets/day/scene-f.jpg',
+    alt: 'Winding down at the end of the day',
+    screen: 0,
+    head: 'Lights out by 11. Prioritise a smooth wind down to help you recharge.',
+    headBox: [148, 320, 424, 160],
+    window: mediaTrack(36),
   },
 ].map((scene) => ({
   ...scene,
   headAt: copyTrack(scene.headBox, scene.settled),
-  bodyAt: copyTrack(scene.bodyBox, scene.settled),
+  // Only scene A carries a paragraph now. The rest say it all in the greeting,
+  // and a `bodyAt` of null is what tells the timeline and the phone's measured
+  // stack there is nothing under the headline to seat.
+  bodyAt: scene.bodyBox ? copyTrack(scene.bodyBox, scene.settled) : null,
 }))
 
-/**
- * Scene D's pillar row. It is the one scene that carries anything under its
- * paragraph, and it follows the copy exactly — same slides, same rise.
- */
 export const DAY_PILL_LABELS = [
-  ['Virtual consultations', 183.8],
-  ['Prescriptions', 132.8],
-  ['Care Plans', 118.7],
-  ['Home Sample test', 166.7],
+  ['Virtual consultations', 162],
+  ['Prescriptions', 111],
+  ['Home Sample test', 145],
+  ['Care Plans', 97],
 ]
 /**
- * Two rows of two, not one row of four. The file's own auto-layout wraps at
- * 478px with a 24px gap on both axes, which is why the box is 131 tall: two
- * 53.5 rows and the gap between them.
+ * One row of four now, 39px tall, not two wrapped rows. The file gives the row
+ * a fixed 623px box that its four chips do not fill — they run to 575 with a
+ * 20px gap and the rest is slack — so the box is the tracked thing and the
+ * chips are left-aligned inside it.
  */
-export const DAY_PILL_ROW_W = 478
-export const DAY_PILLS = copyTrack([148, 553, DAY_PILL_ROW_W, 131], 32)
+export const DAY_PILL_ROW_W = 623
+export const DAY_PILL_GAP = 20
+export const DAY_PILLS = copyTrack([148, 475, DAY_PILL_ROW_W, 39], 32)
 
 /** The category pills, in order. The first is the selected one. */
 export const PILL_LABELS = [
@@ -1130,59 +1163,151 @@ export const PILL_LABELS = [
 ]
 
 /**
- * What the carousel holds: a lead photograph, then five feature cards.
+ * What the carousel holds, per tab.
+ *
+ * The file draws seven versions of this band — one on Slides 18/19 and five
+ * more as the `Carousel Selection 2..6` frames — and the only thing that
+ * changes between them is the TITLE and BODY of each card. The little
+ * visualisation at the top of every card is the same four widgets in the same
+ * order on every tab, because in the file they are the same instances: the
+ * designer swapped the words and left the chrome alone.
+ *
+ * So the chrome is written once and the tabs carry copy. Writing all thirty
+ * cards out longhand would be thirty chances for the chrome to drift apart,
+ * which is the one thing the file guarantees it never does.
  *
  * `fill` is how far along the card's little progress bar runs, as a fraction —
  * Figma draws it as a 212px track with a coloured bar over it.
  */
-export const CAROUSEL_ITEMS = [
-  { kind: 'photo', img: 'lead', alt: 'Someone checking their health on the Pura app' },
-  {
-    kind: 'card',
-    label: 'PureScore',
-    value: '92',
-    caption: '+8 pts · Great',
-    fill: 0.28,
-    title: 'PureScore',
-    body: 'One score for your overall health, built from your lab results and wearable data, with what moved it explained in plain words.',
-  },
-  {
-    kind: 'card',
-    label: 'Health systems',
-    value: '2 of 4',
-    caption: 'Cardiovascular · worth a look',
-    fill: 0.5,
-    title: 'Health systems',
-    body: 'Your results grouped by body system, from heart and metabolism to liver and kidneys, each with a simple status.',
-  },
-  {
-    kind: 'card',
-    label: 'Wearable data',
-    value: '70 bpm',
-    caption: 'Resting heart rate · synced',
-    fill: 0.62,
-    title: 'Wearable data',
-    body: 'Sleep, heart rate and activity from the wearable you already use, shown beside your lab results.',
-  },
-  {
-    kind: 'card',
-    label: 'Digital Twin',
-    value: '12 mo',
-    caption: 'Illustrative projection',
-    fill: 0.8,
-    title: 'Digital Twin',
-    body: 'See how your health could change over 3, 6 and 12 months, and try a change before you commit to it.',
-  },
-  {
-    kind: 'card',
-    label: 'Medical history',
-    value: 'Synced',
-    caption: 'Records and past results',
-    fill: 1,
-    title: 'Medical history',
-    body: "Bring past results and records into one place, so Pura starts from what's already known about you.",
-  },
+const LEAD = {
+  kind: 'photo',
+  img: 'lead',
+  alt: 'Someone checking their health on the Pura app',
+}
+
+const WIDGETS = [
+  { label: 'PureScore', value: '92', caption: '+8 pts \u00b7 Great', fill: 0.28 },
+  { label: 'Health systems', value: '2 of 4', caption: 'Cardiovascular \u00b7 worth a look', fill: 0.5 },
+  { label: 'Wearable data', value: '70 bpm', caption: 'Resting heart rate \u00b7 synced', fill: 0.62 },
+  { label: 'Digital Twin', value: '12 mo', caption: 'Illustrative projection', fill: 0.8 },
+  { label: 'Medical history', value: 'Synced', caption: 'Records and past results', fill: 1 },
 ]
+
+/** One tab's band: the lead photograph, then a card per line of copy. */
+const deck = (cards) => [
+  LEAD,
+  ...cards.map(([title, body], i) => ({ kind: 'card', ...WIDGETS[i], title, body })),
+]
+
+/**
+ * One deck per tab, in `PILL_LABELS` order. The tabs are a real control — see
+ * the note on the carousel in App.jsx — so this is indexed at runtime rather
+ * than being a constant like everything else in this file.
+ */
+export const CAROUSEL_TABS = [
+  // My Health
+  deck([
+    [
+      'PureScore',
+      'One score for your overall health, built from your lab results and wearable data, with what moved it explained in plain words.',
+    ],
+    [
+      'Health systems',
+      'Your results grouped by body system, from heart and metabolism to liver and kidneys, each with a simple status.',
+    ],
+    [
+      'Wearable data',
+      'Sleep, heart rate and activity from the wearable you already use, shown beside your lab results.',
+    ],
+    [
+      'Digital Twin',
+      'See how your health could change over 3, 6 and 12 months, and try a change before you commit to it.',
+    ],
+    [
+      'Medical history',
+      "Bring past results and records into one place, so Pura starts from what's already known about you.",
+    ],
+  ]),
+  // Heart and Metabolism
+  deck([
+    [
+      'Blood sugar',
+      'See where your HbA1c sits and which everyday habits, like movement and sleep, can help bring it into range.',
+    ],
+    [
+      'Cholesterol',
+      'Your lipid results explained in plain language and tracked across every test you take.',
+    ],
+    [
+      'Resting heart rate',
+      'Follow your resting heart rate day to day and see how habits and stress affect it.',
+    ],
+    [
+      'Home lab tests',
+      'Book a blood test at home. Results flow straight into your health picture.',
+    ],
+  ]),
+  // Sleep and Stress
+  deck([
+    [
+      'Sleep duration',
+      'See how long and how consistently you sleep, from your connected wearable.',
+    ],
+    [
+      'Heart rate variability',
+      'Track HRV as a signal of recovery and stress, and see what helps you bounce back.',
+    ],
+    ['Bedtime goal', 'Set a simple bedtime goal and tick it off each day.'],
+    [
+      'Mental wellness support',
+      'Speak to a mental health specialist by video when you want support.',
+    ],
+  ]),
+  // Care
+  deck([
+    [
+      'Online Doctor',
+      'See a UAE-licensed doctor by video, choosing by specialty and language.',
+    ],
+    [
+      'Prescriptions delivered',
+      'Your e-prescription goes to a licensed pharmacy and arrives at your door.',
+    ],
+    [
+      'Insurance checked',
+      'Pura checks your insurance eligibility before you book, so you see the cost up front.',
+    ],
+    [
+      'Care Plans',
+      'Doctor-led plans that bring consultations, medication and tests together for ongoing conditions.',
+    ],
+  ]),
+  // Wellness
+  deck([
+    [
+      'Goals and check-ins',
+      'Daily goals tied to your results, with quick check-ins to keep you on track.',
+    ],
+    ['Challenges', 'Join community challenges or start one with friends and family.'],
+    ['FitCoins', 'Earn FitCoins automatically as you hit goals and finish challenges.'],
+    ['Rewards', 'Spend FitCoins on rewards from Pura partners across the UAE.'],
+  ]),
+  // Women's Health
+  deck([
+    ['PregnaCare', 'Week-by-week guidance through pregnancy, grounded in clinical advice.'],
+    [
+      'Pregnancy dashboard',
+      'A personal view of your blood results, lifestyle and symptoms, in one place.',
+    ],
+    [
+      'Gynaecologist consultations',
+      'Speak to a gynaecologist by video when you have a question.',
+    ],
+  ]),
+]
+
+/** The band the page opens on. */
+export const CAROUSEL_ITEMS = CAROUSEL_TABS[0]
 
 /** Carousel geometry, in frame pixels. */
 export const CAROUSEL_GEO = { rowPad: 140, item: 300, gap: 24, photoH: 420, cardH: 424 }
@@ -1223,3 +1348,27 @@ export const STEP_WINDOWS = {
  */
 export const scrollLength = (vh, isMobile) =>
   STEP_WEIGHTS.length * (isMobile ? vh * 0.52 : Math.max(360, vh * 0.5))
+
+/**
+ * Every table that is read by slide number has to be exactly `SLIDES` long.
+ *
+ * `at()` clamps, so a table that is one short does not throw — it silently
+ * repeats its last row for the missing slide and everything after the miscount
+ * happens one step early. That has cost an afternoon twice. The check is cheap
+ * and DEV-only, and it names the table rather than making you count.
+ */
+if (import.meta.env?.DEV) {
+  const full = {
+    DEVICE_POSE,
+    DEVICE_FADE,
+    DEVICE_TILT,
+    SCREEN_SEQ,
+    CUE_LABEL,
+    STEP_WEIGHTS: [...STEP_WEIGHTS, null], // one shorter by definition
+  }
+  for (const [name, table] of Object.entries(full)) {
+    if (table.length !== SLIDES) {
+      console.error(`frames.js: ${name} has ${table.length} rows, expected ${SLIDES}`)
+    }
+  }
+}

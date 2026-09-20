@@ -4,7 +4,7 @@ The running record of this prototype: what is built, why it is built that way, w
 broke and how it was fixed. Read this before continuing the build. The README covers
 how to run it; this file covers how to *reason* about it.
 
-- **Design source:** [Pura Website](https://www.figma.com/design/1ybPUzTZG9WJ2dle6NfH2U/Pura-Website), page **Final Website**, frames `Slide 1` … `Slide 26`, plus the `Menu` frame (node `6203:71995`) for the navigation.
+- **Design source:** [Pura Website](https://www.figma.com/design/1ybPUzTZG9WJ2dle6NfH2U/Pura-Website), page **Final Website**, frames `Slide 1` … `Slide 36`, plus the `Carousel Selection 2`–`6` frames for the tabbed band, plus the `Menu` frame (node `6203:71995`) for the navigation.
 - **Content source for the inner pages:** `https://pura-website-upload-1.vercel.app` — **not** pura.ai.
 - **Live:** https://pura-hero.vercel.app · **Repo:** https://github.com/Rinielg/pura-hero (private — it carries PureHealth brand assets)
 - **Device model:** forked from [Rinielg/pura-device-viewer](https://github.com/Rinielg/pura-device-viewer)
@@ -13,12 +13,12 @@ how to run it; this file covers how to *reason* about it.
 
 ## 1. What the thing is
 
-One scroll-driven sequence. Twenty-three Figma slides are twenty-three *moments*, and
+One scroll-driven sequence. Thirty-six Figma slides are thirty-six *moments*, and
 scrolling scrubs a single GSAP timeline between them. There is no second section: the
 page is the sequence, plus fixed page furniture (nav, store badges, scroll cue).
 
 `Slide overview` in the Figma file is an assembly board, **not** a moment. Ignore it.
-Everything comes from `Slide 1` … `Slide 23`, in numeric order.
+Everything comes from `Slide 1` … `Slide 36`, in numeric order.
 
 ---
 
@@ -250,7 +250,7 @@ viewports it serves, there is no Lottie in it.
 | `src/hero/useHeroTimeline.js` | The timeline. Turns tables into tweens. |
 | `src/hero/layout.js` | Breakpoints and the four projections. |
 | `src/App.jsx` | The layer stack, the DOM, and the `Carousel` component. |
-| `src/Device.jsx` | The three.js phone: black finish, six screens, shader crossfade, cursor tilt. |
+| `src/Device.jsx` | The three.js phone: black finish, eight screens, shader crossfade, cursor tilt. |
 | `src/Scene.jsx` | The canvas and the procedural studio the mirrored body reflects. |
 | `src/deviceProxy.js` | The one seam between GSAP and three.js. Nothing else crosses it. |
 | `src/Backdrop.jsx` | The mesh gradient: the Lottie on desktop, a still on a phone. |
@@ -291,22 +291,22 @@ Note the ordering: **6 sits above 5 on purpose.** See §5.
 | 7–9 | The screen crossfades to Pura AI; the agent bar appears, then widens. |
 | 10–16 | The whole first-act scene travels up and out. Act 3 copy arrives, then the promo card row scrolls in from the right. |
 | 17 | Everything from the first three acts leaves together (a 434px rise). "Help for every part of your health." and the filter pills arrive. |
-| 18–19 | The feature carousel. **Arrow-driven** — see §6. |
+| 18–19 | The feature carousel. **Arrow-driven, and tabbed** — see §6. |
 | 20–25 | The carousel holds the centre and rises. "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel that *grows* — 154×88, 764×437, 1058×605, 1152×659. |
 | 25 | The device comes back, rising from below the frame at (959.7, 1266.7), and **changes sides**: from here it draws in front of the Overlay rather than under it. |
-| 26 | The day resolves into the app. The panel slides right and stands up at 920×778, the device lands at `ai(663)` showing the Home screen, the morning greeting arrives flush left at x=148, and the phone starts **watching the cursor**. |
-| 27–34 | **The day**: five scenes joined by four transitions. Even slides are settled, odd slides are the reveal. See §4b. |
+| 26 | The day resolves into the app. The panel slides right and stands up at **812×778 centred on x=1366**, the device lands at `ai(663)` showing the day's first screen, the morning greeting arrives flush left at x=148, and the phone starts **watching the cursor**. |
+| 27–36 | **The day**: six scenes joined by five transitions. Even slides are settled, odd slides are the reveal. See §4b. |
 | ~~20–23~~ | ~~The carousel holds the centre and rises, leaving left only at 23. "See how Pura fits into one ordinary day.", the time ruler, and the day's media panel, which *grows* rather than fades. |
 
-### 4b. The day (slides 26–34)
+### 4b. The day (slides 26–36)
 
-Nine slides, one structure, and it is worth stating because every table from 26 on follows
-it:
+Eleven slides, one structure, and it is worth stating because every table from 26 on
+follows it:
 
-| | Settled (26, 28, 30, 32, 34) | Transition (27, 29, 31, 33) |
+| | Settled (26, 28, 30, 32, 34, 36) | Transition (27, 29, 31, 33, 35) |
 |---|---|---|
 | Photograph | one scene fills the panel | two scenes, half the panel each |
-| Headline + paragraph | changes | **unchanged** |
+| Headline (and, on scene A only, its paragraph) | changes | **unchanged** |
 | Phone's screen | changes | **unchanged** |
 | Ruler | moves one hour | **unchanged** |
 | Phone itself | still | still |
@@ -315,9 +315,15 @@ So a transition changes exactly one thing. That is the whole reason it reads as 
 rather than as a cut, and it is why `SCREEN_SEQ` and the copy tables both hold their value
 across the odd slides instead of stepping every slide.
 
-**The panel** is a constant after 26: 920×778 at (960, **182**), radius 60. Five windows are
-stacked in it, one per scene, all mounted at once. `PANEL_TOP` is exported from
-`frames.js` rather than copied into the timeline — it has already moved once.
+**The panel** is a constant after 26: **812×778** centred on x=**1366**, top at y=**182**,
+radius 60. Six windows are stacked in it, one per scene, all mounted at once. `PANEL_TOP`
+is exported from `frames.js` rather than copied into the timeline — it has moved twice,
+and the width and centre have now moved with it.
+
+The hours the ruler shows under the marker are worth knowing, because they are the
+cross-check on every position in the second half of the page: 26 → 7:00, 28 → 9:00,
+30 → 12:00, 32 → 14:00, 34 → 16:00, 36 → 23:00. The last one is what scene F's "lights out
+by 11" is describing.
 
 **The reveal is a shutter, not a crossfade.** Each window is a clipping box over an image
 that **never moves**. The outgoing window's top stays at the panel's top and its height
@@ -327,7 +333,7 @@ frame the file draws.
 
 The image is held still by `ih` on the row: where it is set the image keeps its full 778px
 height and the track offsets it by `PANEL_TOP − windowTop`. Work that through for any of
-the five phases and the image's top comes out at 262 every time — which is what makes the
+the five phases and the image's top comes out at the panel's own top every time — which is what makes the
 tween between any two of them hold it perfectly still. Let the image fill its window
 instead and it rescales as the window shrinks, which reads as a squash.
 
@@ -816,14 +822,36 @@ The slides get **rebuilt**, not edited — every node id changed between passes.
 
 ## 6. The carousel (Slides 18–19)
 
-Arrow-driven, as briefed: right arrow slides the set left, left arrow slides it right.
+Two controls, and they are the only ones inside the sequence.
+
+**The arrows** page the row. Right arrow slides the set left, left arrow slides it right.
 
 - Paging is **derived, not stored**: `overflow = rowW - frameW`, `pages` from `overflow / step`.
   Only `page` is state. Nothing to keep in sync.
 - The row is tweened in a plain `useEffect`, not through the timeline — it is the one thing
   on the page that moves on a click rather than on scroll. It respects
   `prefers-reduced-motion` by tweening with `duration: 0`.
-- `CAROUSEL_GEO` in `frames.js` holds the geometry; `CAROUSEL_ITEMS` holds the content.
+
+**The tabs** swap the deck. The file draws six versions of this band — Slides 18/19 plus
+the five `Carousel Selection` frames — and the only thing that differs between them is each
+card's title and body. The little visualisation at the top of every card is the same four
+widgets in the same order on every tab, because in the file they are the same instances.
+
+So `CAROUSEL_TABS` is six lists of copy over one shared set of `WIDGETS`, and
+`CAROUSEL_ITEMS` is just `CAROUSEL_TABS[0]`. Thirty cards written out longhand would be
+thirty chances for the chrome to drift; the file guarantees it never does.
+
+- The decks are **different lengths** (My Health has five cards, Women's Health three), so
+  changing tab takes the row back to page 0. A tab picked while the row was paged along
+  would otherwise open in its middle.
+- `role="tablist"` / `role="tab"` / `role="tabpanel"`, so the relationship survives a
+  keyboard and a screen reader.
+- **The row is two elements**: `.pills` is the viewport and `.pills__row` overflows it. Six
+  labels come to 603px, which fits a 1920 frame and does not fit a 430 one — and when they
+  were decoration the two that fell off the ends did not matter. As controls they do, so on
+  a phone the viewport is exactly one frame wide and scrolls, and picking a tab scrolls it
+  into the middle.
+- `CAROUSEL_GEO` in `frames.js` holds the geometry; `CAROUSEL_TABS` holds the content.
 
 ---
 
@@ -840,7 +868,19 @@ Each of these is a decision, not drift. Change them only on purpose.
 | No chevron on the nav items | The file's caret is a 16px box with an 8px gap, so showing it on hover reflowed the bar by 24px. |
 | No dot on the active nav item | The file uses weight and the white pill alone. |
 | The phone on slide 26 sits BELOW the Overlay | The file puts it above. The wash dissolving the device's foot is the point of slides 7–9, and one WebGL object cannot be in two layers. |
-| Slide 26's phone screen is `pura-screen.jpg` | The file's export came back at 380k characters, too large to move; it is the same home screen. |
+| The carousel control is taken to `opacity: 0` from slide 24, where the file holds it at 20% | Off the top of a 1920×1080 frame that 20% is invisible. A phone's frame is shorter and the y compression drags anything parked above it back down. Same reason the carousel itself is zeroed there. |
+| The ruler holds y=106 on slide 32, where the file has 100 | A one-slide jog up and back is a twitch, not a move. **Flagged for a nudge in Figma.** |
+
+### Two things in the file that are followed literally and look wrong
+
+Both are almost certainly accidental nudges rather than intent. They are implemented as
+the file has them, because the file is the source — but they are worth fixing there.
+
+1. **The ruler runs backwards between slides 21 and 22.** Slide 21 puts it at x 5929.5 and
+   slide 22 at 6125.5 — 196px to the *right*, which under a scrub is the clock ticking
+   back about twenty minutes before carrying on. Every other step decreases.
+2. **Slide 32's ruler sits 6px higher** than its neighbours on either side. This one is
+   *not* followed — see the divergences table above.
 
 ---
 
@@ -919,7 +959,7 @@ const rootReasons = (el) => {
 
 ## 9. Open items
 
-- **Mobile has no design.** Slides 17–34 are projected, not designed. The filter pill row
+- **Mobile has no design.** Slides 17–36 are projected, not designed. The filter pill row
   is ~603px on a 375px screen even after scaling with `--ps` — the ends are cut off. It
   wants either a real mobile frame or a horizontally scrollable row. Flagged, not invented.
 - **The 23 inner pages have no design either.** They are built in the sequence's visual
@@ -943,7 +983,8 @@ const rootReasons = (el) => {
 - **The day's panel is centred on a phone, not parked right.** At its authored x it
   hung 149px off the edge with the subject of every photograph in the part you could
   not see. Centred it bleeds ±55px symmetrically, which reads as full-bleed.
-- **Six screen textures load up front**, ~680KB and about 45MB of GPU memory, whether or
+- **Eight screen textures load up front** — the day's six plus Home and Pura AI — ~1.1MB and
+  about 60MB of GPU memory, whether or
   not the visitor ever reaches slide 26. Deferring the four day screens until the carousel
   act is the obvious fix and has not been done.
 - **The performance pass was built, then rolled back.** `a5cf93d` put the WebGL scene on

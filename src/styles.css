@@ -690,13 +690,19 @@ body {
    more than a whole phone. It takes the same scale the chip cloud does, for the
    same reason: the row has to read as one row, not as a thing with its ends cut
    off. Figma has no mobile frame for this section yet. */
+/* The row's viewport. It shrink-wraps its contents wherever they fit, which is
+   every desktop width, so this is a plain box until a phone makes it scroll. */
 .pills {
   position: absolute;
   left: 0;
   top: 0;
   display: flex;
-  gap: calc(12px * var(--ps, 1));
   will-change: transform, opacity;
+}
+
+.pills__row {
+  display: flex;
+  gap: calc(12px * var(--ps, 1));
 }
 
 .pill {
@@ -960,26 +966,38 @@ body {
   left: 0;
   top: 0;
   display: flex;
-  /* Two rows of two, which is what the file's own auto-layout does: it wraps at
-     478px with a 24px gap on both axes. Four across would be 626px and would
-     run under the panel. */
-  flex-wrap: wrap;
-  width: 478px;
-  gap: 24px;
+  align-items: center;
+  /* One row of four, which is what the file's own auto-layout now does. The row
+     is given a fixed 623px box that its chips do not fill — they run to 575 with
+     a 20px gap and the rest is slack on the right — so the box is what gets
+     positioned and the chips sit left-aligned inside it. */
+  width: var(--dpw, 623px);
+  gap: var(--dpg, 20px);
   will-change: transform, opacity, filter;
 }
 
 .pill--static {
   width: var(--pw);
-  height: 53.5px;
-  padding: 0;
+  height: 39px;
+  padding: 0 12px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 7.6px;
+  /* The file strokes these white at 20%, which against a white fill is nothing
+     at all — so no visible edge, unlike the tab pills above. */
+  border-color: rgb(255 255 255 / 0.2);
   border-radius: 7.6px;
   font-size: 15.25px;
+  line-height: 22.9px;
+  letter-spacing: -0.24px;
   cursor: default;
   pointer-events: none;
+}
+
+.pill--static img {
+  width: 23px;
+  height: 23px;
+  flex: none;
 }
 
 /* ------------------------------------------------------------- navigation */
@@ -1514,8 +1532,23 @@ body {
   .greeting-body { width: 330px; font-size: 15px; line-height: 21px; text-align: center; }
 
   /* Six pills do not fit a phone; they scroll instead of wrapping, because
-     wrapping would change the row's height and move everything under it. */
-  .pills { gap: 8px; }
+     wrapping would change the row's height and move everything under it — and
+     everything under it is on the timeline.
+
+     The viewport is exactly one frame wide, which inside the already-scaled
+     stage is exactly the screen. The scrollbar is hidden: this is a row of
+     chips inside a composition, and a bar under it would be the only piece of
+     browser furniture on the page. */
+  .pills {
+    width: var(--pvw, 430px);
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .pills::-webkit-scrollbar { display: none; }
+
+  .pills__row { gap: 8px; padding: 0 20px; }
   .pill { height: 42px; padding: 0 16px; font-size: 13px; }
   .feature__title { font-size: 17px; }
   .feature__body { font-size: 12px; line-height: 1.4; }

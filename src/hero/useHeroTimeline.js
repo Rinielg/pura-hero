@@ -81,8 +81,8 @@ const M_PANEL_CLEAR = 26
  * their way.
  *
  * Measured rather than tabled because the heights are a function of the copy,
- * and the copy changes: on a 430px phone frame the five headlines come out
- * 100, 130, 160, 130 and 160 tall. One constant cannot seat all five.
+ * and the copy changes: on a 430px phone frame the six headlines all come out
+ * different heights. One constant cannot seat them all.
  *
  * The drop clears the TALLEST scene rather than each scene's own, or the panel
  * would shuffle up and down as the day went by.
@@ -98,6 +98,9 @@ function mobileStack(L, project, refs) {
   let lowest = top
   const scenes = DAY_SCENES.map((_, i) => {
     const h = refs.heads.current[i]?.offsetHeight ?? 0
+    // Zero for the five scenes that have no paragraph, which collapses the gap
+    // as well: `top + h + gap + 0` still measures the foot of the headline plus
+    // one gap, and that is the clearance the panel wants anyway.
     const b = refs.bodies.current[i]?.offsetHeight ?? 0
     lowest = Math.max(lowest, top + h + M_COPY_GAP + b)
     return { head: top + h / 2, body: top + h + M_COPY_GAP + b / 2 }
@@ -656,7 +659,8 @@ export function useHeroTimeline({
       ]) {
         DAY_SCENES.forEach((scene, i) => {
           const el = list.current[i]
-          if (!el) return
+          // Most scenes have no paragraph, so most `bodies` slots are empty.
+          if (!el || !scene[key]) return
           gsap.set(el, { xPercent: -50, yPercent: -50 })
           // Where the table puts this block when it is settled. Every other row
           // is that, plus or minus one rise, so the difference carries the

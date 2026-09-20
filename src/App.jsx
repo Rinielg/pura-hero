@@ -7,9 +7,11 @@ import { AppStores, Nav } from './hero/Chrome'
 import {
   CARD_CONTENT,
   CAROUSEL_GEO,
-  CAROUSEL_ITEMS,
+  CAROUSEL_TABS,
   CHIPS,
+  DAY_PILL_GAP,
   DAY_PILL_LABELS,
+  DAY_PILL_ROW_W,
   DAY_SCENES,
   HAND_ASPECT,
   MOBILE_CHIPS,
@@ -71,6 +73,23 @@ const Wash = ({ ref }) => (
 )
 
 /**
+ * Bring a tab fully into view inside its own scroll box.
+ *
+ * Only ever does anything where the row overflows, which in practice is a
+ * phone. Without it, picking the last visible tab leaves the one you have just
+ * chosen half off the edge — and since choosing it also changes the cards
+ * below, it reads as the page having jumped rather than as a selection.
+ */
+function centreTab(el) {
+  const box = el.parentElement?.parentElement
+  if (!box || box.scrollWidth <= box.clientWidth) return
+  box.scrollTo({
+    left: el.offsetLeft + el.offsetWidth / 2 - box.clientWidth / 2,
+    behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+  })
+}
+
+/**
  * The feature carousel.
  *
  * Its position on the page is on the scroll timeline like everything else; what
@@ -85,14 +104,21 @@ const Wash = ({ ref }) => (
  * overflow there is at the current breakpoint. On a phone that is several
  * pages; on a wide desktop it is two, which is what the design's half-filled
  * pagination bar shows.
+ *
+ * The TAB decides which deck is in the row, and changing it takes the row back
+ * to the start. Not a detail: the decks are different lengths — Women's Health
+ * has three cards where My Health has five — so a tab picked while the row was
+ * paged along would open somewhere in its middle, with its first card off the
+ * left edge and no indication there was anything there. The file draws every
+ * selection from its first card.
  */
-function Carousel({ scale, frameW, innerRef, controlRef }) {
+function Carousel({ items, tab, scale, frameW, innerRef, controlRef }) {
   const [page, setPage] = useState(0)
   const rowRef = useRef(null)
 
   const { rowPad, item, gap } = CAROUSEL_GEO
   const step = (item + gap) * scale
-  const rowW = (rowPad * 2 + CAROUSEL_ITEMS.length * item + (CAROUSEL_ITEMS.length - 1) * gap) * scale
+  const rowW = (rowPad * 2 + items.length * item + (items.length - 1) * gap) * scale
   const overflow = Math.max(0, rowW - frameW)
   const pages = Math.max(1, Math.ceil(overflow / step) + 1)
   const offset = Math.min(page * step, overflow)
@@ -101,6 +127,11 @@ function Carousel({ scale, frameW, innerRef, controlRef }) {
   useEffect(() => {
     setPage((p) => Math.min(p, pages - 1))
   }, [pages])
+
+  // A new deck opens at its start.
+  useEffect(() => {
+    setPage(0)
+  }, [tab])
 
   // The row is the one thing on the page that moves on a click rather than on
   // scroll, so it is tweened here rather than tracked in the timeline. A plain
@@ -121,13 +152,20 @@ function Carousel({ scale, frameW, innerRef, controlRef }) {
 
   return (
     <>
-      <div className="carousel" ref={innerRef} style={{ width: `${frameW}px` }}>
+      <div
+        className="carousel"
+        ref={innerRef}
+        style={{ width: `${frameW}px` }}
+        id="band"
+        role="tabpanel"
+        aria-labelledby={`band-tab-${tab}`}
+      >
         <div
           className="carousel__row"
           ref={rowRef}
           style={{ padding: `0 ${rowPad * scale}px`, gap: `${gap * scale}px` }}
         >
-          {CAROUSEL_ITEMS.map((it, i) =>
+          {items.map((it, i) =>
             it.kind === 'photo' ? (
               <figure
                 className="carousel__photo"
@@ -228,6 +266,9 @@ export default function App() {
   }))
   const [reduced, setReduced] = useState(false)
   const [finished, setFinished] = useState(false)
+  // Which band of the carousel is showing. The file draws six versions of it —
+  // Slides 18/19 plus `Carousel Selection 2..6` — and this is which one.
+  const [tab, setTab] = useState(0)
 
   useEffect(() => {
     const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight })
@@ -310,14 +351,14 @@ export default function App() {
             style={{ width: `${handW}px`, height: `${handW * HAND_ASPECT}px` }}
           />
 
-          {/* The day's five photo panels, stacked in one box.
+          {/* The day's six photo panels, stacked in one box.
               They live BEHIND the device and behind the wash, which is the
               order the file has from slide 25 on: panel, then Overlay, then the
               phone. Above the wash they would have nothing to blur, and they
               would cover the device outright.
 
               Each is a shutter over an image that never moves — see `shutter`
-              in frames.js. Only one or two are ever open, but all five stay
+              in frames.js. Only one or two are ever open, but all six stay
               mounted: unmounting them would drop the decoded image and make
               scrolling back up a reload. */}
           {DAY_SCENES.map((scene, i) => (
@@ -429,19 +470,51 @@ export default function App() {
           <h2 className="act4-head" ref={refs.act4Head}>
             Help for every part of your health.
           </h2>
-          <div className="pills" ref={refs.pills} style={{ '--ps': layout.chipScale }}>
-            {PILL_LABELS.map((label, i) => (
-              <button type="button" className={i === 0 ? 'pill is-on' : 'pill'} key={label}>
-                {label}
-              </button>
-            ))}
+          {/* A tab list, not six decorative chips: each one swaps the deck in
+              the carousel below. Marked up as tabs so a keyboard and a screen
+              reader get the relationship — the panel they control is the
+              carousel, which is a sibling rather than a child because its
+              position on the page is on the scroll timeline and the tabs' is
+              too, separately.
+
+              Two elements, not one: the outer box is the row's VIEWPORT and is
+              what the timeline moves, and the inner row is what overflows it.
+              Six labels come to 603px, which fits a 1920 frame and does not fit
+              a 430 one — and when they were decoration, the two that fell off
+              the ends did not matter. As controls they do. */}
+          <div
+            className="pills"
+            ref={refs.pills}
+            style={{ '--ps': layout.chipScale, '--pvw': `${layout.frame[0]}px` }}
+          >
+            <div className="pills__row" role="tablist" aria-label="Parts of your health">
+              {PILL_LABELS.map((label, i) => (
+                <button
+                  type="button"
+                  role="tab"
+                  id={`band-tab-${i}`}
+                  aria-selected={i === tab}
+                  aria-controls="band"
+                  className={i === tab ? 'pill is-on' : 'pill'}
+                  key={label}
+                  onClick={(e) => {
+                    setTab(i)
+                    centreTab(e.currentTarget)
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <Carousel
+            items={CAROUSEL_TABS[tab]}
             scale={layout.cardScale}
             frameW={layout.frame[0]}
             innerRef={refs.carousel}
             controlRef={refs.carouselCtrl}
+            tab={tab}
           />
 
           <h2 className="act5-head" ref={refs.act5Head}>
@@ -457,15 +530,15 @@ export default function App() {
             ))}
           </div>
           <span className="ruler-dot" ref={refs.timelineDot} aria-hidden="true" />
-          {/* Slides 26 to 34: the day, told in five scenes. The copy on the
+          {/* Slides 26 to 36: the day, told in six scenes. The copy on the
               left says what the phone in the middle is showing, and both change
               on the settled slides only — the transitions between them move the
               photograph and nothing else.
 
-              All five pairs are in the DOM at once and cross-fade past each
-              other. Swapping the text of one element instead would mean the
-              outgoing and incoming words could never overlap, and the hand-off
-              is the one moment where they have to. */}
+              All six are in the DOM at once and cross-fade past each other.
+              Swapping the text of one element instead would mean the outgoing
+              and incoming words could never overlap, and the hand-off is the one
+              moment where they have to. */}
           {DAY_SCENES.map((scene, i) => (
             <div
               className="greeting"
@@ -479,24 +552,35 @@ export default function App() {
               <p>{scene.head}</p>
             </div>
           ))}
-          {DAY_SCENES.map((scene, i) => (
-            <p
-              className="greeting-body"
-              key={scene.key}
-              style={{ '--gw': `${scene.bodyBox[2]}px` }}
-              ref={(el) => {
-                refs.bodies.current[i] = el
-              }}
-            >
-              {scene.body}
-            </p>
-          ))}
+          {/* Only the first scene has a paragraph. The others are rendered as
+              nothing rather than as an empty node, which leaves that scene's
+              slot in `refs.bodies` undefined — and undefined is what the
+              timeline and the phone's measured stack both check for. */}
+          {DAY_SCENES.map((scene, i) =>
+            scene.body ? (
+              <p
+                className="greeting-body"
+                key={scene.key}
+                style={{ '--gw': `${scene.bodyBox[2]}px` }}
+                ref={(el) => {
+                  refs.bodies.current[i] = el
+                }}
+              >
+                {scene.body}
+              </p>
+            ) : null
+          )}
 
-          {/* Scene D is the only one that carries anything under its paragraph.
+          {/* Scene D is the only one that carries anything under its headline.
               It follows the copy exactly — same slides, same rise. */}
-          <div className="day-pills" ref={refs.dayPills}>
+          <div
+            className="day-pills"
+            ref={refs.dayPills}
+            style={{ '--dpw': `${DAY_PILL_ROW_W}px`, '--dpg': `${DAY_PILL_GAP}px` }}
+          >
             {DAY_PILL_LABELS.map(([label, w]) => (
               <span className="pill pill--static" key={label} style={{ '--pw': `${w}px` }}>
+                <img src="/assets/icons/health-report.svg" alt="" />
                 {label}
               </span>
             ))}
