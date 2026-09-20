@@ -856,16 +856,18 @@ Two controls, and they are the only ones inside the sequence.
   `prefers-reduced-motion` by tweening with `duration: 0`.
 
 **The tabs** swap the deck. The file draws six versions of this band — Slides 18/19 plus
-the five `Carousel Selection` frames — and the only thing that differs between them is each
-card's title and body. The little visualisation at the top of every card is the same four
-widgets in the same order on every tab, because in the file they are the same instances.
+the five `Carousel Selection` frames — and each brings its own lead photograph, its own
+copy and its own card visuals.
 
-So `CAROUSEL_TABS` is six lists of copy over one shared set of `WIDGETS`, and
-`CAROUSEL_ITEMS` is just `CAROUSEL_TABS[0]`. Thirty cards written out longhand would be
-thirty chances for the chrome to drift; the file guarantees it never does.
+Every card names its own: `lead-<tab>.jpg` and `feature-<tab>-<card>.jpg`, the latter
+exported flat from the file's `Feature · …` frames at 300 square. Deliberately literal
+rather than shared-by-content — nine of the twenty-four are byte-identical today, because
+the five selections happen to carry the same four visuals as each other. **Do not
+deduplicate them.** They are five separate frames that get edited separately, and a shared
+file would quietly stop tracking whichever one changed. Tab 1 already has five of its own,
+different from the rest.
 
-Each tab does bring **its own lead photograph** — `lead-1` … `lead-6`, in tab order. That
-is the one visual besides the copy that differs between the file's six versions.
+Only the open tab's images are in the DOM, so only its four or five ever load.
 
 - The decks are **different lengths** (My Health has five cards, Women's Health three), so
   changing tab takes the row back to page 0. A tab picked while the row was paged along
