@@ -924,6 +924,48 @@ choreography implies: the row slides up and left out of exactly the space the
 band occupies, so what you see is the cards clearing off the band rather than the
 band arriving on top of them.
 
+Holding the act's rate settles everything *below* the band. The promo row above
+it is a different problem, because it moves at its own rate entirely — the file
+takes it from 541 to 0 across the step into 17, against the band's 63. They close
+on each other, and no single rate keeps the band clear of both: **at slide 16
+there is 200px between the row's bottom edge and the headline's top, and the band
+is 429 tall.** It does not fit yet.
+
+So the fade is windowed rather than run across the step —
+`STEP_WINDOWS.partners` holds it invisible at slide 16's pose until the row is
+clear, then fades it up and settles it. Leaving the step is simpler: the row now
+rises at the act's rate too, so it holds station above the band the whole way.
+
+### Checking it, rather than believing it
+
+The band is full-bleed, so anything it crosses shows. Paste this into the console
+on the home route and it sweeps every tracked element against the band across the
+four steps around it — on both breakpoints. It should print zero.
+
+```js
+const st = document.querySelector('.layer--interactive .stage')
+const s = new DOMMatrix(getComputedStyle(st).transform).a
+const sr = st.getBoundingClientRect(), bad = []
+for (const step of [14, 15, 16, 17]) for (let i = 0; i <= 20; i++) {
+  window.__tl.progress((step + i / 20) / 35)
+  const be = document.querySelector('.partners'), br = be.getBoundingClientRect()
+  if (+getComputedStyle(be).opacity < 0.01) continue
+  for (const e of st.querySelectorAll('*')) {
+    if (e === be || be.contains(e) || e.contains(be)) continue
+    let o = 1
+    for (let p = e; p && p !== st; p = p.parentElement) o *= +getComputedStyle(p).opacity
+    const r = e.getBoundingClientRect()
+    if (o < 0.01 || r.width < 1 || r.height < 1) continue
+    if (Math.min(br.bottom, r.bottom) - Math.max(br.y, r.y) > 0) bad.push([step + 1, e.className])
+  }
+}
+window.__tl.progress(0); bad
+```
+
+Mind the false positives: `.hero-copy` is a container whose `h1` and `p` carry
+the opacity, so it reads as opaque long after its text has gone. Multiply an
+element's opacity by its ancestors' before believing a hit.
+
 **The logo row is tiled and it drifts.** The file centres one set of eight, 1581
 wide in a 1920 band — which does not reach either edge, and a row that has to
 scroll cannot have an end. So four copies are laid down starting one whole set

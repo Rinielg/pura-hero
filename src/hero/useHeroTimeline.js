@@ -462,10 +462,16 @@ export function useHeroTimeline({
       // being spent horizontally instead.
       if (refs.partners.current) {
         gsap.set(refs.partners.current, { xPercent: -50, yPercent: -50 })
-        track(refs.partners.current, (slide) => {
-          const row = at(PARTNERS, slide)
-          return { ...project(row.c), opacity: row.o }
-        })
+        track(
+          refs.partners.current,
+          (slide) => {
+            const row = at(PARTNERS, slide)
+            return { ...project(row.c), opacity: row.o }
+          },
+          // Held at slide 16's pose until the promo row is clear of it — see
+          // STEP_WINDOWS.partners.
+          STEP_WINDOWS.partners
+        )
       }
       if (refs.partnerRow.current) {
         track(refs.partnerRow.current, (slide) => ({

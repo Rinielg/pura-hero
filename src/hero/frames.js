@@ -697,8 +697,11 @@ export const CARDS = [
   { c: [502, 541], o: 1 },
   { c: [-212, 0], o: 1 },
   // Gone from slide 18 in the file. The row keeps drifting on its own axis
-  // while the page carries it up, and fades out over that step.
-  { c: [-926, -192], o: 0 },
+  // while the page carries it up, and fades out over that step — and "carried
+  // up by the page" is 670, the rise the whole fourth act takes across this
+  // step. It used to be a smaller invented number, which meant the row closed
+  // on the partner band below it instead of holding station above it.
+  { c: [-926, -670], o: 0 },
 ]
 
 /**
@@ -796,6 +799,16 @@ export const PILLS = parked(16, { c: [960, 1068], o: 0, b: 8 }, [
  * choreography does with it: the promo row slides up and left out of exactly
  * the space the band occupies, so the band is behind the cards in the stack and
  * they clear off it.
+ *
+ * Holding the act's rate settles everything BELOW the band. What sits above it
+ * is the promo row, and that moves at its own rate entirely — the file takes it
+ * from 541 to 0 across the step into 17, against the band's 63. They close on
+ * each other, and there is no rate that keeps the band clear of both: at slide
+ * 16 the space between the row's bottom edge and the headline's top is 200px
+ * and the band is 429 tall. It simply does not fit yet.
+ *
+ * Which is why the fade is windowed rather than run across the whole step. See
+ * `STEP_WINDOWS.partners`.
  */
 export const PARTNERS = parked(16, { c: [960, 592.5], o: 0 }, [
   { c: [960, 529.5], o: 1 },
@@ -1467,6 +1480,21 @@ export const STEP_WINDOWS = {
   // hand's movement is untouched and still runs both steps end to end.
   handFade: { 3: [0.5, 1], 4: [0, 0.4] },
   device: { 4: [0.34, 1] },
+  /**
+   * The partner band waits for the promo row to get out of its way.
+   *
+   * Step 15 is slide 16 -> 17, and for most of it the row is still across the
+   * band's top edge — at slide 16 there is 200px between the row and the
+   * headline and the band needs 429. It holds at slide 16's pose, invisible,
+   * until the row's bottom edge has risen clear of where its top will be, and
+   * only then fades up and settles.
+   *
+   * 0.75 is where that happens with room to spare: the row's bottom is at 336
+   * and the band's top is at 378, so the fade starts 42px clear and only opens
+   * up from there. Nothing needed on the step out — the row rises at the act's
+   * rate now, so it holds station above the band the whole way.
+   */
+  partners: { 15: [0.75, 1] },
 }
 
 /**
