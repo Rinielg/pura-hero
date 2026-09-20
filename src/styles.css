@@ -1004,28 +1004,37 @@ body {
   will-change: transform, opacity, filter;
 }
 
+/**
+ * Scene D's pillar chips, which are NOT the tab pills above wearing a different
+ * size. The file's `Pillar item` is a small white CARD: a 7.625 radius, a 15.25
+ * drop shadow at 4% black, and no border at all.
+ *
+ * Read off the component rather than eyeballed, because both of the obvious
+ * guesses are wrong. The component carries a `Health report - Duotone` icon and
+ * it is HIDDEN in all four instances — the chip is its label and nothing else,
+ * 12px of padding either side. And the 1px border the tab pills have would be
+ * wrong here: what the file strokes is 6.67px of white at 20% on the OUTSIDE,
+ * which over a white page is invisible. It is kept below because it is what the
+ * component says, and because the shadow is the only thing making these read as
+ * cards at all — drop it and four labels float on nothing.
+ */
 .pill--static {
   width: var(--pw);
   height: 39px;
   padding: 0 12px;
   display: inline-flex;
   align-items: center;
-  gap: 7.6px;
-  /* The file strokes these white at 20%, which against a white fill is nothing
-     at all — so no visible edge, unlike the tab pills above. */
-  border-color: rgb(255 255 255 / 0.2);
-  border-radius: 7.6px;
+  justify-content: center;
+  border: 0;
+  border-radius: 7.625px;
+  box-shadow:
+    0 0 0 6.67px rgb(255 255 255 / 0.2),
+    0 0 15.25px rgb(0 0 0 / 0.04);
   font-size: 15.25px;
   line-height: 22.9px;
   letter-spacing: -0.24px;
   cursor: default;
   pointer-events: none;
-}
-
-.pill--static img {
-  width: 23px;
-  height: 23px;
-  flex: none;
 }
 
 /* ------------------------------------------------------------- navigation */

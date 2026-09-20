@@ -634,7 +634,6 @@ export default function App() {
           >
             {DAY_PILL_LABELS.map(([label, w]) => (
               <span className="pill pill--static" key={label} style={{ '--pw': `${w}px` }}>
-                <img src="/assets/icons/health-report.svg" alt="" />
                 {label}
               </span>
             ))}
