@@ -16,7 +16,7 @@ import { useEffect, useRef } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Link } from 'react-router-dom'
-import { LottieBackground } from '../LottieBackground'
+import { Backdrop } from '../Backdrop'
 import { STORE } from './content'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -67,7 +67,7 @@ export function PageHero({ kicker, title, lead, children }) {
   return (
     <header className="ph">
       <div className="ph__bg" aria-hidden="true">
-        <LottieBackground />
+        <Backdrop />
       </div>
       <div className="ph__inner">
         <p className="ph__kicker">{kicker}</p>

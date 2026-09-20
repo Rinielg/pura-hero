@@ -77,7 +77,16 @@ export const LAYOUTS = {
   },
 }
 
-export const pickLayout = (width) => (width < 820 ? LAYOUTS.mobile : LAYOUTS.desktop)
+/**
+ * The width below which this build is a phone.
+ *
+ * Exported because two unrelated trees need it — the hero, which picks a whole
+ * layout from it, and the backdrop, which is rendered both inside the hero and
+ * on every inner page and has to reach the same verdict either way.
+ */
+export const PHONE_MAX = 820
+
+export const pickLayout = (width) => (width < PHONE_MAX ? LAYOUTS.mobile : LAYOUTS.desktop)
 
 /** Chip centre, in the layout's own frame pixels. */
 export function projectChip([x, y], L) {

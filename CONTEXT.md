@@ -214,6 +214,34 @@ open dropdown with it when it goes, and resets on every route change — a new
 page opens at the top, and arriving somewhere with no navigation until you
 happen to scroll up is a dead end.
 
+### The backdrop is two different things
+
+`Backdrop.jsx` renders the mesh gradient, and what it renders depends on the
+width:
+
+| | below 820px | 820px and up |
+|---|---|---|
+| What | `/bg/gradient-bg-mobile.jpg` | the Lottie |
+| How | one `background-image`, `cover` | lottie-web, SVG, 15s of drift |
+| Cost | a 144KB decode, once | eight animated radial gradients at viewport size |
+
+The JSON is never fetched on a phone and lottie-web never runs — the effect
+returns before `loadAnimation`. That is the point: the expense was never the
+21KB file, it was compositing eight moving gradients the size of the screen, on
+the device with the least to spend, on a page that also has a 3D phone to draw.
+
+The export is 1320x2868, which is the mobile frame's own 1:2.17 — so `cover` is
+an exact fit and nothing is cropped. It matches the Lottie's `xMidYMid slice`.
+
+**It decides for itself rather than taking a prop.** This component is rendered
+in two unrelated trees: inside the hero, which knows its layout, and by
+`PageHero` on every inner page, which does not. One media query against the same
+`PHONE_MAX` that `pickLayout` uses is what stops the two disagreeing — the
+constant is exported from `layout.js` for exactly that reason.
+
+The file is `Backdrop.jsx`, not `LottieBackground.jsx`: on more than half the
+viewports it serves, there is no Lottie in it.
+
 ## 3. Where things live
 
 | File | What it owns |
@@ -222,13 +250,18 @@ happen to scroll up is a dead end.
 | `src/hero/useHeroTimeline.js` | The timeline. Turns tables into tweens. |
 | `src/hero/layout.js` | Breakpoints and the four projections. |
 | `src/App.jsx` | The layer stack, the DOM, and the `Carousel` component. |
-| `src/Device.jsx` | The three.js phone: black finish, two screens, shader crossfade. |
+| `src/Device.jsx` | The three.js phone: black finish, six screens, shader crossfade, cursor tilt. |
+| `src/Scene.jsx` | The canvas and the procedural studio the mirrored body reflects. |
+| `src/deviceProxy.js` | The one seam between GSAP and three.js. Nothing else crosses it. |
+| `src/Backdrop.jsx` | The mesh gradient: the Lottie on desktop, a still on a phone. |
+| `src/config.js` | Camera, device scale, render quality. Things that never change at runtime. |
+| `src/hero/Chrome.jsx` | The navigation and the store badges — shared by every route. |
 | `src/styles.css` | All of it. No CSS modules, no Tailwind. |
 | `tools/extract-frames.js` | Re-read the sequence from Figma. **Not** part of the build. |
 | `src/main.jsx` | The routes. |
 | `src/site/content.js` | Every word the inner pages say, and the IA mapping. |
 | `src/site/Sections.jsx` | The blocks pages are assembled from. |
-| `src/site/Pages.jsx` | The six pages, as arrangements of those blocks. |
+| `src/site/Pages.jsx` | All 23 inner pages, as one arrangement of those blocks. |
 | `src/site/Layout.jsx` | Nav + page + footer, for document routes. |
 | `src/site.css` | The inner pages. Adds only; never touches the hero. |
 
@@ -236,9 +269,10 @@ happen to scroll up is a dead end.
 
 ```
 0  backdrop        the gradient, which travels
-1  back / copy     chips, hand, hero copy
-2  canvas          the three.js device
+1  back / copy     chips, hand, hero copy, the day's five photo panels
+2  canvas          the three.js device — up to slide 24
 3  front           wash, act-3 copy, cards
+4  canvas          the three.js device — from slide 25 (see DEVICE_FRONT_FROM)
 6  front (interactive)  act-4/5 copy, pills, carousel + arrows
 5  #smooth-wrapper the scroll spacer — fixed, and it swallows clicks
 10 nav, stores, cue
@@ -846,6 +880,8 @@ anything load-bearing use `st.scroll` and wait.
 | Blur survives minification | grep the built CSS | 13 prefixed **and** 13 standard |
 | **No blur is silently dead** | run the backdrop-root audit below | every row `ok` |
 | Inner pages at 375 | walk all 23 routes | 0 overflow, 0 duplicated heroes, 0 fixed badges |
+| The phone gets no Lottie | load at 375, watch the network | `gradient-bg-mobile.jpg` only, no `.json` |
+| Desktop still gets it | load at 1280, count `.backdrop svg` | exactly 1 |
 | Entry motion | diff each table's per-step y delta against the page rise | equal, except `DAY_MEDIA` 22→23 |
 
 **The backdrop-root audit.** A `backdrop-filter` that does nothing looks
@@ -883,18 +919,20 @@ const rootReasons = (el) => {
 
 ## 9. Open items
 
-- **Mobile has no design.** Slides 17–23 are projected, not designed. The filter pill row
+- **Mobile has no design.** Slides 17–34 are projected, not designed. The filter pill row
   is ~603px on a 375px screen even after scaling with `--ps` — the ends are cut off. It
   wants either a real mobile frame or a horizontally scrollable row. Flagged, not invented.
-- **The six inner pages have no design either.** They are built in the sequence's visual
-  language from pura.ai's content, which is the only finished material that exists. Every
-  block in `Sections.jsx` is meant to be replaced as real frames land.
+- **The 23 inner pages have no design either.** They are built in the sequence's visual
+  language from `pura-website-upload-1.vercel.app`'s content, which is the only finished
+  material that exists. Every block in `Sections.jsx` is meant to be replaced as real
+  frames land.
 - **The For Business form is a mailto.** The live site runs a Formidable form; a prototype
   should not collect anyone's details, so the CTA points at the address the form ends in.
 - **Interactions beyond the carousel arrows** are still to come; Riniel is providing them.
-- **Slide 26's mobile layout is hand-placed.** The lifts (140/150 frame px) and the
-  device's 0.7 shrink are numbers that fit, not numbers from a file. A real mobile
-  frame would replace them.
+- **The day's mobile layout is derived, not designed.** The copy is no longer hand-placed
+  — `mobileStack()` measures it and the panel drop falls out of that — but the device's
+  0.7 shrink, the 170px band top and the 18/26px gaps are still numbers that fit rather
+  than numbers from a frame. A real mobile design would replace them.
 - **Slides 24–34 have no interactions apart from the cursor tilt.** 34 is currently
   the end of the sequence.
 - **Scene D's pillar row is hidden below 980px.** Wrapped into two rows it is ~90px
@@ -905,9 +943,21 @@ const rootReasons = (el) => {
 - **The day's panel is centred on a phone, not parked right.** At its authored x it
   hung 149px off the edge with the subject of every photograph in the part you could
   not see. Centred it bleeds ±55px symmetrically, which reads as full-bleed.
-- **Six screen textures load up front**, ~580KB, whether or not the visitor ever
-  reaches slide 26. Deferring the four day screens until the carousel act would be
-  the obvious fix and has not been done.
+- **Six screen textures load up front**, ~680KB and about 45MB of GPU memory, whether or
+  not the visitor ever reaches slide 26. Deferring the four day screens until the carousel
+  act is the obvious fix and has not been done.
+- **The performance pass was built, then rolled back.** `a5cf93d` put the WebGL scene on
+  `frameloop="demand"` (zero renders while idle), paused the gradient off-screen, halved
+  the blur bands on a phone, capped mobile DPR and downsized the screen textures to 20MB.
+  It was reverted in `2f7e31c` at Riniel's request, not because anything was found wrong
+  with it. `git revert 2f7e31c` brings all of it back, reasoning included. The one part
+  that was kept, separately, is the phone's still backdrop.
+- **26 files under `public/assets/site/` are neither tracked nor ignored** — the `app/`,
+  `icons/` and `partners/` subfolders. They reach production only because `vercel --prod`
+  uploads the working directory rather than building from the repo, so a fresh clone would
+  deploy without them. Nothing in `src/` references any of them; they look like leftovers
+  from the inner-pages build. Commit them or delete them — but the repo is not currently a
+  complete description of what is deployed.
 - **Promo cards 3 and 4** still share the line "Give your mind the same attention".
   The tags now differ (Mental Wellness / Care) and the file has it that way, so the
   build follows it — but the body copy looks like placeholder waiting to be written.

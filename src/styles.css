@@ -101,6 +101,15 @@ body {
 .backdrop { position: absolute; inset: 0; z-index: 0; }
 .backdrop svg { width: 100% !important; height: 100% !important; }
 
+/* The phone's still. `cover` matches the Lottie's own `xMidYMid slice`, and the
+   export is the mobile frame's 1:2.17 to begin with, so it lands exactly. */
+.backdrop--still {
+  background-image: url('/bg/gradient-bg-mobile.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 .device-layer { z-index: 2; }
 .device-layer canvas { display: block; }
 

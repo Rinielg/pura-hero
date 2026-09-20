@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { Scene } from './Scene'
-import { LottieBackground } from './LottieBackground'
+import { Backdrop } from './Backdrop'
 import { QUALITY } from './config'
 import { AppStores, Nav } from './hero/Chrome'
 import {
@@ -271,11 +271,12 @@ export default function App() {
     <>
       {/* The gradient sits in a stage of its own so it can travel in frame
           pixels like everything else. Plain white is behind it: from slide 10
-          the first act scrolls away and what it uncovers is the page. */}
+          the first act scrolls away and what it uncovers is the page.
+          On a phone it is a still image rather than the Lottie — see Backdrop. */}
       <div className="layer layer--backdrop" aria-hidden="true">
         <div className="stage" style={stageStyle}>
           <div className="backdrop-travel" ref={refs.backdrop}>
-            <LottieBackground />
+            <Backdrop />
           </div>
         </div>
       </div>

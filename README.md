@@ -69,7 +69,7 @@ the viewport width left of centre.
 passes *in front* of it, so the composition cannot be one element:
 
 ```
- 0  Lottie gradient
+ 0  mesh gradient — Lottie on desktop, a still on a phone
  1  chips, hand, heading      (fixed)
  2  WebGL canvas — the device (fixed)
  3  white wash, scroll cue    (fixed)
@@ -114,11 +114,14 @@ The result lands within 1.5% of the reference on both axes.
 | Path | Source |
 |---|---|
 | `public/models/iphone-18-pro.glb` | pura-device-viewer |
-| `public/assets/pura-screen.jpg` | the app screen from Figma, on the model's display |
+| `public/assets/pura-screen.jpg`, `pura-ai-screen.jpg` | the first two app screens from Figma, on the model's display |
+| `public/assets/day/ui-*.jpg` | the four screens the phone shows through the day (slides 28–34) |
+| `public/assets/day/scene-*.jpg` | the day's four photo panels, exported from the Figma frames |
 | `public/assets/hand.webp` | Figma, cropped from the source by its CROP transform, with the wrist fade rebuilt as a CSS mask |
 | `public/assets/icons/*.svg` | the twelve chips' duotone icons, exported from Figma |
 | `public/assets/store-*.svg`, `pura-logo.svg` | Figma |
-| `public/bg/*.json` | the supplied mesh-gradient Lottie |
+| `public/bg/*.json` | the supplied mesh-gradient Lottie (desktop) |
+| `public/bg/gradient-bg-mobile.jpg` | the same background as a still, for phones |
 
 ## Notes
 
@@ -170,6 +173,11 @@ The result lands within 1.5% of the reference on both axes.
   face, everyone else falls through to Figtree. Shipping publicly with the brand
   face needs a webfont licence and the `.woff2` files dropped into
   `public/fonts` — nothing else has to change.
+- **A phone never gets the Lottie.** Below 820px the mesh gradient is a flat
+  export of the same background rather than eight animated radial gradients.
+  The JSON is not fetched and lottie-web never runs. It is the same image on
+  every phone, so the drift the desktop build opens with is simply absent there
+  — a deliberate trade for a page that has a 3D device to spend its budget on.
 - **The navigation blur exceeds the file.** Figma has `backdrop-blur` on the nav
   pill at radius 0. A static frame has nothing moving underneath it to blur;
   this page does.
@@ -184,16 +192,19 @@ The result lands within 1.5% of the reference on both axes.
 - **Slide 26's paragraph is moved 80px up from where the file leaves it**, to
   match the same paragraph on slide 27. Everything else on that slide got the
   shift when the navigation came out; this one element did not.
-- **All six phone screens load up front** (~580KB), whether or not the visitor
-  reaches the day. They should be deferred until the carousel act.
+- **All six phone screens load up front** (~680KB, ~45MB of GPU memory), whether
+  or not the visitor reaches the day. They should be deferred until the carousel
+  act.
 - **Never put `opacity` in a `will-change` above a `backdrop-filter`.** It makes
   that element a backdrop root and the blur inside it silently stops sampling
   anything — no error, and the computed style still looks correct. It cost the
   Overlay its entire progressive blur until 2026-09-18. There is an audit for it
   in `CONTEXT.md` §8; run it after any change that touches blur.
-- **Slide 26 on a phone is hand-placed.** The copy sits beside the device in the
-  file and above it here, with the device and panel dropped to make room. The
-  numbers fit; they are not from a frame.
+- **The day on a phone is derived, not designed.** The copy sits beside the device
+  in the file and above it here, with the device and panel dropped to make room.
+  The copy itself is measured at build time now, so it survives a copy change —
+  but the device's 0.7 shrink and the band's own margins are still numbers that
+  fit rather than numbers from a frame.
 - **Mobile composition is a derivation, not a design.** Six of the twelve chips
   survive, the cloud converges harder, and the scroll cue drops its label. Those
   are judgement calls made to fit — the Figma file only covers 1920×1080. The
@@ -204,6 +215,15 @@ The result lands within 1.5% of the reference on both axes.
   row rather than an invented one.
 - **The For Business and Support forms are `mailto:` links.** The source site
   runs real forms; a prototype should not collect anyone's details.
+- **A performance pass was built and then rolled back.** `a5cf93d` put the WebGL
+  scene on demand, paused the gradient off-screen, halved the blur bands on a
+  phone and downsized the textures; `2f7e31c` reverted it at Riniel's request.
+  `git revert 2f7e31c` brings it back. The phone's still backdrop is the one
+  piece kept, and it was done separately.
+- **26 files under `public/assets/site/` are untracked.** They reach production
+  only because `vercel --prod` uploads the working directory rather than building
+  from the repo. Nothing references them, but a fresh clone would deploy without
+  them — so the repo is not a complete description of what is live.
 
 ## Routes
 
