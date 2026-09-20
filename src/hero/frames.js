@@ -778,7 +778,7 @@ export const PILLS = parked(16, { c: [960, 1068], o: 0, b: 8 }, [
  * The feature carousel.
  *
  * This track moves the whole carousel through the page. What the arrows move is
- * the row INSIDE it, which is not on the timeline at all — see CAROUSEL_ITEMS
+ * the row INSIDE it, which is not on the timeline at all — see CAROUSEL_TABS
  * and the note on the component. Slides 18 and 19 are identical here on
  * purpose: that is the stretch where the carousel stands still and the reader
  * drives it.
@@ -1179,11 +1179,18 @@ export const PILL_LABELS = [
  * `fill` is how far along the card's little progress bar runs, as a fraction —
  * Figma draws it as a 212px track with a coloured bar over it.
  */
-const LEAD = {
-  kind: 'photo',
-  img: 'lead',
-  alt: 'Someone checking their health on the Pura app',
-}
+/**
+ * Each tab brings its own lead photograph. This is the one thing besides the
+ * copy that actually differs between the file's six versions of the band.
+ */
+const LEADS = [
+  ['lead-1', 'Someone checking their health on the Pura app at home'],
+  ['lead-2', 'A woman eating an evening meal at her kitchen table'],
+  ['lead-3', 'A man winding down on his bed at the end of the day'],
+  ['lead-4', 'A doctor with a tablet, by the window of a clinic'],
+  ['lead-5', 'A group running together on the beach at sunrise'],
+  ['lead-6', 'A pregnant woman having a scan with a clinician'],
+]
 
 const WIDGETS = [
   { label: 'PureScore', value: '92', caption: '+8 pts \u00b7 Great', fill: 0.28 },
@@ -1193,9 +1200,9 @@ const WIDGETS = [
   { label: 'Medical history', value: 'Synced', caption: 'Records and past results', fill: 1 },
 ]
 
-/** One tab's band: the lead photograph, then a card per line of copy. */
-const deck = (cards) => [
-  LEAD,
+/** One tab's band: its lead photograph, then a card per line of copy. */
+const deck = (tab, cards) => [
+  { kind: 'photo', img: LEADS[tab][0], alt: LEADS[tab][1] },
   ...cards.map(([title, body], i) => ({ kind: 'card', ...WIDGETS[i], title, body })),
 ]
 
@@ -1206,7 +1213,7 @@ const deck = (cards) => [
  */
 export const CAROUSEL_TABS = [
   // My Health
-  deck([
+  deck(0, [
     [
       'PureScore',
       'One score for your overall health, built from your lab results and wearable data, with what moved it explained in plain words.',
@@ -1229,7 +1236,7 @@ export const CAROUSEL_TABS = [
     ],
   ]),
   // Heart and Metabolism
-  deck([
+  deck(1, [
     [
       'Blood sugar',
       'See where your HbA1c sits and which everyday habits, like movement and sleep, can help bring it into range.',
@@ -1248,7 +1255,7 @@ export const CAROUSEL_TABS = [
     ],
   ]),
   // Sleep and Stress
-  deck([
+  deck(2, [
     [
       'Sleep duration',
       'See how long and how consistently you sleep, from your connected wearable.',
@@ -1264,7 +1271,7 @@ export const CAROUSEL_TABS = [
     ],
   ]),
   // Care
-  deck([
+  deck(3, [
     [
       'Online Doctor',
       'See a UAE-licensed doctor by video, choosing by specialty and language.',
@@ -1283,7 +1290,7 @@ export const CAROUSEL_TABS = [
     ],
   ]),
   // Wellness
-  deck([
+  deck(4, [
     [
       'Goals and check-ins',
       'Daily goals tied to your results, with quick check-ins to keep you on track.',
@@ -1293,7 +1300,7 @@ export const CAROUSEL_TABS = [
     ['Rewards', 'Spend FitCoins on rewards from Pura partners across the UAE.'],
   ]),
   // Women's Health
-  deck([
+  deck(5, [
     ['PregnaCare', 'Week-by-week guidance through pregnancy, grounded in clinical advice.'],
     [
       'Pregnancy dashboard',
@@ -1308,6 +1315,29 @@ export const CAROUSEL_TABS = [
 
 /** The band the page opens on. */
 export const CAROUSEL_ITEMS = CAROUSEL_TABS[0]
+
+/**
+ * The day's left column, in frame pixels.
+ *
+ * Every headline, paragraph and pillar row from slide 26 on is set flush left at
+ * x=148 in the file, and the phone group is 321 wide centred on 959.7 — so its
+ * left edge is 799. `COPY_CLEAR` is the air the file leaves between the two:
+ * its widest block is the pillar row's 623px box, which runs 148 → 771, and 771
+ * to 799 is 28.
+ *
+ * That makes `DEVICE_LEFT - COPY_LEFT - COPY_CLEAR` come out at exactly 623 on
+ * a 16:9 window — so the responsive clamp below is the identity there, for
+ * every block including the widest one. Not a coincidence and not a tuned
+ * number: it is the file's own column.
+ *
+ * Numbers rather than CSS because the responsive rule needs to do arithmetic
+ * with them: on a window narrower than 16:9 the column follows the screen's
+ * left edge instead of the frame's, and what it may not do is follow it into
+ * the phone. See `frameWindow` in layout.js.
+ */
+export const COPY_LEFT = 148
+export const DEVICE_LEFT = 799
+export const COPY_CLEAR = 28
 
 /** Carousel geometry, in frame pixels. */
 export const CAROUSEL_GEO = { rowPad: 140, item: 300, gap: 24, photoH: 420, cardH: 424 }

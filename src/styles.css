@@ -81,11 +81,23 @@ body {
  */
 .backdrop,
 .device-layer,
+/**
+ * `clip`, not `hidden`, and the difference is load-bearing.
+ *
+ * Both clip the same. `hidden` also makes the layer a SCROLL CONTAINER — an
+ * 11,800px-wide one, because the day's ruler is in it — and a scroll container
+ * is something the browser will scroll on its own to bring a focused control
+ * into view. Focus a carousel tab whose pill hangs past the frame edge and the
+ * whole composition slides sideways by however far it had to go, with nothing
+ * to put it back.
+ *
+ * `clip` does not scroll, so there is nothing to nudge.
+ */
 .layer {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  overflow: hidden;
+  overflow: clip;
 }
 
 /* The gradient lives in a stage now so it can travel in frame pixels like
@@ -734,11 +746,15 @@ body {
  * inside is moved by the arrows, which is why the two are separate elements
  * with separate transforms.
  */
+/* The band's viewport. Its width is what can be SEEN of the frame rather than
+   the frame's own, so on a window narrower than 16:9 it clips at the real screen
+   edges and the row inside still starts one gutter in from the left.
+   `clip` rather than `hidden` for the reason given on `.layer`. */
 .carousel {
   position: absolute;
   left: 0;
   top: 0;
-  overflow: hidden;
+  overflow: clip;
   will-change: transform, opacity;
 }
 
@@ -963,16 +979,28 @@ body {
    to the pointer. */
 .day-pills {
   position: absolute;
-  left: 0;
   top: 0;
   display: flex;
   align-items: center;
   /* One row of four, which is what the file's own auto-layout now does. The row
      is given a fixed 623px box that its chips do not fill — they run to 575 with
      a 20px gap and the rest is slack on the right — so the box is what gets
-     positioned and the chips sit left-aligned inside it. */
-  width: var(--dpw, 623px);
-  gap: var(--dpg, 20px);
+     positioned and the chips sit left-aligned inside it.
+
+     It wraps, though, because it is the widest thing in the column and the
+     column narrows: at 623 it is one row, and below about 460 it becomes two
+     rather than running under the phone.
+
+     The BOX stays 39 tall whatever it does, and the second row overflows below
+     it. The timeline centres this element vertically on the file's own box, so
+     a box that grew would push its first row up into the headline — which on a
+     narrow window is exactly where there is no room. Overflowing downward puts
+     the extra row in the empty space under the column instead. */
+  flex-wrap: wrap;
+  align-content: flex-start;
+  height: 39px;
+  row-gap: 12px;
+  column-gap: var(--dpg, 20px);
   will-change: transform, opacity, filter;
 }
 
@@ -1325,15 +1353,33 @@ body {
  * middle is showing, while the photo panel slides right and stands up.
  * Everything is in frame pixels, like the rest of the sequence.
  */
+/**
+ * The day's copy column.
+ *
+ * Each scene states its own width, because each headline is a different length
+ * and they are all set flush left at x=148 in the file. The mobile rule below
+ * has to be able to override it, so it travels as a custom property rather than
+ * as an inline width.
+ *
+ * `--day-l` and `--day-col` come from App.jsx and follow the window: the column
+ * hangs off the SCREEN's left edge rather than the frame's, and narrows rather
+ * than sliding under the phone. Both are the identity at 16:9 and wider.
+ *
+ * The `left` is doing two jobs at once. The timeline centres these elements on
+ * their box's centre with `xPercent: -50`, so moving the left edge means moving
+ * the centre by the shift AND by half of whatever width the column just lost.
+ */
+.greeting,
+.greeting-body,
+.day-pills {
+  --w: min(var(--gw, 487px), var(--day-col, 100000px));
+  left: calc(var(--day-l, 148px) - 148px + (var(--w) - var(--gw, 487px)) / 2);
+  width: var(--w);
+}
+
 .greeting {
   position: absolute;
-  left: 0;
   top: 0;
-  /* Each scene states its own width, because each headline is a different
-     length and they are all set flush left at x=148 in the file. The mobile
-     rule below has to be able to override it, so it travels as a custom
-     property rather than as an inline width. */
-  width: var(--gw, 487px);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1352,9 +1398,7 @@ body {
 
 .greeting-body {
   position: absolute;
-  left: 0;
   top: 0;
-  width: var(--gw, 479px);
   margin: 0;
   font-family: var(--brand);
   font-size: 20px;

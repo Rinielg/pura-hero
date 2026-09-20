@@ -9,6 +9,9 @@ import {
   CAROUSEL_GEO,
   CAROUSEL_TABS,
   CHIPS,
+  COPY_CLEAR,
+  COPY_LEFT,
+  DEVICE_LEFT,
   DAY_PILL_GAP,
   DAY_PILL_LABELS,
   DAY_PILL_ROW_W,
@@ -19,7 +22,12 @@ import {
   RULER_HOURS,
   scrollLength,
 } from './hero/frames'
-import { pickLayout, projectChip, stageScale as computeStageScale } from './hero/layout'
+import {
+  frameWindow,
+  pickLayout,
+  projectChip,
+  stageScale as computeStageScale,
+} from './hero/layout'
 import { advance, handBaseWidth, useHeroTimeline } from './hero/useHeroTimeline'
 
 /**
@@ -112,13 +120,15 @@ function centreTab(el) {
  * left edge and no indication there was anything there. The file draws every
  * selection from its first card.
  */
-function Carousel({ items, tab, scale, frameW, innerRef, controlRef }) {
+function Carousel({ items, tab, scale, frameW, pad, innerRef, controlRef }) {
   const [page, setPage] = useState(0)
   const rowRef = useRef(null)
 
-  const { rowPad, item, gap } = CAROUSEL_GEO
+  const { item, gap } = CAROUSEL_GEO
   const step = (item + gap) * scale
-  const rowW = (rowPad * 2 + items.length * item + (items.length - 1) * gap) * scale
+  // The gutter is on the LEFT only. A trailing one would be pointless: the row
+  // is wider than its viewport by design and its right end is always clipped.
+  const rowW = (pad + items.length * item + (items.length - 1) * gap) * scale
   const overflow = Math.max(0, rowW - frameW)
   const pages = Math.max(1, Math.ceil(overflow / step) + 1)
   const offset = Math.min(page * step, overflow)
@@ -163,7 +173,7 @@ function Carousel({ items, tab, scale, frameW, innerRef, controlRef }) {
         <div
           className="carousel__row"
           ref={rowRef}
-          style={{ padding: `0 ${rowPad * scale}px`, gap: `${gap * scale}px` }}
+          style={{ paddingLeft: `${pad * scale}px`, gap: `${gap * scale}px` }}
         >
           {items.map((it, i) =>
             it.kind === 'photo' ? (
@@ -172,7 +182,7 @@ function Carousel({ items, tab, scale, frameW, innerRef, controlRef }) {
                 key={i}
                 style={{ width: `${item * scale}px`, height: `${CAROUSEL_GEO.photoH * scale}px` }}
               >
-                <img src="/assets/carousel/lead.jpg" alt={it.alt} />
+                <img src={`/assets/carousel/${it.img}.jpg`} alt={it.alt} />
               </figure>
             ) : (
               <article className="feature" key={i} style={{ width: `${item * scale}px` }}>
@@ -286,6 +296,38 @@ export default function App() {
   const layout = useMemo(() => pickLayout(viewport.w), [viewport.w])
   const scale = computeStageScale(viewport.w, viewport.h, layout)
 
+  /**
+   * Where the screen's left edge falls inside the frame, and what that does to
+   * the two things hung off it.
+   *
+   * The stage COVERS the viewport, so a window narrower than 16:9 loses a slice
+   * of the frame off each side — about 290 frame pixels each at 5:4, which is
+   * the whole of the day's copy column and the carousel's first card. Neither
+   * belongs to the middle of the composition, so neither should follow it.
+   *
+   * Two rules, and both are the identity at 16:9 and wider:
+   *
+   *   The gutter is a PROPORTION of what can be seen, not a fixed length. The
+   *   file's 148px on a 1920 frame is 7.7% of the width, and 7.7% is what it
+   *   stays — a fixed 148 against a 1345px window reads as a much wider margin
+   *   than the design has.
+   *
+   *   The column may not walk into the phone. It is pinned left, so as the
+   *   window narrows the room between it and the phone is what runs out; the
+   *   copy re-wraps into what is left rather than sliding under it. Below about
+   *   4:3 that column gets tight, and a floor stops it collapsing to a word a
+   *   line.
+   *
+   * Recomputed on resize by ordinary React state, which is the reason it is
+   * here and expressed as CSS variables rather than in the timeline: the
+   * timeline is rebuilt only when the BREAKPOINT changes, so a number that
+   * follows the window continuously cannot live in it.
+   */
+  const phone = layout.name === 'mobile'
+  const win = frameWindow(viewport.w, viewport.h, layout)
+  const copyLeft = phone ? COPY_LEFT : win.inset + COPY_LEFT * win.k
+  const copyCol = phone ? 1e5 : Math.max(280, DEVICE_LEFT - COPY_CLEAR - copyLeft)
+
   // Chips a breakpoint does not show are not rendered at all rather than
   // hidden. The timeline skips any chip with no element, so dropping one is a
   // single entry in MOBILE_CHIPS and nothing else.
@@ -300,6 +342,12 @@ export default function App() {
     width: `${layout.frame[0]}px`,
     height: `${layout.frame[1]}px`,
     transform: `translate(-50%, -50%) scale(${scale})`,
+  }
+  /** The stage that carries the left-hung furniture — see the note above. */
+  const columnStyle = {
+    ...stageStyle,
+    '--day-l': `${copyLeft}px`,
+    '--day-col': `${copyCol}px`,
   }
   const handW = handBaseWidth(layout)
   // The heading belongs to the flat layer, so it is projected with the chip
@@ -419,7 +467,7 @@ export default function App() {
           controls inside the sequence — the carousel arrows — so it sits above
           the scroll wrapper rather than under it. */}
       <div className="layer layer--front layer--interactive">
-        <div className="stage" style={stageStyle}>
+        <div className="stage" style={columnStyle}>
           <h2 className="act3-head" ref={refs.act3Head}>
             One place for your whole health.
           </h2>
@@ -508,10 +556,16 @@ export default function App() {
             </div>
           </div>
 
+          {/* The band's viewport is what can be SEEN of the frame, not the
+              frame — so on a narrow window it clips at the real screen edges
+              and the row still starts one gutter in from the left. Centred on
+              frame x 960 as before, which lands its left edge exactly on the
+              screen's: `inset + visible / 2` is 960 whatever the window. */}
           <Carousel
             items={CAROUSEL_TABS[tab]}
             scale={layout.cardScale}
-            frameW={layout.frame[0]}
+            frameW={win.visible}
+            pad={CAROUSEL_GEO.rowPad * win.k}
             innerRef={refs.carousel}
             controlRef={refs.carouselCtrl}
             tab={tab}
@@ -576,7 +630,7 @@ export default function App() {
           <div
             className="day-pills"
             ref={refs.dayPills}
-            style={{ '--dpw': `${DAY_PILL_ROW_W}px`, '--dpg': `${DAY_PILL_GAP}px` }}
+            style={{ '--gw': `${DAY_PILL_ROW_W}px`, '--dpg': `${DAY_PILL_GAP}px` }}
           >
             {DAY_PILL_LABELS.map(([label, w]) => (
               <span className="pill pill--static" key={label} style={{ '--pw': `${w}px` }}>

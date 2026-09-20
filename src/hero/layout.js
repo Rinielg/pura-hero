@@ -142,3 +142,24 @@ export const projectBottom = ([x, y], L) => [
  * composition floating in letterbox bars at odd aspect ratios.
  */
 export const stageScale = (vw, vh, L) => Math.max(vw / L.frame[0], vh / L.frame[1])
+
+/**
+ * How much of the frame the viewport can actually see, in frame pixels.
+ *
+ * The consequence of covering rather than fitting: on any window narrower than
+ * the frame's own 16:9, the frame's left and right edges are off-screen. At a
+ * 5:4 window that is about 290 frame pixels clipped off each side — enough to
+ * take the whole of the day's copy column with it, and the first card of the
+ * carousel.
+ *
+ * Nothing centred cares. Anything anchored to the LEFT of the frame does, and
+ * `inset` is the number it needs: the frame x of the left edge of the screen.
+ *
+ * Deliberately NOT used to move the composition's centre. The phone, the wash
+ * and the gradient all belong to the middle of the frame and stay there; it is
+ * only the left-hung furniture that follows the edge.
+ */
+export function frameWindow(vw, vh, L) {
+  const visible = Math.min(L.frame[0], vw / stageScale(vw, vh, L))
+  return { visible, inset: (L.frame[0] - visible) / 2, k: visible / L.frame[0] }
+}

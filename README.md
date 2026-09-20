@@ -115,6 +115,7 @@ The result lands within 1.5% of the reference on both axes.
 |---|---|
 | `public/models/iphone-18-pro.glb` | pura-device-viewer |
 | `public/assets/pura-screen.jpg`, `pura-ai-screen.jpg` | the first two app screens from Figma, on the model's display |
+| `public/assets/carousel/lead-1…6.jpg` | one lead photograph per carousel tab, from the six `Carousel Selection` frames |
 | `public/assets/day/ui-a…f.jpg` | the six screens the phone shows through the day (slides 26–36) |
 | `public/assets/day/scene-a…f.jpg` | the day's six photo panels, exported from the Figma `Image` frames at 812×778 so the crop is baked in |
 | `public/assets/hand.webp` | Figma, cropped from the source by its CROP transform, with the wrist fade rebuilt as a CSS mask |
@@ -193,6 +194,13 @@ The result lands within 1.5% of the reference on both axes.
   whether or not the visitor reaches the day. They should be deferred until the
   carousel act. This got worse with the rebuild: the day now has six distinct
   screens rather than four, and its first one is no longer the Home screen.
+- **A window narrower than 16:9 crops the frame's left and right edges**, because
+  the stage covers rather than fits. The two things hung off the left — the
+  carousel row and the day's copy column — follow the screen's edge instead and
+  the copy narrows to stay clear of the phone. Everything else still crops: the
+  day's photo panel bleeds off the right, and the promo card row loses a little
+  at both ends. Both read as intended framing rather than as clipping, so they
+  are left alone.
 - **The ruler runs backwards between slides 21 and 22**, because the file does.
   196px to the right, which under a scrub is the clock ticking back about twenty
   minutes before carrying on. Implemented as the file has it and flagged rather

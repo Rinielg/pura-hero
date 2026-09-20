@@ -841,6 +841,9 @@ So `CAROUSEL_TABS` is six lists of copy over one shared set of `WIDGETS`, and
 `CAROUSEL_ITEMS` is just `CAROUSEL_TABS[0]`. Thirty cards written out longhand would be
 thirty chances for the chrome to drift; the file guarantees it never does.
 
+Each tab does bring **its own lead photograph** — `lead-1` … `lead-6`, in tab order. That
+is the one visual besides the copy that differs between the file's six versions.
+
 - The decks are **different lengths** (My Health has five cards, Women's Health three), so
   changing tab takes the row back to page 0. A tab picked while the row was paged along
   would otherwise open in its middle.
@@ -852,6 +855,46 @@ thirty chances for the chrome to drift; the file guarantees it never does.
   a phone the viewport is exactly one frame wide and scrolls, and picking a tab scrolls it
   into the middle.
 - `CAROUSEL_GEO` in `frames.js` holds the geometry; `CAROUSEL_TABS` holds the content.
+
+---
+
+## 6b. Left of the frame is not left of the screen
+
+The stage **covers** the viewport rather than fitting inside it — see `stageScale`. On any
+window narrower than 16:9 that costs you the frame's left and right edges: about 290 frame
+pixels off each side at 5:4, which is the whole of the day's copy column and the
+carousel's first card.
+
+Nothing centred cares. Two things are hung off the LEFT and do:
+
+| | Rule |
+|---|---|
+| The carousel | Its viewport is `frameWindow().visible`, not `frame[0]`. Centred on frame x 960 as before, which lands its left edge exactly on the screen's — `inset + visible / 2` is 960 whatever the window. Its gutter is on the left only; a trailing one is pointless on a row that is wider than its viewport by design. |
+| The day's copy | Hangs off the screen's left edge, and **narrows** rather than sliding under the phone. `--day-l` and `--day-col` come from App.jsx and follow the window continuously. |
+
+Two things make this work rather than fight the design:
+
+**The gutter is a proportion of what can be seen**, not a fixed length. 148px on a 1920
+frame is 7.7% of the width, and 7.7% is what it stays — a fixed 148 against a 1345px
+window reads as a much wider margin than the design has.
+
+**`DEVICE_LEFT - COPY_LEFT - COPY_CLEAR` is exactly 623** on a 16:9 window, which is the
+widest block the day has (the pillar row's box). So the clamp is the identity at the
+design aspect for every block including the widest, and `COPY_CLEAR = 28` is read off the
+file — 148 + 623 is 771, and the phone starts at 799.
+
+It lives in **CSS variables on the stage, not in the timeline.** The timeline is rebuilt
+only when the breakpoint changes, so a number that has to follow the window continuously
+cannot live in it.
+
+### `overflow: clip`, never `hidden`, on `.layer`
+
+`hidden` clips *and* makes the element a scroll container — an 11,800px-wide one here,
+because the day's ruler is in it. A scroll container is something the browser will scroll
+by itself to bring a focused control into view, so focusing a carousel tab whose pill
+hangs past the frame edge slid the entire composition sideways by 124px, with nothing to
+put it back. It was latent for as long as the pills were decoration. `clip` does not
+scroll, so there is nothing to nudge.
 
 ---
 
