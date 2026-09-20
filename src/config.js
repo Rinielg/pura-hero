@@ -29,10 +29,6 @@ export const QUALITY = {
   /** Capped at 1.5x. Above that the extra pixels are mostly invisible on a
    *  phone-sized object and the cost is quadratic. */
   dpr: [1, 1.5],
-  /** And lower again on an actual phone, where the device is ~200px wide, the
-   *  screen is typically 3x, and the GPU is a fraction of a laptop's. 1.25
-   *  against 1.5 is a third fewer pixels per frame. */
-  dprMobile: [1, 1.25],
   /** Environment map the mirrored body samples. 128 squared is plenty for soft
    *  studio panels, and it is built once rather than per frame. */
   envResolution: 128,

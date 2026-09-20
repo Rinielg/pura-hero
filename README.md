@@ -184,14 +184,8 @@ The result lands within 1.5% of the reference on both axes.
 - **Slide 26's paragraph is moved 80px up from where the file leaves it**, to
   match the same paragraph on slide 27. Everything else on that slide got the
   shift when the navigation came out; this one element did not.
-- **All six phone screens still load up front** (~680KB), whether or not the
-  visitor reaches the day. They are now 640px wide rather than 820–1024, so the
-  memory cost is 20MB instead of 45 — but deferring them until the carousel act
-  is still the right fix and has not been done.
-- **The WebGL scene renders on demand**, not every frame. Four things have to
-  call `invalidate()`: the scrub, the pointer, the tilt while it eases, and the
-  screen textures arriving. Add a fifth source of movement and it has to call it
-  too, or the device will not answer. See CONTEXT.md §2e.
+- **All six phone screens load up front** (~580KB), whether or not the visitor
+  reaches the day. They should be deferred until the carousel act.
 - **Never put `opacity` in a `will-change` above a `backdrop-filter`.** It makes
   that element a backdrop root and the blur inside it silently stops sampling
   anything — no error, and the computed style still looks correct. It cost the

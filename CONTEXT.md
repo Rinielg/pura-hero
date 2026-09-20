@@ -214,66 +214,6 @@ open dropdown with it when it goes, and resets on every route change — a new
 page opens at the top, and arriving somewhere with no navigation until you
 happen to scroll up is a dead end.
 
-## 2e. What it costs to run
-
-Four things on this page are expensive, and on a phone all four were running all
-the time. None of them needed to be.
-
-| | was | now |
-|---|---|---|
-| WebGL scene | rendered every frame, all 34 slides | **on demand** — 0 renders idle |
-| Mesh gradient | drifting even once scrolled past | **paused off-screen** |
-| Wash blur | 8 `backdrop-filter` passes | **4 on a phone** |
-| Screen textures | 45MB of GPU memory | **20MB** |
-
-### The scene renders on demand
-
-Nothing in it moves by itself: the device answers to the scroll and to the
-pointer, and between those it is a still image. `frameloop="demand"` takes it
-from ~60 renders a second — of a mirrored body against an environment map, for
-the whole page, including the eleven slides where `DEVICE_FADE` holds it at zero
-and there is nothing to see — to **zero while idle**, measured off
-`gl.info.render.frame`.
-
-The cost is that every source of change has to say so. There are exactly four,
-and each call site is commented as one: the scrub (`ScrollTrigger.onUpdate`),
-the pointer, the tilt still easing toward the pointer, and the screen textures
-arriving. **Miss one and the device silently freezes.**
-
-One trap worth keeping: `onUpdate: invalidate` type-checks, runs, and renders
-nothing. ScrollTrigger calls its callback with itself as the first argument, and
-R3F reads *its* first argument as a root state — so it has to be
-`onUpdate: () => invalidate()`. The device froze on scroll and the only symptom
-was a render count of zero.
-
-### The gradient stops when it leaves
-
-Eight animated radial gradients the size of the viewport are the most expensive
-thing on the page, and the backdrop travels up and out with the first act — from
-roughly slide 10 there is none of it on screen. An `IntersectionObserver` on the
-element pauses it there and resumes it on the way back up, from the frame it
-stopped on.
-
-Two independent reasons to be stopped — off-screen, and a hidden tab — and both
-have to be clear before it plays again, or leaving a hidden tab would restart a
-gradient nobody can see. `window.__bg.running` answers it in the console.
-
-### The rest
-
-- **Two blur bands on a phone, not four.** Each is a separate `backdrop-filter`
-  pass over the full width of the frame, and there are two washes, so the
-  desktop build asked a phone for eight of them at radii up to 60px. Bands 2 and
-  4 carry the ramp on their own; their masks widen to cover what 1 and 3 were
-  doing.
-- **No MSAA on a phone, and DPR capped at 1.25** rather than 1.5 — a third fewer
-  pixels per frame, at the breakpoint where the device is ~200px wide.
-- **The six screen textures went from 820–1024px wide to 640.** They were
-  oversampled about 4x against the ~450 device pixels the phone's display
-  actually occupies at its largest. 45MB to 20MB of GPU memory, with no visible
-  difference at desktop where it is biggest.
-
----
-
 ## 3. Where things live
 
 | File | What it owns |

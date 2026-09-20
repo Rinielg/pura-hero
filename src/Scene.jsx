@@ -77,35 +77,16 @@ function Studio({ resolution }) {
  * worse than none.
  */
 export function Scene({ layout, stageScale, quality }) {
-  const phone = layout.name === 'mobile'
   return (
     <Canvas
-      dpr={phone ? quality.dprMobile : quality.dpr}
+      dpr={quality.dpr}
       camera={{ position: CAMERA.position, fov: CAMERA.fov }}
-      /**
-       * ON DEMAND, not every frame.
-       *
-       * Nothing in this scene moves by itself: the device answers to the scroll
-       * and to the pointer, and between those it is a still image. Left on
-       * `always` it re-rendered a mirrored body against an environment map sixty
-       * times a second for the whole page, including the eleven slides where
-       * `DEVICE_FADE` holds it at zero and there is nothing to see.
-       *
-       * The cost of `demand` is that every source of change has to say so.
-       * There are four, all of them in this file or the timeline: the scrub
-       * (ScrollTrigger's `onUpdate`), the pointer, the tilt still easing toward
-       * the pointer, and the screen textures arriving. Miss one and the device
-       * freezes, which is why each call site carries a comment saying so.
-       */
-      frameloop="demand"
       // alpha: the canvas is a transparent layer over the Lottie gradient.
       gl={{
         alpha: true,
-        // MSAA costs a full extra resolve every frame and buys least where the
-        // object is smallest. The phone keeps its edges from the device pixel
-        // ratio instead.
-        antialias: !phone,
-        powerPreference: 'high-performance',
+        antialias: true,
+
+
         toneMapping: ACESFilmicToneMapping,
         toneMappingExposure: 1.05,
       }}
