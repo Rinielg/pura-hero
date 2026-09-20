@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useGLTF } from '@react-three/drei'
-import { useFrame, useThree } from '@react-three/fiber'
+import { invalidate, useFrame, useThree } from '@react-three/fiber'
 import { Box3, LinearSRGBColorSpace, MathUtils, Vector3 } from 'three'
 import { DEVICE } from './config'
 import variantData from './variants.json'
@@ -328,11 +328,15 @@ function usePointer() {
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (!fine || still) return
 
+    // Source of change #2: the pointer. Under `frameloop="demand"` a move that
+    // does not ask for a frame is a move the device never answers.
     const move = (e) => {
       at.current = { x: e.clientX, y: e.clientY }
+      invalidate()
     }
     const away = () => {
       at.current = null
+      invalidate()
     }
 
     // `pointerout` with no relatedTarget is the pointer leaving the window
@@ -418,6 +422,9 @@ export function Device({ layout, stageScale, anisotropy = 4 }) {
         const display = findDisplay(scene)
         built = images.map((image) => makeScreenTexture(image, display))
         setScreenTexture(built)
+        // Source of change #4: the screens arriving. Without this the phone
+        // keeps its stock wallpaper until something else happens to scroll.
+        invalidate()
       })
       .catch((error) => console.warn('[device] screen textures failed:', error.message))
     return () => {
@@ -468,6 +475,14 @@ export function Device({ layout, stageScale, anisotropy = 4 }) {
     // panel and a 120Hz one.
     deviceProxy.tiltX = MathUtils.damp(deviceProxy.tiltX, wantX, TILT_LAMBDA, delta)
     deviceProxy.tiltY = MathUtils.damp(deviceProxy.tiltY, wantY, TILT_LAMBDA, delta)
+
+    // Source of change #3: the easing itself. Damping needs a run of frames to
+    // land, and one pointer event only bought one — so while there is still a
+    // gap worth closing, ask for the next. An eighth of a degree is below what
+    // a 663px-tall phone can show.
+    if (Math.abs(wantX - deviceProxy.tiltX) > 0.125 || Math.abs(wantY - deviceProxy.tiltY) > 0.125) {
+      invalidate()
+    }
 
     g.rotation.set(
       MathUtils.degToRad(deviceProxy.rx + deviceProxy.tiltX * deviceProxy.tilt),

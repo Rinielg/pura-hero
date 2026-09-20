@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import gsap from 'gsap'
+import { invalidate } from '@react-three/fiber'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollSmoother } from 'gsap/ScrollSmoother'
 import { useGSAP } from '@gsap/react'
@@ -245,6 +246,18 @@ export function useHeroTimeline({
           end: 'bottom bottom',
           scrub: reduced ? true : 0.4,
           invalidateOnRefresh: true,
+          // Source of change #1 for the WebGL scene, which renders on demand.
+          // The scrub is what moves `deviceProxy`, so every tick of it has to
+          // ask for a frame — including the ones after the finger has stopped,
+          // while the 0.4s scrub is still catching up. Note this is R3F's
+          // `invalidate`, nothing to do with ScrollTrigger's
+          // `invalidateOnRefresh` above.
+          // Wrapped, NOT passed by reference: ScrollTrigger calls this with
+          // itself as the first argument, and R3F reads its first argument as
+          // a root state. `onUpdate: invalidate` type-checks, runs, and
+          // silently renders nothing — the device simply freezes while you
+          // scroll.
+          onUpdate: () => invalidate(),
         },
       })
 

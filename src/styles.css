@@ -1459,6 +1459,30 @@ body {
      composition. */
   .site .stores { display: none; }
 
+  /* Two blur bands instead of four.
+     Each band is a separate `backdrop-filter` pass over the full width of the
+     frame, and there are two washes, so the desktop build asks a phone for
+     eight of them — at radii up to 60px, over a photograph, every frame it
+     composites. Bands 2 and 4 carry the ramp on their own; their masks widen to
+     cover what 1 and 3 were doing. The gradient is fractionally less smooth and
+     costs half as much.
+     `-webkit-` first in both pairs, as everywhere else — see the note at the
+     top of this file. */
+  .wash__blur--1,
+  .wash__blur--3 { display: none; }
+
+  .wash__blur--2 {
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 46%);
+    mask-image: linear-gradient(180deg, transparent 0%, #000 46%);
+  }
+
+  .wash__blur--4 {
+    -webkit-backdrop-filter: blur(40px);
+    backdrop-filter: blur(40px);
+    -webkit-mask-image: linear-gradient(180deg, transparent 38%, #000 100%);
+    mask-image: linear-gradient(180deg, transparent 38%, #000 100%);
+  }
+
   .stores { right: 12px; bottom: 12px; gap: 6px; }
   .stores__badge { width: 104px; height: 35px; gap: 6px; padding: 0 6px; }
   .stores__glyph { width: 17px; height: 20px; }
