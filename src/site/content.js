@@ -21,14 +21,19 @@
 
 import { NAVIGATION } from '../config'
 
+/**
+ * The two store listings. Every App Store badge, Play badge and Get the app
+ * button on the site goes through here, so there is one place to change them.
+ */
 export const STORE = {
-  appStore: 'https://apps.apple.com/ae/app/pura-by-purehealth/id6449597603',
+  appStore: 'https://apps.apple.com/us/app/pura-by-purehealth/id6449597603',
   googlePlay: 'https://play.google.com/store/apps/details?id=ae.purehealth.pura',
 }
 
 export const EXTERNAL = {
   group: 'https://purehealth.ae/',
   email: 'mailto:care.pura@pura.ai',
+  longevity: 'https://longevityclinic.pura.ai',
   /** The three ways to reach the partnerships team, from the Menu MVP page. */
   whatsapp: 'https://web.whatsapp.com/',
   phone: 'tel:123456789',
@@ -148,12 +153,11 @@ export const REG_NOTE =
  * `to`, and that is what tells the bar to render an anchor instead of a route
  * link — see `MenuGroup`.
  *
- * Longevity Clinic has no dropdown in the file and no page yet. It points at
- * the home route, which is the only thing this release has to point at; give it
- * a destination and this is the one line to change.
+ * Longevity Clinic has no dropdown in the file. It leaves the site entirely,
+ * so like the Partner with us items it carries an `href` rather than a `to`.
  */
 export const MENU_MVP = [
-  { key: 'longevity', label: 'Longevity Clinic', to: '/' },
+  { key: 'longevity', label: 'Longevity Clinic', href: EXTERNAL.longevity },
   {
     key: 'partner',
     label: 'Partner with us',

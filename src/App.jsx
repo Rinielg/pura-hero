@@ -579,10 +579,11 @@ export default function App() {
             Pura brings your data, your doctors and your daily habits together, so
             every day adds up to a healthier life.
           </p>
-          <div className="act3-cta" ref={refs.act3Cta}>
-            <a href="#top">Why Pura</a>
-            <a href="#top">How it works</a>
-          </div>
+          {/* "Why Pura" and "How it works" are not rendered for the first
+              release — neither has anywhere to go while the MVP menu is the
+              site's only navigation. `ACT3_CTA` and its ref are kept, and
+              `track` skips a ref with no element, so putting them back is this
+              block and nothing else. */}
 
           {/* Five cards, wider than the frame on purpose: slides 13 to 15 change
               nothing but this row's x, so the end of the page is a horizontal

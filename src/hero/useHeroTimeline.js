@@ -583,7 +583,10 @@ export function useHeroTimeline({
             // answers the same question the same way — where a `slide >= 25`
             // test had scene A's window answering it differently from scene B's
             // and leaving the panel 389 frame pixels high on slide 26 alone.
-            x: projectChip(w ? [960, row.c[1]] : row.c, L)[0],
+            // `w &&` is not enough on its own: every shutter row has a window
+            // on every layout, so testing it alone centred the panel on desktop
+            // too and lost the right-hand composition the file draws.
+            x: projectChip(w && L.name === 'mobile' ? [960, row.c[1]] : row.c, L)[0],
             y: w ? w.top + w.h / 2 : projectChip(row.c, L)[1],
             width: projectLength(row.w, L),
             height: w ? w.h : projectLength(row.h, L),

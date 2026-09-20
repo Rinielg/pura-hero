@@ -101,8 +101,14 @@ function MenuGroup({ group, open, onOpen, onClose, onCloseNow }) {
   const within = ownerOf(pathname) === group.key
   const hasCard = !!items?.length
 
-  const Label = to ? Link : 'button'
-  const labelProps = to ? { to } : { type: 'button' }
+  // Three kinds of top-level item: a route, a link off the site, and a button
+  // that only opens its dropdown. The MVP has one of each of the first two.
+  const Label = to ? Link : group.href ? 'a' : 'button'
+  const labelProps = to
+    ? { to }
+    : group.href
+      ? { href: group.href, target: '_blank', rel: 'noreferrer' }
+      : { type: 'button' }
 
   return (
     <li

@@ -1267,21 +1267,18 @@ export const PILL_LABELS = [
 /**
  * What the carousel holds, per tab.
  *
- * The file draws seven versions of this band — one on Slides 18/19 and five
- * more as the `Carousel Selection 2..6` frames — and the only thing that
- * changes between them is the TITLE and BODY of each card. The little
- * visualisation at the top of every card is the same four widgets in the same
- * order on every tab, because in the file they are the same instances: the
- * designer swapped the words and left the chrome alone.
+ * The file draws six versions of this band — Slides 18/19 and the five
+ * `Carousel Selection` frames — and each brings its own lead photograph, its own
+ * copy and its own card visuals. The visuals are the file's `Feature · …`
+ * frames, exported flat at 300x300: small compositions of charts, rings and
+ * record lists that are not worth rebuilding in the DOM and would not match if
+ * they were.
  *
- * So the chrome is written once and the tabs carry copy. Writing all thirty
- * cards out longhand would be thirty chances for the chrome to drift apart,
- * which is the one thing the file guarantees it never does.
- *
- * The chrome is the file's own `Feature · …` frames, exported at 300x300 — five
- * small compositions of charts, rings and record lists that are not worth
- * rebuilding in the DOM and would not match if they were. They were an invented
- * label/value/bar widget until the file made clear what actually sits there.
+ * Every card names its own, as `<tab>-<card>`. That is deliberately literal
+ * rather than shared-by-content: the five selections happen to carry the same
+ * four visuals as each other today, but they are five separate frames that get
+ * edited separately, and a shared file would quietly stop tracking the one that
+ * changed. Tab 1 already has five of its own, different from the rest.
  */
 /**
  * Each tab brings its own lead photograph. This is the one thing besides the
@@ -1296,18 +1293,15 @@ const LEADS = [
   ['lead-6', 'A pregnant woman having a scan with a clinician'],
 ]
 
-const WIDGETS = [
-  { feature: 'purescore' },
-  { feature: 'health-systems' },
-  { feature: 'wearable' },
-  { feature: 'digital-twin' },
-  { feature: 'medical-history' },
-]
-
 /** One tab's band: its lead photograph, then a card per line of copy. */
 const deck = (tab, cards) => [
   { kind: 'photo', img: LEADS[tab][0], alt: LEADS[tab][1] },
-  ...cards.map(([title, body], i) => ({ kind: 'card', ...WIDGETS[i], title, body })),
+  ...cards.map(([title, body], i) => ({
+    kind: 'card',
+    feature: `${tab + 1}-${i + 1}`,
+    title,
+    body,
+  })),
 ]
 
 /**
