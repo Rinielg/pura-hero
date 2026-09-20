@@ -702,6 +702,85 @@ body {
    more than a whole phone. It takes the same scale the chip cloud does, for the
    same reason: the row has to read as one row, not as a thing with its ends cut
    off. Figma has no mobile frame for this section yet. */
+/**
+ * The partner band, slide 17.
+ *
+ * One box that travels, with everything inside it placed against the band's own
+ * top-left in frame pixels and scaled by `--bs`. `clip` rather than `hidden`
+ * for the reason given on `.layer` — and it does real work here: the gradient
+ * is far taller than the band and the logo row far wider.
+ */
+.partners {
+  position: absolute;
+  left: 0;
+  top: 0;
+  overflow: clip;
+  will-change: transform, opacity;
+}
+
+.partners__grad {
+  position: absolute;
+  object-fit: cover;
+}
+
+/* Transparent at the top, white by the bottom, so the gradient resolves into
+   the page rather than ending on a line. */
+.partners__wash {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to bottom, rgb(251 239 227 / 0), #fff);
+}
+
+.partners__head,
+.partners__sub {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0;
+  text-align: center;
+  font-family: var(--brand);
+  font-weight: 400;
+}
+
+.partners__head {
+  font-size: calc(48px * var(--bs));
+  line-height: calc(58px * var(--bs));
+  letter-spacing: calc(-0.96px * var(--bs));
+  color: var(--ink);
+}
+
+.partners__sub {
+  font-size: calc(22px * var(--bs));
+  line-height: calc(31px * var(--bs));
+  color: #1b2238;
+}
+
+/* The rail the logo row runs in: band width, masked at both ends so the tiled
+   row fades out rather than being cut off mid-mark. */
+.partners__rail {
+  position: absolute;
+  left: 0;
+  right: 0;
+  overflow: clip;
+  mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+}
+
+.partners__row {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  will-change: transform;
+}
+
+.partners__row img {
+  display: block;
+  flex: none;
+  object-fit: contain;
+}
+
 /* The row's viewport. It shrink-wraps its contents wherever they fit, which is
    every desktop width, so this is a plain box until a phone makes it scroll. */
 .pills {
@@ -1006,17 +1085,18 @@ body {
 
 /**
  * Scene D's pillar chips, which are NOT the tab pills above wearing a different
- * size. The file's `Pillar item` is a small white CARD: a 7.625 radius, a 15.25
- * drop shadow at 4% black, and no border at all.
+ * size. The file's `Pillar item` is a small white card outlined in warm cream:
+ * a 7.625 radius, a 1px #F8E4D3 stroke, and its drop shadow switched OFF.
  *
- * Read off the component rather than eyeballed, because both of the obvious
- * guesses are wrong. The component carries a `Health report - Duotone` icon and
- * it is HIDDEN in all four instances — the chip is its label and nothing else,
- * 12px of padding either side. And the 1px border the tab pills have would be
- * wrong here: what the file strokes is 6.67px of white at 20% on the OUTSIDE,
- * which over a white page is invisible. It is kept below because it is what the
- * component says, and because the shadow is the only thing making these read as
- * cards at all — drop it and four labels float on nothing.
+ * Read off the component rather than eyeballed, because the obvious guesses are
+ * wrong. The component carries a `Health report - Duotone` icon and it is HIDDEN
+ * in all four instances — the chip is its label and nothing else, 12px of
+ * padding either side.
+ *
+ * The stroke is drawn as a ring rather than a border because Figma puts it on
+ * the OUTSIDE: a `border` would eat two pixels out of a chip whose width the
+ * file states exactly, where a ring leaves the box at its stated 162, 111, 145
+ * or 97 and paints around it.
  */
 .pill--static {
   width: var(--pw);
@@ -1027,9 +1107,7 @@ body {
   justify-content: center;
   border: 0;
   border-radius: 7.625px;
-  box-shadow:
-    0 0 0 6.67px rgb(255 255 255 / 0.2),
-    0 0 15.25px rgb(0 0 0 / 0.04);
+  box-shadow: 0 0 0 1px #f8e4d3;
   font-size: 15.25px;
   line-height: 22.9px;
   letter-spacing: -0.24px;

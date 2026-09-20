@@ -290,7 +290,7 @@ Note the ordering: **6 sits above 5 on purpose.** See §5.
 | 4–6 | A hand comes up from below, takes the phone, and fades **in place**. |
 | 7–9 | The screen crossfades to Pura AI; the agent bar appears, then widens. |
 | 10–16 | The whole first-act scene travels up and out. Act 3 copy arrives, then the promo card row scrolls in from the right. |
-| 17 | Everything from the first three acts leaves together (a 434px rise). "Help for every part of your health." and the filter pills arrive. |
+| 17 | Everything from the first three acts leaves together. The **partner band** takes the middle of the frame — "Built by PureHealth" and eight logos — and pushes the whole fourth act down past it; the carousel is still below the fold here. See §6c. |
 | 18–19 | The feature carousel. **Arrow-driven, and tabbed** — see §6. |
 | 20–25 | The carousel holds the centre and rises. "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel that *grows* — 154×88, 764×437, 1058×605, 1152×659. |
 | 25 | The device comes back, rising from below the frame at (959.7, 1266.7), and **changes sides**: from here it draws in front of the Overlay rather than under it. |
@@ -324,6 +324,15 @@ The hours the ruler shows under the marker are worth knowing, because they are t
 cross-check on every position in the second half of the page: 26 → 7:00, 28 → 9:00,
 30 → 12:00, 32 → 14:00, 34 → 16:00, 36 → 23:00. The last one is what scene F's "lights out
 by 11" is describing.
+
+**The two windows are tiled into the panel box, not projected one by one.** A
+window's height is a `projectLength`, which scales with the device; its centre
+used to go through `projectChip`, which converges the y axis at a different rate.
+On a phone those rates are 0.604 and 0.8, so the pair that meets 16 frame pixels
+apart on desktop met **76 CSS pixels** apart on a 375px screen — a chasm down the
+middle of the reveal. Tiled, the gap is whatever `LAYOUTS[…].panelGap` says: 16
+on desktop, 8 on a phone. `shutter()` tags each row with the panel edge it hangs
+from, which is what lets a layout re-tile the pair without naming the phases.
 
 **The reveal is a shutter, not a crossfade.** Each window is a clipping box over an image
 that **never moves**. The outgoing window's top stays at the panel's top and its height
@@ -886,6 +895,36 @@ file — 148 + 623 is 771, and the phone starts at 799.
 It lives in **CSS variables on the stage, not in the timeline.** The timeline is rebuilt
 only when the breakpoint changes, so a number that has to follow the window continuously
 cannot live in it.
+
+## 6c. The partner band (Slide 17)
+
+One box, on one slide, carried in from below the frame and out over the top —
+the same treatment the promo row gets, and for the same reason: the file draws it
+on slide 17 and nowhere else, so it has to travel rather than switch on.
+
+Everything inside it is positioned against **the band's own top-left** in frame
+pixels and scaled by one number, `--bs`. One number rather than the usual two
+projections, because the band travels as a single box: give the box the object
+scale and its contents the chip convergence and they come apart on a phone,
+exactly the way the day's two photo windows did (§4b).
+
+**The logo row is tiled and it drifts.** The file centres one set of eight, 1581
+wide in a 1920 band — which does not reach either edge, and a row that has to
+scroll cannot have an end. So four copies are laid down starting one whole set
+to the left of the file's position, which puts the *second* copy exactly on the
+file's 169 when the drift is zero. The drift is a table like any other: +480 at
+slide 16, 0 at 17, −480 at 18, so the logos move sideways for exactly as long as
+the band is on screen.
+
+A tiled row has a partial mark at each edge. `.partners__rail` masks both ends so
+those fade rather than being cut, and the eight the file draws sit well inside
+the mask — so the settled slide is still the file's own composition.
+
+Figma also puts a `BACKGROUND_BLUR 60` on the band's wash. Skipped: one
+`backdrop-filter` band gives a hard line where its box starts (§5), and over a
+gradient this smooth there is nothing for it to soften.
+
+---
 
 ### `overflow: clip`, never `hidden`, on `.layer`
 

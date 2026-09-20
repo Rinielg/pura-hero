@@ -18,6 +18,10 @@ import {
   DAY_SCENES,
   HAND_ASPECT,
   MOBILE_CHIPS,
+  PARTNER_BAND,
+  PARTNER_LOGOS,
+  PARTNER_SETS,
+  PARTNER_SET_W,
   PILL_LABELS,
   RULER_HOURS,
   scrollLength,
@@ -79,6 +83,85 @@ const Wash = ({ ref }) => (
     <div className="wash__tint" />
   </div>
 )
+
+/**
+ * The partner band on slide 17.
+ *
+ * Everything in it is positioned against the band's own top-left in frame
+ * pixels and scaled by one number, `--bs`. One number rather than the usual two
+ * projections because the band travels as a single box: if the box took the
+ * object scale and its contents took the chip convergence, they would come
+ * apart on a phone exactly the way the day's two photo windows did.
+ *
+ * The row is TILED — four copies of the eight marks, laid down starting one
+ * whole set to the left of where the file puts them. The set is 1581 wide in a
+ * 1920 band, so a single copy does not reach both edges, and a row that has to
+ * scroll cannot have an end. At slide 17 with no drift the second copy sits
+ * exactly on the file's 169 and the first fills the left edge, so the settled
+ * slide is the file's composition with the tiling either side of it.
+ */
+function Partners({ scale, frameW, innerRef, rowRef }) {
+  const B = PARTNER_BAND
+  const px = (v) => `calc(${v}px * var(--bs))`
+
+  return (
+    <section
+      className="partners"
+      ref={innerRef}
+      aria-label="Built by PureHealth"
+      style={{ width: `${frameW}px`, height: `${B.h * scale}px`, '--bs': scale }}
+    >
+      {/* The gradient is one image hung far above the band and clipped by it,
+          so what shows is its bottom edge. */}
+      <img
+        className="partners__grad"
+        src="/assets/partners/gradient.jpg"
+        alt=""
+        style={{ left: px(B.grad.x), top: px(B.grad.y), width: px(B.grad.w), height: px(B.grad.h) }}
+      />
+      {/* Figma blurs the backdrop here as well as washing it. Skipped: one
+          `backdrop-filter` band gives a hard line where its box starts, which is
+          the whole reason the hero's own wash is built in four layers — and over
+          a gradient this smooth there is nothing for it to soften anyway. */}
+      <span className="partners__wash" style={{ top: px(B.wash.y), height: px(B.wash.h) }} />
+
+      <h2 className="partners__head" style={{ top: px(B.head) }}>
+        Built by PureHealth
+      </h2>
+      <p className="partners__sub" style={{ top: px(B.sub) }}>
+        One of the world’s largest and most trusted healthcare networks.
+      </p>
+
+      {/* A rail around the row, masked at both ends.
+          The file centres ONE set of eight with clear margins either side. A row
+          that scrolls cannot do that — it has to be tiled, and a tiled row has a
+          partial mark at each edge. The mask fades those out instead of cutting
+          them, and the eight the file draws sit well inside it, so the settled
+          slide is still the file's composition. */}
+      <div className="partners__rail" style={{ top: px(B.row), height: px(B.logoH) }}>
+        <div
+          className="partners__row"
+          ref={rowRef}
+          style={{ left: px(B.rowLeft - PARTNER_SET_W), gap: px(B.gap) }}
+        >
+          {Array.from({ length: PARTNER_SETS }, (_, set) =>
+            PARTNER_LOGOS.map(([slug, w, name]) => (
+              <img
+                key={`${set}-${slug}`}
+                src={`/assets/partners/partner-${slug}.png`}
+                // One copy reads; the rest are the same marks again and would be
+                // read out four times over.
+                alt={set === 1 ? name : ''}
+                aria-hidden={set === 1 ? undefined : true}
+                style={{ width: px(w), height: px(B.logoH) }}
+              />
+            ))
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
 
 /**
  * Bring a tab fully into view inside its own scroll box.
@@ -254,6 +337,8 @@ export default function App() {
     cards: useRef(null),
     act4Head: useRef(null),
     act5Head: useRef(null),
+    partners: useRef(null),
+    partnerRow: useRef(null),
     pills: useRef(null),
     carousel: useRef(null),
     carouselCtrl: useRef(null),
@@ -514,6 +599,16 @@ export default function App() {
               </article>
             ))}
           </div>
+
+          {/* Slide 17 only. First among the fourth act's children so it paints
+              under them, though at the positions the file gives nothing in this
+              act ever overlaps it. */}
+          <Partners
+            scale={layout.cardScale}
+            frameW={layout.frame[0]}
+            innerRef={refs.partners}
+            rowRef={refs.partnerRow}
+          />
 
           <h2 className="act4-head" ref={refs.act4Head}>
             Help for every part of your health.

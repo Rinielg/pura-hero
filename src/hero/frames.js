@@ -695,7 +695,7 @@ export const CARDS = [
   { c: [808, 676], o: 1 },
   // 16 and 17 carry the promo row off to the left as the fourth act arrives.
   { c: [502, 541], o: 1 },
-  { c: [-212, 107], o: 1 },
+  { c: [-212, 0], o: 1 },
   // Gone from slide 18 in the file. The row keeps drifting on its own axis
   // while the page carries it up, and fades out over that step.
   { c: [-926, -192], o: 0 },
@@ -758,7 +758,9 @@ export const CARD_CONTENT = [
  */
 export const ACT4_HEAD = parked(15, { c: [960.5, 1106], o: 0, b: 8 }, [
   { c: [960.5, 971], o: 1, b: 0 },
-  { c: [960.5, 537], o: 1, b: 0 },
+  // Slide 17 sits far lower than it used to: the partner band arrived in the
+  // middle of the frame and pushed the whole fourth act down past it.
+  { c: [960.5, 908], o: 1, b: 0 },
   { c: [960.5, 238], o: 1, b: 0 },
   { c: [960.5, 238], o: 1, b: 0 },
   { c: [960.5, 91], o: 0.3, b: 8 },
@@ -766,13 +768,90 @@ export const ACT4_HEAD = parked(15, { c: [960.5, 1106], o: 0, b: 8 }, [
 ])
 
 export const PILLS = parked(16, { c: [960, 1068], o: 0, b: 8 }, [
-  { c: [960, 634], o: 1, b: 0 },
+  { c: [960, 1005], o: 1, b: 0 },
   { c: [960, 335], o: 1, b: 0 },
   { c: [960, 335], o: 1, b: 0 },
   { c: [960, 188], o: 0.6, b: 4 },
   { c: [960, 7], o: 0.2, b: 4 },
   { c: [960, -324], o: 0.2, b: 4 },
 ])
+
+/* ------------------------------------------------------ the partner band */
+
+/**
+ * "Built by PureHealth", on slide 17 and nowhere else.
+ *
+ * The file draws it on that one slide, so like the promo row it has to be
+ * carried in and out rather than switched on: parked flush below the frame
+ * while the third act is still leaving, up into place for 17, and on up and out
+ * over the step into 18 — the same 670px rise everything else in the fourth act
+ * takes across that step.
+ */
+export const PARTNERS = parked(16, { c: [960, 1294.5], o: 0 }, [
+  { c: [960, 529.5], o: 1 },
+  { c: [960, -140.5], o: 0 },
+])
+
+/**
+ * The band's own geometry, in frame pixels from ITS top-left corner.
+ *
+ * Everything inside it is laid out against these rather than against the slide,
+ * because the band travels as one box — and because on a phone the box and its
+ * contents take the same scale, which is the only way they stay in register.
+ */
+export const PARTNER_BAND = {
+  w: 1920,
+  h: 429,
+  head: 70,
+  sub: 132,
+  row: 197,
+  rowLeft: 169,
+  logoH: 156,
+  gap: 70,
+  /** The gradient: a 1937x1080 image hung far above the band and clipped by it,
+   *  so what shows is its bottom 429 pixels. */
+  grad: { x: -25, y: -651, w: 1937, h: 1080 },
+  /** And the white wash over its lower part. */
+  wash: { y: 128, h: 301 },
+}
+
+/** The eight marks, in the file's order, with the width each is drawn at. */
+export const PARTNER_LOGOS = [
+  ['ssmc', 156, 'Sheikh Shakhbout Medical City'],
+  ['seha', 156, 'SEHA Corniche Hospital'],
+  ['dawak', 88, 'Dawak'],
+  ['medical-office', 115, 'The Medical Office'],
+  ['active', 165, 'Active Abu Dhabi'],
+  ['sakina', 130, 'Sakina'],
+  ['daman', 130, 'Daman'],
+  ['purelab', 151, 'PureLab'],
+]
+
+/**
+ * The pitch the row repeats at: eight logos and eight gaps.
+ *
+ * The set is 1581 wide inside a 1920 frame, so ONE of it does not fill the
+ * band — and a row that has to scroll cannot have an end. It is tiled instead,
+ * starting one whole set to the left of where the file puts it, so that at
+ * slide 17 with no drift the second copy sits exactly on the file's 169 and the
+ * first copy is what fills the left edge.
+ */
+export const PARTNER_SET_W =
+  PARTNER_LOGOS.reduce((a, [, w]) => a + w, 0) + PARTNER_LOGOS.length * PARTNER_BAND.gap
+
+/** How many copies of the set to lay down. Four covers the frame plus the drift
+ *  at every breakpoint, with one spare. */
+export const PARTNER_SETS = 4
+
+/**
+ * Where the row sits, per slide, as an x offset from the file's own position.
+ *
+ * This is the horizontal scroll: the band is only on screen across two steps,
+ * and the row drifts left through both of them, so the logos move sideways for
+ * exactly as long as you can see them. Zero on slide 17 means the settled slide
+ * is the file's own composition.
+ */
+export const PARTNER_DRIFT = parked(16, 480, [0, -480])
 
 /**
  * The feature carousel.
@@ -784,7 +863,9 @@ export const PILLS = parked(16, { c: [960, 1068], o: 0, b: 8 }, [
  * drives it.
  */
 export const CAROUSEL = parked(16, { c: [1668, 1387], o: 0 }, [
-  { c: [1668, 953], o: 1 },
+  // Below the frame on 17 — the partner band has the middle of that slide, and
+  // the carousel only rises into view on 18.
+  { c: [1668, 1324], o: 1 },
   { c: [960, 654], o: 1 },
   { c: [960, 654], o: 1 },
   { c: [960, 507], o: 1 },
@@ -965,11 +1046,20 @@ export const PANEL_TOP = PANEL.top
 /** And its height, for the same reason. */
 export const PANEL_H = PANEL.h
 
-/**
- * Half the panel, which is where two photographs meet mid-transition. 778 does
- * not halve to this: the file leaves a 16px gap between the two windows.
- */
+/** Half the panel, which is where two photographs meet mid-transition. */
 const HALF = 381
+
+/**
+ * The air between the two windows mid-reveal. 778 does not halve to 381: the
+ * file leaves 16 between them.
+ *
+ * Exported because a phone does not want 16. The panel is projected at one rate
+ * and the positions inside it at another, so the two windows have to be re-tiled
+ * into the box rather than each projected from its own centre — and once you are
+ * re-tiling, the gap is a number the layout chooses. See `LAYOUTS.panelGap`.
+ */
+export const PANEL_GAP = PANEL.h - HALF * 2
+export const PANEL_HALF = HALF
 
 /**
  * One window onto a scene's photograph.
@@ -991,6 +1081,11 @@ const shutter = (top, h) => ({
   r: PANEL.r,
   o: 1,
   ih: PANEL.h,
+  // Which edge of the panel this window hangs from. One of the two always does,
+  // which is the whole shape of the reveal — and it is what lets a layout
+  // re-tile the pair into its own panel box instead of trusting two centres
+  // that were projected at a different rate from the heights between them.
+  edge: top <= PANEL.top ? 'top' : 'bottom',
 })
 
 /** Shut against the bottom of the panel: a scene that has not arrived yet. */
@@ -1142,15 +1237,11 @@ export const DAY_PILL_LABELS = [
   ['Home Sample test', 145],
   ['Care Plans', 97],
 ]
-/**
- * One row of four now, 39px tall, not two wrapped rows. The file gives the row
- * a fixed 623px box that its four chips do not fill — they run to 575 with a
- * 20px gap and the rest is slack — so the box is the tracked thing and the
- * chips are left-aligned inside it.
- */
-export const DAY_PILL_ROW_W = 623
-export const DAY_PILL_GAP = 20
-export const DAY_PILLS = copyTrack([148, 475, DAY_PILL_ROW_W, 39], 32)
+/** One row of four, 39 tall, and the box now hugs its chips exactly: four
+ *  widths and three 8px gaps come to 539. */
+export const DAY_PILL_ROW_W = 539
+export const DAY_PILL_GAP = 8
+export const DAY_PILLS = copyTrack([148, 469, DAY_PILL_ROW_W, 39], 32)
 
 /** The category pills, in order. The first is the selected one. */
 export const PILL_LABELS = [
@@ -1321,11 +1412,11 @@ export const CAROUSEL_ITEMS = CAROUSEL_TABS[0]
  *
  * Every headline, paragraph and pillar row from slide 26 on is set flush left at
  * x=148 in the file, and the phone group is 321 wide centred on 959.7 — so its
- * left edge is 799. `COPY_CLEAR` is the air the file leaves between the two:
- * its widest block is the pillar row's 623px box, which runs 148 → 771, and 771
- * to 799 is 28.
+ * left edge is 799. `COPY_CLEAR` is the air the file leaves between the two: its
+ * widest block is scene C's 555px headline, which runs 148 → 703, and 703 to 799
+ * is 96.
  *
- * That makes `DEVICE_LEFT - COPY_LEFT - COPY_CLEAR` come out at exactly 623 on
+ * That makes `DEVICE_LEFT - COPY_LEFT - COPY_CLEAR` come out at exactly 555 on
  * a 16:9 window — so the responsive clamp below is the identity there, for
  * every block including the widest one. Not a coincidence and not a tuned
  * number: it is the file's own column.
@@ -1337,7 +1428,7 @@ export const CAROUSEL_ITEMS = CAROUSEL_TABS[0]
  */
 export const COPY_LEFT = 148
 export const DEVICE_LEFT = 799
-export const COPY_CLEAR = 28
+export const COPY_CLEAR = 96
 
 /** Carousel geometry, in frame pixels. */
 export const CAROUSEL_GEO = { rowPad: 140, item: 300, gap: 24, photoH: 420, cardH: 424 }

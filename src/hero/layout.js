@@ -22,7 +22,7 @@
  * the desktop render is exactly the Figma numbers.
  */
 
-import { FRAME } from './frames'
+import { FRAME, PANEL_GAP } from './frames'
 
 const DESIGN_CX = FRAME.w / 2
 const DESIGN_CY = FRAME.h / 2
@@ -47,6 +47,8 @@ export const LAYOUTS = {
     objScale: 1,
     objOffset: [0, 0],
     cardScale: 1,
+    /** The air between the day's two photo windows mid-reveal. */
+    panelGap: PANEL_GAP,
     allChips: true,
   },
   mobile: {
@@ -73,6 +75,12 @@ export const LAYOUTS = {
     // thumbnail rather than a card. 0.74 puts them at about two thirds of a
     // phone's width, so one reads at a time and the row still scrolls.
     cardScale: 0.74,
+    // Half the desktop gap. The panel is about a third of the size here, and
+    // 16 projected down is not what a hairline between two photographs wants —
+    // it is a number the design states rather than one that falls out of a
+    // scale, which is why the pair is re-tiled into the panel box rather than
+    // projected window by window.
+    panelGap: 8,
     allChips: false,
   },
 }

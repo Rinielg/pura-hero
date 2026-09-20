@@ -43,7 +43,7 @@ npm run build    # static output in dist/ — deploy that folder anywhere
 | 9–10 | The whole first act starts travelling up and out — device, wash and gradient backdrop together. What it uncovers is plain white. The second act's copy softens away as "One place for your whole health." rises from below. |
 | 11–12 | The third act resolves: headline, paragraph, two pills, and a five-card promo row entering from the right. |
 | 13–15 | Nothing moves but the card row's x. The last stretch of the page is a **horizontal** scroll driven by the vertical one. |
-| 16–19 | The first three acts leave together. "Help for every part of your health.", then the **tabbed** feature carousel: six tabs over six decks of cards, with arrows that page the row. |
+| 16–19 | The first three acts leave together. Slide 17 is the **partner band** — "Built by PureHealth" over eight logos that drift sideways as you scroll — and then "Help for every part of your health." and the **tabbed** feature carousel: six tabs over six decks of cards, with arrows that page the row. |
 | 20–25 | "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel growing from a 154×88 pill. The device returns at 25, rising from below the frame — and from here it draws **in front of** the wash rather than under it. |
 | 24–36 | The file stops drawing the navigation here and moves everything up 80px into the space. The build **keeps** the bar — it hides itself on the way down anyway. |
 | 26–36 | **The day.** Six scenes joined by five transitions: a settled slide changes the photograph, the greeting, the phone's screen and the hour on the ruler; the transition between two of them changes only the photograph, which splits the panel in half and reveals the next scene from the bottom. The phone stays put throughout and follows the cursor. The day runs 7:00 to 23:00 on the ruler. |
@@ -116,6 +116,7 @@ The result lands within 1.5% of the reference on both axes.
 | `public/models/iphone-18-pro.glb` | pura-device-viewer |
 | `public/assets/pura-screen.jpg`, `pura-ai-screen.jpg` | the first two app screens from Figma, on the model's display |
 | `public/assets/carousel/lead-1…6.jpg` | one lead photograph per carousel tab, from the six `Carousel Selection` frames |
+| `public/assets/partners/*` | the eight partner marks and the band's gradient, from the `Partners` component on slide 17 |
 | `public/assets/day/ui-a…f.jpg` | the six screens the phone shows through the day (slides 26–36) |
 | `public/assets/day/scene-a…f.jpg` | the day's six photo panels, exported from the Figma `Image` frames at 812×778 so the crop is baked in |
 | `public/assets/hand.webp` | Figma, cropped from the source by its CROP transform, with the wrist fade rebuilt as a CSS mask |

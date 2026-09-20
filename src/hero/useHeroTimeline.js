@@ -29,11 +29,14 @@ import {
   DAY_PILLS,
   DAY_SCENES,
   PANEL_H,
+  PANEL_HALF,
   PANEL_TOP,
   DEVICE_FRONT_FROM,
   HAND_FADE,
   HAND_POSE,
   KICKER,
+  PARTNERS,
+  PARTNER_DRIFT,
   PILLS,
   SCREEN_SEQ,
   STEP_WEIGHTS,
@@ -453,6 +456,23 @@ export function useHeroTimeline({
       }
 
       // ------------------------------------------- the fourth and fifth acts
+      // The partner band travels as one box, and the logo row inside it drifts
+      // sideways the whole time the box is on screen. Two tracks, because they
+      // are two motions: the band is the page moving, the row is the scroll
+      // being spent horizontally instead.
+      if (refs.partners.current) {
+        gsap.set(refs.partners.current, { xPercent: -50, yPercent: -50 })
+        track(refs.partners.current, (slide) => {
+          const row = at(PARTNERS, slide)
+          return { ...project(row.c), opacity: row.o }
+        })
+      }
+      if (refs.partnerRow.current) {
+        track(refs.partnerRow.current, (slide) => ({
+          x: at(PARTNER_DRIFT, slide) * L.cardScale,
+        }))
+      }
+
       for (const [ref, table] of [
         [refs.act4Head, ACT4_HEAD],
         [refs.act5Head, ACT5_HEAD],
@@ -485,7 +505,48 @@ export function useHeroTimeline({
       }
 
       // ------------------------------------------------------------- the day
-      // Five photo panels stacked in one box.
+      /**
+       * The panel the day plays out in, measured once for this layout.
+       *
+       * Everything from slide 26 on is TILED INTO this box rather than
+       * projected window by window, and that is the fix for a real bug rather
+       * than a tidy-up. A window's height is a `projectLength`, which scales
+       * with the device; its centre went through `projectChip`, which converges
+       * the y axis at a different rate. On a phone the two rates were 0.604 and
+       * 0.8, so the pair that meets 16 frame pixels apart on desktop met 76 CSS
+       * pixels apart on a 375px screen — a chasm down the middle of the reveal.
+       *
+       * Tiled, the gap is whatever the layout says it is, and `panelGap` says
+       * 16 on desktop and 8 on a phone.
+       */
+      const panel = (() => {
+        const h = projectLength(PANEL_H, L)
+        return {
+          h,
+          top: project([960, PANEL_TOP + PANEL_H / 2 + drop]).y - h / 2,
+          half: (h - L.panelGap) / 2,
+        }
+      })()
+
+      /**
+       * Where a shutter row sits inside that box, or null if it is not one.
+       *
+       * `ih` is what marks a row as a shutter — scene A's early rows, while the
+       * panel is still growing out of a 154x88 pill, are not, and they keep the
+       * plain projection. Of the three heights a shutter ever has, only the
+       * half needs replacing: 0 and the full panel project to themselves.
+       */
+      const window_ = (row) => {
+        if (row.ih == null) return null
+        const h = row.h === PANEL_HALF ? panel.half : projectLength(row.h, L)
+        return {
+          h,
+          edge: row.edge,
+          top: row.edge === 'top' ? panel.top : panel.top + panel.h - h,
+        }
+      }
+
+      // Six photo panels stacked in one box.
       //
       // Scene A's grows rather than fades, out of a 154x88 pill, and its radius
       // grows with it so the shape stays a stadium instead of becoming a
@@ -504,40 +565,36 @@ export function useHeroTimeline({
         gsap.set(el, { xPercent: -50, yPercent: -50 })
         track(el, (slide) => {
           const row = at(scene.window, slide)
-          // On a phone the panel is CENTRED rather than parked on the right of
-          // the frame: there is no "right of the phone" at 375px, and left at
-          // its authored x it hung 149px off the edge with the subject of every
-          // photograph in the part you could not see. It also drops far enough
-          // to clear the copy, which on a phone sits above it rather than
-          // beside it.
-          //
-          // Keyed off the ROW, not off the slide number. `ih` is what marks a
-          // row as one of the day's shutters, and every scene's window then
-          // answers the same question the same way — where a `slide >= 25`
-          // test had scene A's window answering it differently from scene B's
-          // and leaving the panel 389 frame pixels high on slide 26 alone.
-          const day = L.name === 'mobile' && row.ih != null
-          const [x, y] = projectChip(day ? [960, row.c[1] + drop] : row.c, L)
+          const w = window_(row)
           return {
-            x,
-            y,
+            // On a phone the panel is CENTRED rather than parked on the right
+            // of the frame: there is no "right of the phone" at 375px, and left
+            // at its authored x it hung 149px off the edge with the subject of
+            // every photograph in the part you could not see.
+            //
+            // Keyed off the ROW, not off the slide number. `ih` is what marks a
+            // row as one of the day's shutters, and every scene's window then
+            // answers the same question the same way — where a `slide >= 25`
+            // test had scene A's window answering it differently from scene B's
+            // and leaving the panel 389 frame pixels high on slide 26 alone.
+            x: projectChip(w ? [960, row.c[1]] : row.c, L)[0],
+            y: w ? w.top + w.h / 2 : projectChip(row.c, L)[1],
             width: projectLength(row.w, L),
-            height: projectLength(row.h, L),
+            height: w ? w.h : projectLength(row.h, L),
             borderRadius: `${projectLength(row.r, L)}px`,
             opacity: row.o,
           }
         })
 
-        // The image inside. Measured from the UNSHIFTED row, so the mobile drop
-        // above moves the window and its image together and cancels out here.
+        // The image inside, held still while the window moves over it: it keeps
+        // the panel's full height and is offset by however far the window's top
+        // has drifted from the panel's.
         const img = el.querySelector('img')
         track(img, (slide) => {
           const row = at(scene.window, slide)
-          const top = row.c[1] - row.h / 2
-          return {
-            height: projectLength(row.ih ?? row.h, L),
-            y: projectLength(row.ih ? PANEL_TOP - top : 0, L),
-          }
+          const w = window_(row)
+          if (!w) return { height: projectLength(row.h, L), y: 0 }
+          return { height: panel.h, y: w.edge === 'top' ? 0 : -(panel.h - w.h) }
         })
       })
 
