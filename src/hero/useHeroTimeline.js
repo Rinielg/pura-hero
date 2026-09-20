@@ -462,16 +462,10 @@ export function useHeroTimeline({
       // being spent horizontally instead.
       if (refs.partners.current) {
         gsap.set(refs.partners.current, { xPercent: -50, yPercent: -50 })
-        track(
-          refs.partners.current,
-          (slide) => {
-            const row = at(PARTNERS, slide)
-            return { ...project(row.c), opacity: row.o }
-          },
-          // Held at slide 16's pose until the promo row is clear of it — see
-          // STEP_WINDOWS.partners.
-          STEP_WINDOWS.partners
-        )
+        track(refs.partners.current, (slide) => {
+          const row = at(PARTNERS, slide)
+          return { ...project(row.c), opacity: row.o }
+        })
       }
       if (refs.partnerRow.current) {
         track(refs.partnerRow.current, (slide) => ({
@@ -479,19 +473,25 @@ export function useHeroTimeline({
         }))
       }
 
-      for (const [ref, table] of [
-        [refs.act4Head, ACT4_HEAD],
+      for (const [ref, table, windows] of [
+        // The headline and the tabs arrive late on the step into 17, because
+        // the partner band climbs straight through where they will be.
+        [refs.act4Head, ACT4_HEAD, STEP_WINDOWS.act4Arrival],
         [refs.act5Head, ACT5_HEAD],
-        [refs.pills, PILLS],
+        [refs.pills, PILLS, STEP_WINDOWS.act4Arrival],
         [refs.carouselCtrl, CAROUSEL_CTRL],
         [refs.timelineDot, TIMELINE_DOT],
       ]) {
         if (!ref.current) continue
         gsap.set(ref.current, { xPercent: -50, yPercent: -50 })
-        track(ref.current, (slide) => {
-          const row = at(table, slide)
-          return { ...project(row.c), opacity: row.o, filter: blur(row.b ?? 0) }
-        })
+        track(
+          ref.current,
+          (slide) => {
+            const row = at(table, slide)
+            return { ...project(row.c), opacity: row.o, filter: blur(row.b ?? 0) }
+          },
+          windows
+        )
       }
 
       // The carousel and the ruler are both far wider than the frame, so they

@@ -695,13 +695,13 @@ export const CARDS = [
   { c: [808, 676], o: 1 },
   // 16 and 17 carry the promo row off to the left as the fourth act arrives.
   { c: [502, 541], o: 1 },
-  { c: [-212, 0], o: 1 },
+  { c: [-212, -36], o: 1 },
   // Gone from slide 18 in the file. The row keeps drifting on its own axis
   // while the page carries it up, and fades out over that step — and "carried
   // up by the page" is 670, the rise the whole fourth act takes across this
   // step. It used to be a smaller invented number, which meant the row closed
   // on the partner band below it instead of holding station above it.
-  { c: [-926, -670], o: 0 },
+  { c: [-926, -706], o: 0 },
 ]
 
 /**
@@ -759,10 +759,11 @@ export const CARD_CONTENT = [
  * is the design's, and it is what stops the page reading as a stack of separate
  * sections. The file used to bring it in at 20%; it now arrives resolved.
  */
-export const ACT4_HEAD = parked(15, { c: [960.5, 1106], o: 0, b: 8 }, [
-  { c: [960.5, 971], o: 1, b: 0 },
-  // Slide 17 sits far lower than it used to: the partner band arrived in the
-  // middle of the frame and pushed the whole fourth act down past it.
+export const ACT4_HEAD = parked(16, { c: [960.5, 971], o: 0, b: 8 }, [
+  // Slide 17 sits far lower than it used to, and it is no longer on 16 at all:
+  // the partner band took the bottom of that slide and the middle of this one,
+  // and pushed the whole fourth act down past it. It still waits one page-rise
+  // below its pose, which is where the file used to draw it.
   { c: [960.5, 908], o: 1, b: 0 },
   { c: [960.5, 238], o: 1, b: 0 },
   { c: [960.5, 238], o: 1, b: 0 },
@@ -782,35 +783,22 @@ export const PILLS = parked(16, { c: [960, 1068], o: 0, b: 8 }, [
 /* ------------------------------------------------------ the partner band */
 
 /**
- * "Built by PureHealth", on slide 17 and nowhere else.
+ * "Built by PureHealth", rising from the foot of slide 16 into the middle of 17.
  *
- * The file draws it on that one slide, so it has to be carried in and out
- * rather than switched on. What it must NOT do is travel: it moves at exactly
- * the rate the rest of the fourth act moves — -63 into slide 17 and -670 out of
- * it, the same two numbers the headline and the tabs take — so the gap between
- * it and them never changes and it cannot cross them.
+ * It travels with the PROMO ROW, not with the headline — the file states both
+ * and they agree exactly: the row goes 541 -> -36 and the band 1106.5 -> 529.5,
+ * both -577, which holds a constant 150px between the row's bottom edge and the
+ * band's top through the whole step. Out of 17 they move together again at the
+ * act's -670.
  *
- * Parking it below the frame instead, which is where the carousel waits, meant
- * a 765px climb against the headline's 63. It arrived by passing straight
- * through the headline and the tabs, for most of the step.
- *
- * So what marks slides 16 and 18 is the OPACITY, not the position. The band is
- * revealed rather than flown in — which is also what the file's own
- * choreography does with it: the promo row slides up and left out of exactly
- * the space the band occupies, so the band is behind the cards in the stack and
- * they clear off it.
- *
- * Holding the act's rate settles everything BELOW the band. What sits above it
- * is the promo row, and that moves at its own rate entirely — the file takes it
- * from 541 to 0 across the step into 17, against the band's 63. They close on
- * each other, and there is no rate that keeps the band clear of both: at slide
- * 16 the space between the row's bottom edge and the headline's top is 200px
- * and the band is 429 tall. It simply does not fit yet.
- *
- * Which is why the fade is windowed rather than run across the whole step. See
- * `STEP_WINDOWS.partners`.
+ * That is the answer to a question this band kept asking. It is full-bleed, so
+ * anything it passes shows; and the only way a full-bleed band never crosses
+ * anything is by matching the rate of whatever it is stacked against. Above it
+ * that is the promo row. Below it is the headline, which arrives late enough
+ * not to be in the way — see `STEP_WINDOWS.act4Arrival`.
  */
-export const PARTNERS = parked(16, { c: [960, 592.5], o: 0 }, [
+export const PARTNERS = parked(15, { c: [960, 1241.5], o: 0 }, [
+  { c: [960, 1106.5], o: 1 },
   { c: [960, 529.5], o: 1 },
   { c: [960, -140.5], o: 0 },
 ])
@@ -1290,8 +1278,10 @@ export const PILL_LABELS = [
  * cards out longhand would be thirty chances for the chrome to drift apart,
  * which is the one thing the file guarantees it never does.
  *
- * `fill` is how far along the card's little progress bar runs, as a fraction —
- * Figma draws it as a 212px track with a coloured bar over it.
+ * The chrome is the file's own `Feature · …` frames, exported at 300x300 — five
+ * small compositions of charts, rings and record lists that are not worth
+ * rebuilding in the DOM and would not match if they were. They were an invented
+ * label/value/bar widget until the file made clear what actually sits there.
  */
 /**
  * Each tab brings its own lead photograph. This is the one thing besides the
@@ -1307,11 +1297,11 @@ const LEADS = [
 ]
 
 const WIDGETS = [
-  { label: 'PureScore', value: '92', caption: '+8 pts \u00b7 Great', fill: 0.28 },
-  { label: 'Health systems', value: '2 of 4', caption: 'Cardiovascular \u00b7 worth a look', fill: 0.5 },
-  { label: 'Wearable data', value: '70 bpm', caption: 'Resting heart rate \u00b7 synced', fill: 0.62 },
-  { label: 'Digital Twin', value: '12 mo', caption: 'Illustrative projection', fill: 0.8 },
-  { label: 'Medical history', value: 'Synced', caption: 'Records and past results', fill: 1 },
+  { feature: 'purescore' },
+  { feature: 'health-systems' },
+  { feature: 'wearable' },
+  { feature: 'digital-twin' },
+  { feature: 'medical-history' },
 ]
 
 /** One tab's band: its lead photograph, then a card per line of copy. */
@@ -1481,20 +1471,20 @@ export const STEP_WINDOWS = {
   handFade: { 3: [0.5, 1], 4: [0, 0.4] },
   device: { 4: [0.34, 1] },
   /**
-   * The partner band waits for the promo row to get out of its way.
+   * The fourth act's headline and tabs wait for the partner band to pass.
    *
-   * Step 15 is slide 16 -> 17, and for most of it the row is still across the
-   * band's top edge — at slide 16 there is 200px between the row and the
-   * headline and the band needs 429. It holds at slide 16's pose, invisible,
-   * until the row's bottom edge has risen clear of where its top will be, and
-   * only then fades up and settles.
+   * Step 15 is slide 16 -> 17. The file does not draw either of them on 16, and
+   * for good reason: the band climbs 577 across that step and they sit exactly
+   * in its path — the headline's line and the band's bottom edge cross at about
+   * three quarters of the way through. So both hold at their slide-16 poses,
+   * invisible, and only fade up once the band is above them.
    *
-   * 0.75 is where that happens with room to spare: the row's bottom is at 336
-   * and the band's top is at 378, so the fade starts 42px clear and only opens
-   * up from there. Nothing needed on the step out — the row rises at the act's
-   * rate now, so it holds station above the band the whole way.
+   * 0.75 is where that happens with room to spare: the band's bottom is at 888
+   * and the headline's top at 942, so the fade starts 54px clear and only opens
+   * up from there. Nothing is needed on the step out — everything in the act,
+   * band included, leaves at the same -670.
    */
-  partners: { 15: [0.75, 1] },
+  act4Arrival: { 15: [0.75, 1] },
 }
 
 /**

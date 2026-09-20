@@ -14,7 +14,8 @@ Two sources feed it, and they are not interchangeable:
 
 | | Source |
 |---|---|
-| The sequence, and the navigation | Figma `Final Website` (slides 1–36), the `Carousel Selection 2`–`6` frames, and the `Menu` frame, node `6203:71995` |
+| The sequence | Figma `Final Website` (slides 1–36), the `Carousel Selection 2`–`6` frames |
+| The navigation | Figma `Menu MVP` for what ships; the `Menu` frame, node `6203:71995`, for the full one that is kept behind `NAVIGATION` in `config.js` |
 | Everything the inner pages say | `https://pura-website-upload-1.vercel.app` — **not** pura.ai, which is the older single-page site |
 
 The sequence is still growing. New slides go into `src/hero/frames.js` as extra

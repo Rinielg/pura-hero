@@ -65,6 +65,20 @@ website build. NOT pura.ai, which is the older single-page site. An earlier pass
 sourced from pura.ai and had to be redone; if you are adding a page, take its
 copy from the upload site.
 
+### Two menus, one bar
+
+The first release ships the **Menu MVP** page's bar: `Longevity Clinic`, a
+`Partner with us` dropdown of three off-site links (WhatsApp, `tel:`, `mailto:`)
+and the Get the app pill. `NAVIGATION` in `config.js` switches it; `MENU` and
+its 23 pages are kept, not deleted, and still drive the **footer** and the "more
+in this pillar" band at the foot of every inner page. The routes stay mounted,
+so an inner page is reachable by URL and still links to its siblings — it is
+only the bar that gets shorter.
+
+Two things to know when the full menu comes back: the footer already shows all
+23 pages while the bar shows two, which is a decision waiting to be made rather
+than a bug; and `Longevity Clinic` has no page, so it points at `/`.
+
 **Navigation spec: Figma node `6203:71995`** (page *Final Website*, frame
 *Menu*). It draws four states — default, hover, dropdown-item hover, and
 active/selected — with measurements the CSS follows exactly: bar 955×56, 24px
@@ -919,7 +933,14 @@ projections, because the band travels as a single box: give the box the object
 scale and its contents the chip convergence and they come apart on a phone,
 exactly the way the day's two photo windows did (§4b).
 
-It sits **behind the promo row** in the stack, which is what the file's own
+It sits at the **bottom** of the stack — its own layer at z 2, under the wash
+and under the promo row. That is where the file puts it, and it is the point of
+slide 16: the band rises out of the foot of that slide *through* the Overlay, so
+it is washed white and only resolves once it has climbed clear. Put it up with
+the rest of the fourth act and it arrives at full strength through the wash,
+which is the one thing the file is careful not to do.
+
+It sits behind the promo row for the same reason, which is what the file's own
 choreography implies: the row slides up and left out of exactly the space the
 band occupies, so what you see is the cards clearing off the band rather than the
 band arriving on top of them.

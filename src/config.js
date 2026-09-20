@@ -1,5 +1,19 @@
 /** Fixed scene setup — the things that never change at runtime. */
 
+/**
+ * Which navigation the build ships.
+ *
+ * `'mvp'` is the first release: two items and a Partner with us dropdown, built
+ * to the Figma `Menu MVP` page. `'full'` is the seven-group menu over the 23
+ * inner pages, which is finished and kept — see `MENU` in site/content.js. The
+ * routes stay mounted either way, so an inner page is still reachable by URL
+ * and still links to its siblings; it is only the BAR that gets shorter.
+ *
+ * One switch rather than a deletion, because the full menu is a week of copy
+ * that will be wanted back.
+ */
+export const NAVIGATION = 'mvp'
+
 export const DEVICE = {
   /** The source model is authored in centimetres. 0.1 puts it in a sane scene
    *  scale; the hero's pose scale is applied on top of this, and the real size

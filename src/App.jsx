@@ -269,16 +269,14 @@ function Carousel({ items, tab, scale, frameW, pad, innerRef, controlRef }) {
               </figure>
             ) : (
               <article className="feature" key={i} style={{ width: `${item * scale}px` }}>
-                <div className="feature__panel" style={{ height: `${item * scale}px` }}>
-                  <div className="feature__inner">
-                    <span className="feature__label">{it.label}</span>
-                    <strong className="feature__value">{it.value}</strong>
-                    <span className="feature__caption">{it.caption}</span>
-                    <span className="feature__bar">
-                      <span style={{ width: `${it.fill * 100}%` }} />
-                    </span>
-                  </div>
-                </div>
+                {/* The file's own `Feature · …` composition, exported flat. The
+                    heading under it says what it is, so it reads as decoration. */}
+                <img
+                  className="feature__panel"
+                  src={`/assets/carousel/feature-${it.feature}.jpg`}
+                  alt=""
+                  style={{ height: `${item * scale}px` }}
+                />
                 <h3 className="feature__title">{it.title}</h3>
                 <p className="feature__body">{it.body}</p>
               </article>
@@ -459,6 +457,27 @@ export default function App() {
         <Scene layout={layout} stageScale={scale} quality={QUALITY} />
       </div>
 
+      {/* The partner band, on its own layer between the back and the wash.
+          The file puts it at the BOTTOM of slide 16's stack — under the promo
+          row and under the Overlay — so as it rises out of the foot of that
+          slide it is washed white, and only resolves once it has climbed clear.
+          Put it up with the rest of the fourth act and it arrives at full
+          strength through the wash instead, which is the one thing the file is
+          careful not to do.
+
+          Not `aria-hidden`, unlike the layer below it: it carries a heading and
+          eight partner names. */}
+      <div className="layer layer--band">
+        <div className="stage" style={stageStyle}>
+          <Partners
+            scale={layout.cardScale}
+            frameW={layout.frame[0]}
+            innerRef={refs.partners}
+            rowRef={refs.partnerRow}
+          />
+        </div>
+      </div>
+
       {/* ------------------------------------------------ behind the device */}
       <div className="layer layer--back" aria-hidden="true">
         <div className="stage" style={stageStyle}>
@@ -564,18 +583,6 @@ export default function App() {
             <a href="#top">Why Pura</a>
             <a href="#top">How it works</a>
           </div>
-
-          {/* Slide 17 only, and BEFORE the promo row so the cards paint over
-              it. That is the order the file's own choreography implies: the row
-              slides up and left out of exactly the space the band takes, so what
-              should be seen is the cards clearing off the band rather than the
-              band arriving on top of them. */}
-          <Partners
-            scale={layout.cardScale}
-            frameW={layout.frame[0]}
-            innerRef={refs.partners}
-            rowRef={refs.partnerRow}
-          />
 
           {/* Five cards, wider than the frame on purpose: slides 13 to 15 change
               nothing but this row's x, so the end of the page is a horizontal

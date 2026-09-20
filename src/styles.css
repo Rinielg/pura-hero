@@ -126,6 +126,11 @@ body {
 .device-layer canvas { display: block; }
 
 .layer--back { z-index: 1; }
+/* The partner band: above the chip cloud, BELOW the wash, so slide 16's
+   Overlay washes it white as it rises out of the foot of that slide. It shares
+   its z with the device layer's lower position, which is harmless — the device
+   is at zero opacity for every slide the band is on screen (see DEVICE_FADE). */
+.layer--band { z-index: 2; }
 .layer--copy { z-index: 1; }
 .layer--front { z-index: 3; }
 /* Above #smooth-wrapper (z 5), which is fixed and covers the viewport. The
@@ -854,78 +859,31 @@ body {
 
 .feature { flex: none; }
 
+/* The file's `Feature · …` frame: 300 square, a 20 radius and its own warm
+   gradient baked in. Five small compositions of charts, rings and record lists
+   that are not worth rebuilding in the DOM and would not match if they were. */
 .feature__panel {
-  display: grid;
-  place-items: center;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #f5ded1 0%, #ede6e0 100%);
-}
-
-/* 252 x 190 inside a 300 x 300 panel — kept as a ratio so the whole card can
-   be scaled by one number at a breakpoint. */
-.feature__inner {
-  display: flex;
-  flex-direction: column;
-  width: 84%;
-  height: 63.3%;
-  padding: 6.7%;
-  border-radius: 16px;
-  background: #fff;
-}
-
-.feature__label {
-  font-family: var(--brand);
-  font-weight: 600;
-  font-size: 13px;
-  color: #5e5a66;
-}
-
-.feature__value {
-  margin-top: 1.05em;
-  font-family: var(--brand);
-  font-weight: 500;
-  font-size: 48px;
-  line-height: 1;
-  color: var(--ink);
-}
-
-.feature__caption {
-  margin-top: 0.75em;
-  font-family: var(--brand);
-  font-size: 14px;
-  color: var(--ink);
-}
-
-.feature__bar {
-  position: relative;
   display: block;
-  margin-top: auto;
-  height: 6px;
-  border-radius: 3px;
-  background: #f1e6df;
-  overflow: hidden;
+  width: 100%;
+  border-radius: 20px;
+  object-fit: cover;
 }
 
-.feature__bar span {
-  position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: 3px;
-  background: #7c9cc4;
-}
-
+/* 24 under the panel, then the file's own 20/14 with an 8px gap between. */
 .feature__title {
-  margin: 18px 0 0;
+  margin: 24px 0 0;
   font-family: var(--brand);
   font-weight: 500;
-  font-size: 22px;
-  line-height: 1.1;
+  font-size: 20px;
+  line-height: 1.2;
+  letter-spacing: -0.4px;
   color: var(--ink);
 }
 
 .feature__body {
   margin: 8px 0 0;
   font-family: var(--brand);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.45;
   color: var(--ink);
   opacity: 0.8;
@@ -1337,6 +1295,37 @@ body {
 
 /* Figma's item-hover: a faint surface. Its active/selected: a visible edge. */
 .pnav__item:hover { background: rgba(14, 26, 43, 0.035); }
+
+/**
+ * An item with an icon and no description — the MVP's Partner with us links.
+ *
+ * Same card, same 8px radius, same padding. The difference the file draws is
+ * that it hovers to a WHITE surface with the warm cream border rather than to a
+ * grey tint, which is the same treatment the day's pillar chips get.
+ */
+.pnav__item--icon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pnav__item--icon .pnav__item-i {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+
+.pnav__item--icon .pnav__item-t {
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.25px;
+}
+
+.pnav__item--icon:hover {
+  background: #fff;
+  border-color: #f8e4d3;
+}
 .pnav__item.is-active {
   background: #fff;
   border-color: rgba(14, 26, 43, 0.1);
@@ -1608,6 +1597,15 @@ body {
   }
   .nav__sheet a.is-active { background: rgba(14, 26, 43, 0.06); }
 
+  /* The MVP's Partner with us links carry an icon and no description, so they
+     read as a row rather than as a stacked title-and-body. The sheet's own
+     `display: block` above would put the mark on its own line. */
+  .nav__sheet a.pnav__item--icon {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
   /* On a document page the badges are fixed furniture over scrolling content,
      so at this width they permanently cover a 220x35 strip of every inner page
      — the foot of the CTA band and the first line of the footer's fine print.
@@ -1683,9 +1681,6 @@ body {
   .pill { height: 42px; padding: 0 16px; font-size: 13px; }
   .feature__title { font-size: 17px; }
   .feature__body { font-size: 12px; line-height: 1.4; }
-  .feature__value { font-size: 34px; }
-  .feature__label { font-size: 11px; }
-  .feature__caption { font-size: 11px; }
   .ruler span { font-size: 12px; }
   .card__head, .card__foot { padding: 14px; }
   .card__title { font-size: 20px; line-height: 24px; }

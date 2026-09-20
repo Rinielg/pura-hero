@@ -5,13 +5,18 @@
  *
  * The navigation is built to the Figma `Menu` frame (node 6203:71995), which
  * specifies four states — default, hover, dropdown-item hover, and
- * active/selected — and a dropdown card hanging under the bar. Every top-level
- * item has one.
+ * active/selected — and a dropdown card hanging under the bar.
+ *
+ * WHICH menu is in it is a separate question, and the answer is `NAV_MENU`: the
+ * first release ships the two-item `Menu MVP` bar, the full seven-group one is
+ * kept and switched by `NAVIGATION` in config.js. Everything below is written
+ * against the shape rather than against either list — a group may or may not
+ * have a dropdown, and an item may be a route or a link off the site.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { MENU, STORE } from '../site/content'
+import { NAV_MENU, STORE } from '../site/content'
 
 export const STORE_LINKS = STORE
 
@@ -29,11 +34,57 @@ export const STORE_LINKS = STORE
  * wins, so a page can only ever be in one place in the menu.
  */
 function ownerOf(pathname) {
-  const byRoute = MENU.find(
-    (g) => g.to && (pathname === g.to || pathname.startsWith(`${g.to}/`))
+  const byRoute = NAV_MENU.find(
+    (g) => g.to && g.to !== '/' && (pathname === g.to || pathname.startsWith(`${g.to}/`))
   )
   if (byRoute) return byRoute.key
-  return MENU.find((g) => g.items.some((i) => i.to === pathname))?.key ?? null
+  return NAV_MENU.find((g) => g.items?.some((i) => i.to === pathname))?.key ?? null
+}
+
+/**
+ * One dropdown entry. A route link, or an anchor when it leaves the site.
+ *
+ * The MVP's Partner with us items are a WhatsApp URL, a `tel:` and a `mailto:`.
+ * Only the first is a page, so only the first opens in a new tab: sending
+ * `tel:` to a new tab leaves an empty one behind on desktop once the handler
+ * has taken it.
+ */
+function MenuItem({ item }) {
+  const body = item.body ? <small>{item.body}</small> : null
+  const icon = item.icon ? (
+    <img className="pnav__item-i" src={`/assets/icons/${item.icon}.svg`} alt="" />
+  ) : null
+
+  if (item.href) {
+    const external = item.href.startsWith('http')
+    return (
+      <a
+        className={icon ? 'pnav__item pnav__item--icon' : 'pnav__item'}
+        href={item.href}
+        role="menuitem"
+        {...(external ? { target: '_blank', rel: 'noreferrer' } : {})}
+      >
+        {icon}
+        <span className="pnav__item-t">{item.title}</span>
+        {body}
+      </a>
+    )
+  }
+
+  return (
+    <NavLink
+      to={item.to}
+      role="menuitem"
+      end
+      className={({ isActive }) =>
+        `${isActive ? 'pnav__item is-active' : 'pnav__item'}${icon ? ' pnav__item--icon' : ''}`
+      }
+    >
+      {icon}
+      <span className="pnav__item-t">{item.title}</span>
+      {body}
+    </NavLink>
+  )
 }
 
 /**
@@ -48,6 +99,7 @@ function MenuGroup({ group, open, onOpen, onClose, onCloseNow }) {
   const { label, to, items } = group
   const { pathname } = useLocation()
   const within = ownerOf(pathname) === group.key
+  const hasCard = !!items?.length
 
   const Label = to ? Link : 'button'
   const labelProps = to ? { to } : { type: 'button' }
@@ -55,22 +107,21 @@ function MenuGroup({ group, open, onOpen, onClose, onCloseNow }) {
   return (
     <li
       className={`pnav__group${open ? ' is-open' : ''}${within ? ' is-within' : ''}`}
-      onPointerEnter={onOpen}
-      onPointerLeave={onClose}
-      onFocus={onOpen}
+      onPointerEnter={hasCard ? onOpen : undefined}
+      onPointerLeave={hasCard ? onClose : undefined}
+      onFocus={hasCard ? onOpen : undefined}
       onBlur={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) onCloseNow()
+        if (hasCard && !e.currentTarget.contains(e.relatedTarget)) onCloseNow()
       }}
     >
       <Label
         {...labelProps}
         className="pnav__label"
-        aria-expanded={open}
-        aria-haspopup="true"
+        {...(hasCard ? { 'aria-expanded': open, 'aria-haspopup': 'true' } : {})}
         onClick={(e) => {
           // On touch there is no hover: the first tap opens, and only a second
-          // one follows the link.
-          if (!open && window.matchMedia('(hover: none)').matches) {
+          // one follows the link. A group with no dropdown just follows it.
+          if (hasCard && !open && window.matchMedia('(hover: none)').matches) {
             e.preventDefault()
             onOpen()
           }
@@ -84,20 +135,13 @@ function MenuGroup({ group, open, onOpen, onClose, onCloseNow }) {
         {label}
       </Label>
 
-      <div className="pnav__card" role="menu" aria-label={label}>
-        {items.map((item) => (
-          <NavLink
-            key={item.to + item.title}
-            to={item.to}
-            role="menuitem"
-            end
-            className={({ isActive }) => (isActive ? 'pnav__item is-active' : 'pnav__item')}
-          >
-            <span className="pnav__item-t">{item.title}</span>
-            <small>{item.body}</small>
-          </NavLink>
-        ))}
-      </div>
+      {hasCard ? (
+        <div className="pnav__card" role="menu" aria-label={label}>
+          {items.map((item) => (
+            <MenuItem key={(item.to ?? item.href) + item.title} item={item} />
+          ))}
+        </div>
+      ) : null}
     </li>
   )
 }
@@ -229,7 +273,7 @@ export function Nav() {
         </Link>
 
         <ul className="pnav">
-          {MENU.map((group) => (
+          {NAV_MENU.map((group) => (
             <MenuGroup
               key={group.key}
               group={group}
@@ -262,23 +306,28 @@ export function Nav() {
 
       {/* The phone menu: the same tree, flattened into one scrollable sheet. */}
       <div className="nav__sheet" id="nav-sheet" hidden={!sheet}>
-        {MENU.map((group) => (
+        {NAV_MENU.map((group) => (
           <section key={group.key}>
-            <h2>{group.label}</h2>
-            <ul>
-              {group.items.map((item) => (
-                <li key={item.to + item.title}>
-                  <NavLink
-                    to={item.to}
-                    end
-                    className={({ isActive }) => (isActive ? 'is-active' : undefined)}
-                  >
-                    {item.title}
-                    <small>{item.body}</small>
-                  </NavLink>
+            {/* A group with no dropdown is its own single entry here — there is
+                no list to put under a heading nobody can follow. */}
+            {group.items?.length ? (
+              <>
+                <h2>{group.label}</h2>
+                <ul>
+                  {group.items.map((item) => (
+                    <li key={(item.to ?? item.href) + item.title}>
+                      <MenuItem item={item} />
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <ul>
+                <li>
+                  <MenuItem item={{ to: group.to, title: group.label }} />
                 </li>
-              ))}
-            </ul>
+              </ul>
+            )}
           </section>
         ))}
       </div>

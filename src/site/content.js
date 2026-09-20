@@ -19,17 +19,31 @@
  * items that are about the company rather than about the product.
  */
 
+import { NAVIGATION } from '../config'
+
 export const STORE = {
   appStore: 'https://apps.apple.com/ae/app/pura-by-purehealth/id6449597603',
   googlePlay: 'https://play.google.com/store/apps/details?id=ae.purehealth.pura',
 }
 
-export const EXTERNAL = { group: 'https://purehealth.ae/', email: 'mailto:care.pura@pura.ai' }
+export const EXTERNAL = {
+  group: 'https://purehealth.ae/',
+  email: 'mailto:care.pura@pura.ai',
+  /** The three ways to reach the partnerships team, from the Menu MVP page. */
+  whatsapp: 'https://web.whatsapp.com/',
+  phone: 'tel:123456789',
+  partner: 'mailto:care.pura@pura.ai?subject=Pura',
+}
 
 /**
  * The menu. `to` on a group is where its own label navigates; `items` is the
  * dropdown. Every group has one, because the brief asks for dropdowns on all of
  * them — including More, which has no page of its own and so has no `to`.
+ *
+ * KEPT, not shipped. The first release runs `MENU_MVP` below — see
+ * `NAVIGATION` in config.js. This one still drives the FOOTER and the "more in
+ * this pillar" band at the foot of every inner page, so the 23 pages remain a
+ * connected site behind a two-item bar.
  */
 export const MENU = [
   {
@@ -121,6 +135,38 @@ export const ALL_ROUTES = [...new Set(MENU.flatMap((g) => g.items.map((i) => i.t
  */
 export const REG_NOTE =
   'Please note: Pura does not provide emergency services — in an emergency, call 998. Information on this page is general in nature and is not a substitute for professional medical advice, diagnosis or treatment. (Locked regulatory slot — final wording subject to Regulatory sign-off.)'
+
+/**
+ * The first release's menu, built to the Figma `Menu MVP` page.
+ *
+ * The same bar as `MENU` — same pill, same dropdown card, same hover — with two
+ * items instead of seven. Which is the point of keeping it as data: nothing
+ * about the navigation's behaviour changes, only what is in it.
+ *
+ * `Partner with us` is the one group with a dropdown, and its three items leave
+ * the site: WhatsApp, a phone number and an email. They are `href` rather than
+ * `to`, and that is what tells the bar to render an anchor instead of a route
+ * link — see `MenuGroup`.
+ *
+ * Longevity Clinic has no dropdown in the file and no page yet. It points at
+ * the home route, which is the only thing this release has to point at; give it
+ * a destination and this is the one line to change.
+ */
+export const MENU_MVP = [
+  { key: 'longevity', label: 'Longevity Clinic', to: '/' },
+  {
+    key: 'partner',
+    label: 'Partner with us',
+    items: [
+      { title: 'Whatsapp', icon: 'whatsapp', href: EXTERNAL.whatsapp },
+      { title: 'Phone', icon: 'phone', href: EXTERNAL.phone },
+      { title: 'Email', icon: 'email', href: EXTERNAL.partner },
+    ],
+  },
+]
+
+/** What the bar actually renders. The footer and the inner pages keep `MENU`. */
+export const NAV_MENU = NAVIGATION === 'mvp' ? MENU_MVP : MENU
 
 export const PROOF_FOOTNOTE =
   '† Illustrative figure for prototype — replace with verified data before publication.'
