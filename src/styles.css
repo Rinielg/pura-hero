@@ -1578,6 +1578,52 @@ body {
 
 /* ------------------------------------------------------------- responsive */
 
+/* ------------------------------------------------------- the legal row */
+
+/**
+ * Slide 43's footer: a 48-tall bar in #f7cdb9 across the foot of the viewport,
+ * with three links centred in it.
+ *
+ * z-index 9 puts it UNDER the cue and the store badges, which is what the file
+ * shows: its back-to-top disc sits at 1000-1040 against a bar at 1032-1080, so
+ * the disc straddles the bar's top edge rather than clearing it.
+ *
+ * Opacity and pointer-events are both on the timeline — without the second one
+ * the links stay tabbable through all forty-two slides where they are invisible.
+ */
+.close-links {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Two spaces each side of the bullet at 16px, which is what the file sets. */
+  gap: 8px;
+  background: #f7cdb9;
+  font-family: var(--brand);
+  font-size: 16px;
+  letter-spacing: -0.32px;
+  color: #0e1a2b;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+.close-links a {
+  color: inherit;
+  /* The file underlines all three. */
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.close-links a:hover { text-decoration-thickness: 2px; }
+
+.close-links__sep { opacity: 0.6; }
+
 /* -------------------------------------------------------------- preloader */
 /* No scrolling behind the loading screen. This covers the phone and
    reduced-motion cases, where there is no ScrollSmoother to pause. */

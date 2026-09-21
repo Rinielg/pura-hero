@@ -240,7 +240,15 @@ export function CTABand({ title, body, link }) {
       {body ? <p className="lede">{body}</p> : null}
       <div className="cta__row">
         {link ? (
-          <a className="btn btn--dark" href={link.href}>
+          // Same rule as the menu's `MenuItem`: a new tab for http(s) and NOT
+          // for `mailto:` or `tel:`, which hand off to another app and would
+          // leave an empty tab behind. Every CTA in `content.js` is a mailto
+          // today; this is so an external one added later behaves like the rest.
+          <a
+            className="btn btn--dark"
+            href={link.href}
+            {...(link.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
+          >
             {link.label}
           </a>
         ) : (
