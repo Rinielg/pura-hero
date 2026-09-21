@@ -1287,7 +1287,12 @@ export const DAY_SCENES = [
     alt: 'Lunch at home, logged in the app',
     screen: 3,
     head: 'Lunch was a solid choice today. However, your HbA1c from lab is 6.1, just nudging above normal.',
+    body: 'This is something worth having a conversation with your doctor.',
     headBox: [148, 320, 555, 160],
+    // 24 below the head box, the same gap scene A leaves. The node hugs one
+    // line at 546; the column clamp in `.greeting-body` is what wraps it when
+    // the frame is narrower than the design's.
+    bodyBox: [148, 504, 546, 26],
     window: mediaTrack(30),
   },
   {
@@ -1326,8 +1331,8 @@ export const DAY_SCENES = [
 ].map((scene) => ({
   ...scene,
   headAt: copyTrack(scene.headBox, scene.settled, scene.exit),
-  // Only scene A carries a paragraph now. The rest say it all in the greeting,
-  // and a `bodyAt` of null is what tells the timeline and the phone's measured
+  // Scenes A and C carry a paragraph; the rest say it all in the greeting, and
+  // a `bodyAt` of null is what tells the timeline and the phone's measured
   // stack there is nothing under the headline to seat.
   bodyAt: scene.bodyBox ? copyTrack(scene.bodyBox, scene.settled, scene.exit) : null,
 }))

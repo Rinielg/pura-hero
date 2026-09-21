@@ -1543,7 +1543,8 @@ body {
   font-weight: 500;
   font-size: 36px;
   line-height: 40px;
-  letter-spacing: -1.2px;
+  /* The file sets -1px, not -1.2. */
+  letter-spacing: -1px;
   color: var(--ink);
 }
 
@@ -1554,7 +1555,9 @@ body {
   font-family: var(--brand);
   font-size: 20px;
   line-height: 26px;
-  letter-spacing: -0.2px;
+  /* The file sets -2%, which at 20px is -0.4 — this was half that, and over the
+     63 characters of scene C's line the difference was enough to wrap it. */
+  letter-spacing: -0.4px;
   color: rgba(14, 26, 43, 0.72);
   will-change: transform, opacity, filter;
 }

@@ -775,7 +775,7 @@ export default function App() {
               <p>{scene.head}</p>
             </div>
           ))}
-          {/* Only the first scene has a paragraph. The others are rendered as
+          {/* Scenes A and C have a paragraph. The others are rendered as
               nothing rather than as an empty node, which leaves that scene's
               slot in `refs.bodies` undefined — and undefined is what the
               timeline and the phone's measured stack both check for. */}
