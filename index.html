@@ -7,6 +7,19 @@
     <meta name="description" content="Your wearables, medical history and lab results, together in one app." />
     <title>Pura — Your health, simplified.</title>
 
+    <!-- The `Favicon` frame from the Figma file, exported at every size it is
+         actually asked for. `.ico` carries 16, 32 and 48 in one file, which
+         covers legacy browsers and the Windows taskbar; the `.svg` is what
+         modern browsers pick, and it stays sharp at any size.
+
+         `apple-touch-icon` is FLATTENED onto the brand cream on purpose. iOS
+         does not honour transparency there — it composites onto black — so the
+         circle's transparent corners would ship as black ones. -->
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <!-- Figtree stands in for Greycliff CF where the brand face is not

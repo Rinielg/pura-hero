@@ -1,0 +1,11 @@
+{
+  "name": "Pura",
+  "short_name": "Pura",
+  "description": "Your wearables, medical history and lab results, together in one app.",
+  "icons": [
+    { "src": "/icon-192.png", "type": "image/png", "sizes": "192x192" },
+    { "src": "/icon-512.png", "type": "image/png", "sizes": "512x512" }
+  ],
+  "theme_color": "#fbefe3",
+  "background_color": "#fbefe3"
+}
