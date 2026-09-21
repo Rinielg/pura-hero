@@ -575,7 +575,14 @@ export default function App() {
       <div className="layer layer--copy">
         <div className="stage" style={stageStyle}>
           <div className="hero-copy" ref={refs.heading} style={{ top: `${copyTop}px` }}>
-            <h1 ref={refs.headLine}>Your health, simplified.</h1>
+            {/* Title case, and no full stop. The file's `Heading` on slide 1
+                reads "Your Health, Simplified" and so does the live copy on
+                slide 2 — the only two slides where it is inside the frame.
+                Slides 5 onward carry "Your health, simplified." but those are
+                the STALE copy parked at y -105, above the top of the frame and
+                never seen. Read the heading that is on screen, not the last one
+                in the file. */}
+            <h1 ref={refs.headLine}>Your Health, Simplified</h1>
             {/* The file sets a NON-BREAKING space between "medical" and
                 "history", which is what stops the pair splitting across the two
                 lines this wraps to on a narrow window. Written as an escape
