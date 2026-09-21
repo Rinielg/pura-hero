@@ -44,7 +44,7 @@ npm run build    # static output in dist/ — deploy that folder anywhere
 | 9–10 | The whole first act starts travelling up and out — device, wash and gradient backdrop together. What it uncovers is plain white. The second act's copy softens away as "One place for your whole health." rises from below. |
 | 11–12 | The third act resolves: headline, paragraph, two pills, and a five-card promo row entering from the right. |
 | 13–15 | Nothing moves but the card row's x. The last stretch of the page is a **horizontal** scroll driven by the vertical one. |
-| 16–19 | The first three acts leave together. Slide 17 is the **partner band** — "Built by PureHealth" over eight logos that drift sideways as you scroll — and then "Help for every part of your health." and the **tabbed** feature carousel: five tabs over five decks of cards, with arrows that page the row. |
+| 16–19 | The first three acts leave together. Slide 17 is the **partner band** — "Built by PureHealth." over eight logos that drift sideways as you scroll — and then "Help for every part of your health." and the **tabbed** feature carousel: five tabs over five decks of cards, with arrows that page the row. |
 | 20–25 | "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel growing from a 154×88 pill. The device returns at 25, rising from below the frame — and from here it draws **in front of** the wash rather than under it. |
 | 24–36 | The file stops drawing the navigation here and moves everything up 80px into the space. The build **keeps** the bar — it hides itself on the way down anyway. |
 | 26–36 | **The day.** Six scenes joined by five transitions: a settled slide changes the photograph, the greeting, the phone's screen and the hour on the ruler; the transition between two of them changes only the photograph, which splits the panel in half and reveals the next scene from the bottom. The phone stays put throughout and follows the cursor. The day runs 7:00 to 23:00 on the ruler. |
@@ -230,6 +230,10 @@ The result lands within 1.5% of the reference on both axes.
   The copy itself is measured at build time now, so it survives a copy change —
   but the device's 0.7 shrink and the band's own margins are still numbers that
   fit rather than numbers from a frame.
+- **A line that hugs in Figma is not a line with a measure.** `textAutoResize`
+  says which, and a hugging node given a fixed CSS width fits until the copy
+  changes. Wrapping bugs also show up on machines WITH Greycliff CF installed
+  and not without it — the Figtree fallback is ~11% narrower. See CONTEXT §5.
 - **The page holds behind a loading screen until slide 1 can be drawn**, built to the
   file's `Loader` frame. Everything below the hero carries `fetchPriority="low"` — without
   it the ~140 always-mounted `<img>` elements take every connection and the phone's own

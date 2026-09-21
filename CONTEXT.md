@@ -313,13 +313,13 @@ opacity for every slide the band is on screen. It has to sit under the wash, bec
 | 4–6 | A hand comes up from below, takes the phone, and fades **in place**. |
 | 7–9 | The screen crossfades to Pura AI; the agent bar appears, then widens. |
 | 10–16 | The whole first-act scene travels up and out. Act 3 copy arrives, then the promo card row scrolls in from the right. |
-| 17 | Everything from the first three acts leaves together. The **partner band** takes the middle of the frame — "Built by PureHealth" and eight logos — and pushes the whole fourth act down past it; the carousel is still below the fold here. See §6c. |
+| 17 | Everything from the first three acts leaves together. The **partner band** takes the middle of the frame — "Built by PureHealth." and eight logos — and pushes the whole fourth act down past it; the carousel is still below the fold here. See §6c. |
 | 18–19 | The feature carousel. **Arrow-driven, and tabbed** — see §6. |
 | 20–25 | The carousel holds the centre and rises. "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel that *grows* — 154×88, 764×437, 1058×605, 1152×659. |
 | 25 | The device comes back, rising from below the frame at (959.7, 1266.7), and **changes sides**: from here it draws in front of the Overlay rather than under it. |
 | 26 | The day resolves into the app. The panel slides right and stands up at **812×778 centred on x=1366**, the device lands at `ai(663)` showing the day's first screen, the morning greeting arrives flush left at x=148, and the phone starts **watching the cursor**. |
 | 27–36 | **The day**: six scenes joined by five transitions. Even slides are settled, odd slides are the reveal. See §4b. |
-| 37–42 | **The close.** The day rises off the top as one piece (420, then 486 — see `DAY_LIFT`), the gradient fades back full-frame under a new top scrim, the phone grows from 321×663 to 451×931 for the Digital Twin, and the page ends on two rows of stadium photographs travelling in opposite directions under "Pura knows your body like you do." |
+| 37–43 | **The close.** The day rises off the top as one piece (420, then 486 — see `DAY_LIFT`), the gradient fades back full-frame under a new top scrim, and the phone grows from 321×663 to 451×931 for the Digital Twin — its OVERVIEW screen on 38–39 and its visceral-fat detail from 40. Slide 40 pauses it at 540.5 before it leaves, so the exit is its own step. The page ends on two rows of stadium photographs travelling in opposite directions under "Pura knows your body like you do." |
 
 ### 4b. The day (slides 26–36)
 
@@ -329,7 +329,7 @@ follows it:
 | | Settled (26, 28, 30, 32, 34, 36) | Transition (27, 29, 31, 33, 35) |
 |---|---|---|
 | Photograph | one scene fills the panel | two scenes, half the panel each |
-| Headline (and, on scene A only, its paragraph) | changes | **unchanged** |
+| Headline (and, on scenes A and C, its paragraph) | changes | **unchanged** |
 | Phone's screen | changes | **unchanged** |
 | Ruler | moves one hour | **unchanged** |
 | Phone itself | still | still |
@@ -893,6 +893,55 @@ Distinct hashes are the answer to "how many screens are there". Eight across sli
 which with Home and Pura AI is the ten in `SCREEN_URLS`. Do this after any change to the
 day or the close rather than trusting a visual scan.
 
+### Text that hugs, and text that wraps
+
+`textAutoResize` decides which, and getting it backwards is the most common way
+a line ends up on two rows here. It has cost two fixes.
+
+- **`WIDTH_AND_HEIGHT`** — the node HUGS one line. The width Figma reports is the
+  MEASURED width of that line, not a measure to set to. In CSS: `width:
+  max-content`, or a box the text cannot fill.
+- **`HEIGHT`** — the node has a fixed measure and wraps inside it. The width IS
+  the measure. In CSS: that width.
+
+Nine of the sequence's headings hug; three wrap ("With a digital twin…" at
+965×116, "Ask Pura AI anything…" at 273×63, "Pura brings your data…" at 700×62).
+A hugging node given a fixed width is a line that fits until the copy changes:
+`.kicker` was pinned at 623 against the file's 630, which held until the line
+gained its full stop and pushed "you." onto a second row.
+
+```js
+t.textAutoResize   // 'WIDTH_AND_HEIGHT' | 'HEIGHT' | 'NONE'
+```
+
+The exception is anything inside the day's left column. `.greeting-body` and
+`.day-pills` clamp to `min(--gw, --day-col)`, so they are SUPPOSED to wrap when
+the cover crop narrows the column below the design's width — see §6b.
+
+### Tracking is in percent, and percent is not pixels
+
+Figma reports `letterSpacing` as either `PIXELS` or `PERCENT`, and a percent has
+to be multiplied by the font size before it means anything. Two greeting styles
+had been transcribed as though it were already pixels:
+
+| | was | file |
+|---|---|---|
+| `.greeting p` | -1.2px | **-1px** (`PIXELS`) |
+| `.greeting-body` | -0.2px | **-0.4px** (`PERCENT -2` at 20px) |
+
+Worth about 13px over the 63 characters of scene C's paragraph, which is what
+wrapped it. Check the unit, not just the number.
+
+### The brand font is NOT the wrapping risk
+
+The instinct is to blame the fallback. Measured on a machine with Greycliff CF
+installed, at 100px "Handgloves" sets **540 in Greycliff against 478 in
+Figtree** — the fallback is about 11% NARROWER, so it wraps less, not more.
+
+Which means wrapping bugs show up on the DESIGN team's machines and not on
+anyone else's. Check line counts with the brand font installed; that is the
+worst case, not the best one.
+
 ### Node ids are worthless here
 
 The slides get **rebuilt**, not edited — every node id changed between passes. Match by
@@ -1090,6 +1139,8 @@ Each of these is a decision, not drift. Change them only on purpose.
 | The phone on slide 26 sits BELOW the Overlay | The file puts it above. The wash dissolving the device's foot is the point of slides 7–9, and one WebGL object cannot be in two layers. |
 | The carousel control is taken to `opacity: 0` from slide 24, where the file holds it at 20% | Off the top of a 1920×1080 frame that 20% is invisible. A phone's frame is shorter and the y compression drags anything parked above it back down. Same reason the carousel itself is zeroed there. |
 | The ruler holds y=106 on slide 32, where the file has 100 | A one-slide jog up and back is a twitch, not a move. **Flagged for a nudge in Figma.** |
+| No round `+` on the promo cards (slides 11–17) | Riniel's call, not the file's — the file still draws it. It had no destination in the MVP. `.card__more` and `card-plus.svg` are kept, so restoring it is one block in App.jsx. |
+| The hero headline is "Your Health, Simplified" | Title case, no full stop — the `Heading` on slides 1 and 2, which are the only two where it is inside the frame. Slides 5+ carry "Your health, simplified." but always at y -105, above the top of the frame. **Read the heading that is on screen, not the last one in the file.** |
 
 ### Two things in the file that are followed literally and look wrong
 
@@ -1244,7 +1295,14 @@ const rootReasons = (el) => {
   0.7 shrink, the 170px band top and the 18/26px gaps are still numbers that fit rather
   than numbers from a frame. A real mobile design would replace them.
 - **Slides 20–43 have no interactions apart from the cursor tilt.** 43 is the end of the
-  sequence; the last thing the page does is the two photo rows and the store badges.
+  sequence; the last thing the page does is the two photo rows under the closing line.
+- **The day's pill row wraps to two lines below 16:9.** It is 518 wide against a column
+  that the cover crop narrows — one row at 1600×900 and wider, two at 1440×900. That is
+  the documented `.day-pills` behaviour rather than a bug, but the threshold moved when
+  the row shrank from 539 to 518, so it now wraps on more screens than it used to.
+- **The model is 4.27 MB and dominates the cold load.** The loading screen lifts in about
+  1 s locally and 5.5 s cold over the network, and the glb is most of that. Draco or
+  Meshopt compression is the single biggest lever left and has not been tried.
 - **Scene D's pillar row is hidden below 980px.** Wrapped into two rows it is ~90px
   tall and the band between the ruler and the panel is already carrying a three-line
   headline and a three-line paragraph, so it landed on the photograph. Dropped rather
@@ -1253,10 +1311,20 @@ const rootReasons = (el) => {
 - **The day's panel is centred on a phone, not parked right.** At its authored x it
   hung 149px off the edge with the subject of every photograph in the part you could
   not see. Centred it bleeds ±55px symmetrically, which reads as full-bleed.
-- **Nine screen textures load up front** — the day's six, the closing act's Digital Twin,
-  Home and Pura AI — ~1.2MB and about 68MB of GPU memory, whether or
-  not the visitor ever reaches slide 26. Deferring the seven day-and-close screens until
-  the carousel act is the obvious fix and has not been done.
+- **Ten screen textures load up front, and they are oversized.** The day's six, the
+  close's two, Home and Pura AI: **2.81 MB on the wire and about 107 MB of GPU memory**,
+  whether or not the visitor ever reaches slide 26.
+
+  Both numbers went UP when the screens started being cut from their image fills at
+  native resolution instead of exported from the node — that fixed the aspect and the
+  upscaling, and it also means `ui-d` now ships at **1907×4096, which is 31 MB of GPU
+  memory on its own**. The phone's display is roughly 300–600 CSS px tall, so that is
+  something like seven times oversampled.
+
+  Two independent fixes, neither done: cap the long edge at ~2560 when cutting them
+  (`ui-d` alone would drop from 31 MB to about 12 MB), and defer the eight day-and-close
+  screens until the carousel act. The loading screen currently absorbs the download cost
+  — see §7b — but nothing absorbs the memory.
 - **The performance pass was built, then rolled back.** `a5cf93d` put the WebGL scene on
   `frameloop="demand"` (zero renders while idle), paused the gradient off-screen, halved
   the blur bands on a phone, capped mobile DPR and downsized the screen textures to 20MB.
@@ -1264,11 +1332,11 @@ const rootReasons = (el) => {
   with it. `git revert 2f7e31c` brings all of it back, reasoning included. The one part
   that was kept, separately, is the phone's still backdrop.
 - **26 files under `public/assets/site/` are neither tracked nor ignored** — the `app/`,
-  `icons/` and `partners/` subfolders. They reach production only because `vercel --prod`
-  uploads the working directory rather than building from the repo, so a fresh clone would
-  deploy without them. Nothing in `src/` references any of them; they look like leftovers
-  from the inner-pages build. Commit them or delete them — but the repo is not currently a
-  complete description of what is deployed.
+  `icons/` and `partners/` subfolders. Checked: **nothing in `src/` references them**, and
+  the sixteen `/assets/site/*.webp` the inner pages do use are all tracked. So they are
+  leftovers from the inner-pages build that `vercel --prod` happens to upload along with
+  everything else, not a hole in the repo — a fresh clone deploys the same site. Commit
+  them or delete them; either is fine, and neither is urgent.
 - **Promo cards 3 and 4** still share the line "Give your mind the same attention".
   The tags now differ (Mental Wellness / Care) and the file has it that way, so the
   build follows it — but the body copy looks like placeholder waiting to be written.
