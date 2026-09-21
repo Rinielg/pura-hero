@@ -777,7 +777,10 @@ body {
   color: #1b2238;
 }
 
-/* The rail the logo row runs in: band width, masked at both ends so the tiled
+/* NOT RENDERED — the file hides the logo row on slides 17 and 18. Kept so that
+   restoring the drifting rail is one block in App.jsx and nothing else.
+
+   The rail the logo row runs in: band width, masked at both ends so the tiled
    row fades out rather than being cut off mid-mark. */
 .partners__rail {
   position: absolute;

@@ -826,20 +826,20 @@ export const CARD_CONTENT = [
  * is the design's, and it is what stops the page reading as a stack of separate
  * sections. The file used to bring it in at 20%; it now arrives resolved.
  */
-export const ACT4_HEAD = parked(16, { c: [960.5, 971], o: 0, b: 8 }, [
+export const ACT4_HEAD = parked(16, { c: [960.5, 806], o: 0, b: 8 }, [
   // Slide 17 sits far lower than it used to, and it is no longer on 16 at all:
   // the partner band took the bottom of that slide and the middle of this one,
   // and pushed the whole fourth act down past it. It still waits one page-rise
   // below its pose, which is where the file used to draw it.
-  { c: [960.5, 908], o: 1, b: 0 },
+  { c: [960.5, 743], o: 1, b: 0 },
   { c: [960.5, 238], o: 1, b: 0 },
   { c: [960.5, 238], o: 1, b: 0 },
   { c: [960.5, 91], o: 0.3, b: 8 },
   { c: [960.5, -90], o: 0, b: 8 },
 ])
 
-export const PILLS = parked(16, { c: [960, 1068], o: 0, b: 8 }, [
-  { c: [960, 1005], o: 1, b: 0 },
+export const PILLS = parked(16, { c: [960, 903], o: 0, b: 8 }, [
+  { c: [960, 840], o: 1, b: 0 },
   { c: [960, 335], o: 1, b: 0 },
   { c: [960, 335], o: 1, b: 0 },
   { c: [960, 188], o: 0.6, b: 4 },
@@ -864,10 +864,16 @@ export const PILLS = parked(16, { c: [960, 1068], o: 0, b: 8 }, [
  * that is the promo row. Below it is the headline, which arrives late enough
  * not to be in the way — see `STEP_WINDOWS.act4Arrival`.
  */
-export const PARTNERS = parked(15, { c: [960, 1241.5], o: 0 }, [
-  { c: [960, 1106.5], o: 1 },
-  { c: [960, 529.5], o: 1 },
-  { c: [960, -140.5], o: 0 },
+export const PARTNERS = parked(15, { c: [960, 1143.5], o: 0 }, [
+  // Slide 16 keeps the file's own TOP for the band (892). The file has not been
+  // updated there and still draws the old 1920x429 shape, so the top is the
+  // only number on that slide that still means anything: 892 + 233/2.
+  { c: [960, 1008.5], o: 1 },
+  { c: [960, 457.5], o: 1 },
+  // It no longer vanishes at 18. It carries on up at 40%, and is gone from the
+  // file by 19 — so it keeps the same rate out and takes the opacity with it.
+  { c: [960, -47.5], o: 0.4 },
+  { c: [960, -552.5], o: 0 },
 ])
 
 /**
@@ -878,21 +884,29 @@ export const PARTNERS = parked(15, { c: [960, 1241.5], o: 0 }, [
  * contents take the same scale, which is the only way they stay in register.
  */
 export const PARTNER_BAND = {
-  w: 1920,
-  h: 429,
+  /** A CARD now, not a full-bleed band: 1840 inside the 1920 frame, so 40 of
+   *  gutter each side, on a 24 radius. */
+  w: 1840,
+  h: 233,
+  r: 24,
   head: 70,
   sub: 132,
-  row: 197,
-  rowLeft: 169,
-  logoH: 156,
-  gap: 70,
-  /** The gradient: a 1937x1080 image hung far above the band and clipped by it,
-   *  so what shows is its bottom 429 pixels. */
-  grad: { x: -25, y: -651, w: 1937, h: 1080 },
-  /** And the white wash over its lower part. */
-  wash: { y: 128, h: 301 },
+  /** The gradient: a 1937x1080 image hung far above the card and clipped by it,
+   *  so what shows is its bottom 233 pixels. */
+  grad: { x: -49, y: -847, w: 1937, h: 1080 },
+  /** And the wash over its lower part, at half strength. */
+  wash: { y: 67, h: 166, o: 0.5 },
 }
 
+/**
+ * The eight marks — NOT RENDERED any more.
+ *
+ * The file's `Partner Logos` frame is hidden on slides 17 and 18, and the card
+ * that replaced the band is 233 tall, which is not enough to hold a 156px row
+ * anyway. The tables and the artwork under `public/assets/partners/` are kept
+ * because the horizontal drift was built to a brief and may be wanted back:
+ * restoring it is the `.partners__rail` block in App.jsx and nothing else.
+ */
 /** The eight marks, in the file's order, with the width each is drawn at. */
 export const PARTNER_LOGOS = [
   ['ssmc', 156, 'Sheikh Shakhbout Medical City'],
@@ -940,10 +954,10 @@ export const PARTNER_DRIFT = parked(16, 480, [0, -480])
  * purpose: that is the stretch where the carousel stands still and the reader
  * drives it.
  */
-export const CAROUSEL = parked(16, { c: [1668, 1387], o: 0 }, [
+export const CAROUSEL = parked(16, { c: [1668, 1222], o: 0 }, [
   // Below the frame on 17 — the partner band has the middle of that slide, and
   // the carousel only rises into view on 18.
-  { c: [1668, 1324], o: 1 },
+  { c: [1668, 1159], o: 1 },
   { c: [960, 654], o: 1 },
   { c: [960, 654], o: 1 },
   { c: [960, 507], o: 1 },

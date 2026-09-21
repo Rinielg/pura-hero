@@ -8,6 +8,7 @@ import { Preloader } from './Preloader'
 import { begin } from './preload'
 import {
   CARD_CONTENT,
+  FRAME,
   CAROUSEL_GEO,
   CAROUSEL_TABS,
   CHIPS,
@@ -21,9 +22,6 @@ import {
   HAND_ASPECT,
   MOBILE_CHIPS,
   PARTNER_BAND,
-  PARTNER_LOGOS,
-  PARTNER_SETS,
-  PARTNER_SET_W,
   PILL_LABELS,
   CLOSE_ROWS,
   CLOSE_TILE,
@@ -105,16 +103,26 @@ const Wash = ({ ref }) => (
  * exactly on the file's 169 and the first fills the left edge, so the settled
  * slide is the file's composition with the tiling either side of it.
  */
-function Partners({ scale, frameW, innerRef, rowRef }) {
+function Partners({ scale, frameW, innerRef }) {
   const B = PARTNER_BAND
   const px = (v) => `calc(${v}px * var(--bs))`
+  // The card keeps its SHARE of the frame, not its 1840 frame pixels. 1840 of
+  // 1920 is a 40px gutter each side at the design width; on a 430 frame the
+  // same share is a 9px gutter. Taking the number literally put a 1187px card
+  // in a 375px viewport, hanging off both edges.
+  const w = (frameW * B.w) / FRAME.w
 
   return (
     <section
       className="partners"
       ref={innerRef}
       aria-label="Built by PureHealth."
-      style={{ width: `${frameW}px`, height: `${B.h * scale}px`, '--bs': scale }}
+      style={{
+        width: `${w}px`,
+        height: `${B.h * scale}px`,
+        borderRadius: `${B.r * scale}px`,
+        '--bs': scale,
+      }}
     >
       {/* The gradient is one image hung far above the band and clipped by it,
           so what shows is its bottom edge. */}
@@ -129,43 +137,27 @@ function Partners({ scale, frameW, innerRef, rowRef }) {
           `backdrop-filter` band gives a hard line where its box starts, which is
           the whole reason the hero's own wash is built in four layers — and over
           a gradient this smooth there is nothing for it to soften anyway. */}
-      <span className="partners__wash" style={{ top: px(B.wash.y), height: px(B.wash.h) }} />
+      <span
+        className="partners__wash"
+        style={{ top: px(B.wash.y), height: px(B.wash.h), opacity: B.wash.o }}
+      />
 
       <h2 className="partners__head" style={{ top: px(B.head) }}>
         Built by PureHealth.
       </h2>
+      {/* Verbatim from the file, missing apostrophe included — it reads
+          "worlds" where it plainly means "world's". Flagged to Riniel rather
+          than corrected here, because copy is not this build's to change. */}
       <p className="partners__sub" style={{ top: px(B.sub) }}>
-        The largest and most trusted healthcare group in the Middle East.
+        The worlds largest and most trusted healthcare group.
       </p>
 
-      {/* A rail around the row, masked at both ends.
-          The file centres ONE set of eight with clear margins either side. A row
-          that scrolls cannot do that — it has to be tiled, and a tiled row has a
-          partial mark at each edge. The mask fades those out instead of cutting
-          them, and the eight the file draws sit well inside it, so the settled
-          slide is still the file's composition. */}
-      <div className="partners__rail" style={{ top: px(B.row), height: px(B.logoH) }}>
-        <div
-          className="partners__row"
-          ref={rowRef}
-          style={{ left: px(B.rowLeft - PARTNER_SET_W), gap: px(B.gap) }}
-        >
-          {Array.from({ length: PARTNER_SETS }, (_, set) =>
-            PARTNER_LOGOS.map(([slug, w, name]) => (
-              <img
-                key={`${set}-${slug}`}
-                src={`/assets/partners/partner-${slug}.png`}
-                fetchPriority="low"
-                // One copy reads; the rest are the same marks again and would be
-                // read out four times over.
-                alt={set === 1 ? name : ''}
-                aria-hidden={set === 1 ? undefined : true}
-                style={{ width: px(w), height: px(B.logoH) }}
-              />
-            ))
-          )}
-        </div>
-      </div>
+      {/* The logo row is GONE. The file hides `Partner Logos` on 17 and 18 and
+          the card that replaced the band is 233 tall, which would not hold a
+          156px row. `PARTNER_LOGOS`, `PARTNER_SET_W`, `PARTNER_SETS` and
+          `PARTNER_DRIFT` are all kept, and `track` skips a ref with no element,
+          so restoring the drifting rail is this block coming back and nothing
+          else. */}
     </section>
   )
 }
@@ -511,12 +503,7 @@ export default function App() {
           eight partner names. */}
       <div className="layer layer--band">
         <div className="stage" style={stageStyle}>
-          <Partners
-            scale={layout.cardScale}
-            frameW={layout.frame[0]}
-            innerRef={refs.partners}
-            rowRef={refs.partnerRow}
-          />
+          <Partners scale={layout.cardScale} frameW={layout.frame[0]} innerRef={refs.partners} />
         </div>
       </div>
 
