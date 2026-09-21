@@ -260,12 +260,26 @@ body {
  * entirely by GSAP — the transform, including the -50%/-50% centring, belongs
  * to the timeline, so there is no `transform` or `left`/`top` here.
  */
+/* The file's node is `WIDTH_AND_HEIGHT` — it HUGS one line rather than wrapping
+   inside a box, and the 630 Figma reports is the measured width of that line,
+   not a measure to set to. So this hugs too.
+
+   It was a fixed 623px — 7px under the file's own 630, which is close enough to
+   have held until the line gained its full stop and pushed "you." onto a second
+   row. Measured against the REAL face: Greycliff CF is installed here, and at
+   100px "Handgloves" sets 540 in Greycliff against 478 in Figtree, so the
+   fallback is about 11% NARROWER and wraps less, not more. A machine without
+   the brand font would never have shown this. The timeline centres this on its
+   own midpoint (`xPercent: -50`), so a box that hugs lands in the same place.
+
+   The phone overrides it back to a fixed 360 further down — there it MUST wrap,
+   because one line of this does not fit a 430px frame. */
 .kicker {
   position: absolute;
   left: 0;
   top: 0;
   margin: 0;
-  width: 623px;
+  width: max-content;
   font-family: var(--brand);
   font-weight: 400;
   font-size: 40px;
