@@ -264,7 +264,7 @@ viewports it serves, there is no Lottie in it.
 | `src/hero/useHeroTimeline.js` | The timeline. Turns tables into tweens. |
 | `src/hero/layout.js` | Breakpoints and the four projections. |
 | `src/App.jsx` | The layer stack, the DOM, and the `Carousel` component. |
-| `src/Device.jsx` | The three.js phone: black finish, eight screens, shader crossfade, cursor tilt. |
+| `src/Device.jsx` | The three.js phone: black finish, nine screens, shader crossfade, cursor tilt. |
 | `src/Scene.jsx` | The canvas and the procedural studio the mirrored body reflects. |
 | `src/deviceProxy.js` | The one seam between GSAP and three.js. Nothing else crosses it. |
 | `src/Backdrop.jsx` | The mesh gradient: the Lottie on desktop, a still on a phone. |
@@ -282,17 +282,24 @@ viewports it serves, there is no Lottie in it.
 ### The layer stack (z-index)
 
 ```
-0  backdrop        the gradient, which travels
-1  back / copy     chips, hand, hero copy, the day's five photo panels
+0  backdrop        the gradient, which travels and comes back for the close
+1  back / copy     chips, hand, hero copy, the day's six photo panels
 2  canvas          the three.js device — up to slide 24
-3  front           wash, act-3 copy, cards
+2  band            the partner band (slide 17), BELOW the wash on purpose
+3  front           wash, top scrim, act-3 copy, cards
 4  canvas          the three.js device — from slide 25 (see DEVICE_FRONT_FROM)
-6  front (interactive)  act-4/5 copy, pills, carousel + arrows
+6  front (interactive)  act-4/5 copy, tabs, carousel + arrows, the close
 5  #smooth-wrapper the scroll spacer — fixed, and it swallows clicks
 10 nav, stores, cue
 ```
 
-Note the ordering: **6 sits above 5 on purpose.** See §5.
+Two orderings that look wrong and are not:
+
+**6 sits above 5 on purpose** — see §5.
+
+**The band shares z 2 with the device's lower position.** Harmless: the device is at zero
+opacity for every slide the band is on screen. It has to sit under the wash, because slide
+16 washes it white as it rises out of the foot of the frame — see §6c.
 
 ---
 
@@ -311,7 +318,6 @@ Note the ordering: **6 sits above 5 on purpose.** See §5.
 | 26 | The day resolves into the app. The panel slides right and stands up at **812×778 centred on x=1366**, the device lands at `ai(663)` showing the day's first screen, the morning greeting arrives flush left at x=148, and the phone starts **watching the cursor**. |
 | 27–36 | **The day**: six scenes joined by five transitions. Even slides are settled, odd slides are the reveal. See §4b. |
 | 37–42 | **The close.** The day rises off the top as one piece (420, then 486 — see `DAY_LIFT`), the gradient fades back full-frame under a new top scrim, the phone grows from 321×663 to 451×931 for the Digital Twin, and the page ends on two rows of stadium photographs travelling in opposite directions under "Pura knows your body like you do." |
-| ~~20–23~~ | ~~The carousel holds the centre and rises, leaving left only at 23. "See how Pura fits into one ordinary day.", the time ruler, and the day's media panel, which *grows* rather than fades. |
 
 ### 4b. The day (slides 26–36)
 
@@ -826,6 +832,19 @@ pushes its neighbours along in the auto-layout row.
 Slides 21→23 travel from just before 5:00 to exactly 6:00; the marker landing on
 6:00 at Slide 23 is the check that the positions are right.
 
+### Getting assets out of Figma
+
+The MCP bridge returns JSON, so an image has to come back as base64 — which for a dozen
+photographs is hundreds of thousands of tokens. It does not have to. The Desktop Bridge
+plugin has `fetch`, and its manifest allows `http://localhost` on ports **9223–9232**. So:
+
+1. Run a throwaway HTTP server on **9232** that writes `POST` bodies to disk.
+2. In `figma_execute`, `node.exportAsync(...)` and `fetch` the bytes straight at it.
+
+Nothing large ever enters the conversation. Everything under `public/assets/close`,
+`partners`, `carousel` and `day` came back that way. Use `localhost`, not `127.0.0.1` —
+the allowlist is by name.
+
 ### Figma asset extraction
 
 - Exports **clip to the slide frame**. The hand came back 610px instead of 1884; the fix
@@ -1135,7 +1154,7 @@ const rootReasons = (el) => {
 
 ## 9. Open items
 
-- **Mobile has no design.** Slides 17–36 are projected, not designed. The filter pill row
+- **Mobile has no design.** Slides 17–42 are projected, not designed. The filter pill row
   is ~603px on a 375px screen even after scaling with `--ps` — the ends are cut off. It
   wants either a real mobile frame or a horizontally scrollable row. Flagged, not invented.
 - **The 23 inner pages have no design either.** They are built in the sequence's visual
@@ -1144,13 +1163,14 @@ const rootReasons = (el) => {
   frames land.
 - **The For Business form is a mailto.** The live site runs a Formidable form; a prototype
   should not collect anyone's details, so the CTA points at the address the form ends in.
-- **Interactions beyond the carousel arrows** are still to come; Riniel is providing them.
+- **Interactions beyond the band** are still to come; Riniel is providing them. What exists
+  is the carousel: six tabs over six decks, and arrows that page the row.
 - **The day's mobile layout is derived, not designed.** The copy is no longer hand-placed
   — `mobileStack()` measures it and the panel drop falls out of that — but the device's
   0.7 shrink, the 170px band top and the 18/26px gaps are still numbers that fit rather
   than numbers from a frame. A real mobile design would replace them.
-- **Slides 24–34 have no interactions apart from the cursor tilt.** 34 is currently
-  the end of the sequence.
+- **Slides 20–42 have no interactions apart from the cursor tilt.** 42 is the end of the
+  sequence; the last thing the page does is the two photo rows and the store badges.
 - **Scene D's pillar row is hidden below 980px.** Wrapped into two rows it is ~90px
   tall and the band between the ruler and the panel is already carrying a three-line
   headline and a three-line paragraph, so it landed on the photograph. Dropped rather
@@ -1161,8 +1181,8 @@ const rootReasons = (el) => {
   not see. Centred it bleeds ±55px symmetrically, which reads as full-bleed.
 - **Nine screen textures load up front** — the day's six, the closing act's Digital Twin,
   Home and Pura AI — ~1.2MB and about 68MB of GPU memory, whether or
-  not the visitor ever reaches slide 26. Deferring the four day screens until the carousel
-  act is the obvious fix and has not been done.
+  not the visitor ever reaches slide 26. Deferring the seven day-and-close screens until
+  the carousel act is the obvious fix and has not been done.
 - **The performance pass was built, then rolled back.** `a5cf93d` put the WebGL scene on
   `frameloop="demand"` (zero renders while idle), paused the gradient off-screen, halved
   the blur bands on a phone, capped mobile DPR and downsized the screen textures to 20MB.
@@ -1178,5 +1198,16 @@ const rootReasons = (el) => {
 - **Promo cards 3 and 4** still share the line "Give your mind the same attention".
   The tags now differ (Mental Wellness / Care) and the file has it that way, so the
   build follows it — but the body copy looks like placeholder waiting to be written.
+- **The Digital Twin screen is not in the Figma file.** Its `UI` node is a 417×896
+  rectangle whose image paints only the top 629 — no sheet, no cards. `ui-twin.jpg` is the
+  880×1912 export Riniel supplied instead. Re-export that node and it comes back short
+  again; compare the aspect to 0.46 before using anything from it.
+- **The footer still lists all 23 pages while the bar shows two.** The MVP menu is what
+  ships and `MENU` still drives the footer and the inner pages' sibling band, which keeps
+  the site connected — but for a first release the two disagree about how big the site is.
+  Riniel's call.
+- **The store badges appear twice on slides 41–42** — once in the closing act, where the
+  file puts a pair under the last line, and once as the fixed bottom-right furniture that
+  is on every slide. Both are right on their own.
 - **The repo is private** because of the brand assets. Public visibility is Riniel's call.
 - The bundle is over 500 kB — three.js and the model. Code-splitting is untouched.

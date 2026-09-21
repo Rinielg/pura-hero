@@ -47,8 +47,8 @@ npm run build    # static output in dist/ — deploy that folder anywhere
 | 16–19 | The first three acts leave together. Slide 17 is the **partner band** — "Built by PureHealth" over eight logos that drift sideways as you scroll — and then "Help for every part of your health." and the **tabbed** feature carousel: six tabs over six decks of cards, with arrows that page the row. |
 | 20–25 | "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel growing from a 154×88 pill. The device returns at 25, rising from below the frame — and from here it draws **in front of** the wash rather than under it. |
 | 24–36 | The file stops drawing the navigation here and moves everything up 80px into the space. The build **keeps** the bar — it hides itself on the way down anyway. |
-| 37–42 | **The close.** The day rises off the top as one piece, the gradient comes back full-frame, the phone grows for the Digital Twin and then leaves, and the page ends on two rows of photographs travelling opposite ways under the last line. |
 | 26–36 | **The day.** Six scenes joined by five transitions: a settled slide changes the photograph, the greeting, the phone's screen and the hour on the ruler; the transition between two of them changes only the photograph, which splits the panel in half and reveals the next scene from the bottom. The phone stays put throughout and follows the cursor. The day runs 7:00 to 23:00 on the ruler. |
+| 37–42 | **The close.** The day rises off the top as one piece, the gradient comes back full-frame, the phone grows for the Digital Twin and then leaves, and the page ends on two rows of photographs travelling opposite ways under the last line. |
 
 `Slide overview` in Figma is an assembly board rather than a moment in the
 sequence, and is deliberately ignored — it does not show the whole site.
@@ -119,10 +119,13 @@ The result lands within 1.5% of the reference on both axes.
 | `public/assets/pura-screen.jpg`, `pura-ai-screen.jpg` | the first two app screens from Figma, on the model's display |
 | `public/assets/carousel/lead-1…6.jpg` | one lead photograph per carousel tab, from the six `Carousel Selection` frames |
 | `public/assets/partners/*` | the eight partner marks and the band's gradient, from the `Partners` component on slide 17 |
+| `public/assets/carousel/feature-<tab>-<card>.jpg` | each tab's card visuals, from that selection's own `Feature · …` frames. Per-tab on purpose — see CONTEXT §6 |
 | `public/assets/day/ui-a…f.jpg` | the six screens the phone shows through the day (slides 26–36) |
+| `public/assets/day/ui-twin.jpg` | the Digital Twin screen for the close. **Supplied by Riniel, not exported** — the Figma node is placed short and has no sheet |
+| `public/assets/close/close-a1…b5.jpg` | the closing act's two rows of stadium photographs |
 | `public/assets/day/scene-a…f.jpg` | the day's six photo panels, exported from the Figma `Image` frames at 812×778 so the crop is baked in |
 | `public/assets/hand.webp` | Figma, cropped from the source by its CROP transform, with the wrist fade rebuilt as a CSS mask |
-| `public/assets/icons/*.svg` | the twelve chips' duotone icons, exported from Figma |
+| `public/assets/icons/*.svg` | the chip cloud's duotone icons, the promo tags, the carousel arrow, and the MVP menu's WhatsApp/phone/email marks |
 | `public/assets/store-*.svg`, `pura-logo.svg` | Figma |
 | `public/bg/*.json` | the supplied mesh-gradient Lottie (desktop) |
 | `public/bg/gradient-bg-mobile.jpg` | the same background as a still, for phones |
@@ -186,17 +189,22 @@ The result lands within 1.5% of the reference on both axes.
   pill at radius 0. A static frame has nothing moving underneath it to blur;
   this page does.
 - **The cursor tilt is not in the file either.** A static frame cannot express
-  it. 18° of yaw and 12° of pitch, gated to slides 26–36 by `DEVICE_TILT`, and
+  it. 18° of yaw and 12° of pitch, gated to slides 26–42 by `DEVICE_TILT`, and
   off entirely under `prefers-reduced-motion` or on a touch screen.
 - **Scene D's pillar row is dropped below 980px**, and the day's panel is centred
   rather than parked on the right. Both are derivations — there is no mobile
-  frame for slides 26–36 any more than for the rest of the sequence. The copy
+  frame for slides 26–42 any more than for the rest of the sequence. The copy
   itself is no longer a derivation: it is measured and stacked at build time,
   so it survives a copy change.
 - **All nine phone screens load up front** (~1.2MB, ~68MB of GPU memory),
   whether or not the visitor reaches the day. They should be deferred until the
-  carousel act. This got worse with the rebuild: the day now has six distinct
-  screens rather than four, and its first one is no longer the Home screen.
+  carousel act. It keeps getting worse: six for the day, one for the close, and
+  the day's first is no longer the Home screen.
+- **Nothing corrects a screen texture's aspect.** The shader samples raw UV, so a
+  texture of the wrong shape is silently stretched onto the glass — no error, and
+  card UIs hide it. The glass is 0.4599; `window.__screen` reports it in DEV.
+  Figma's `exportAsync` returns a node's *render* bounds rather than its box,
+  which is how a 417×896 screen came back 418×629 and got squashed 30%.
 - **A window narrower than 16:9 crops the frame's left and right edges**, because
   the stage covers rather than fits. The two things hung off the left — the
   carousel row and the day's copy column — follow the screen's edge instead and
