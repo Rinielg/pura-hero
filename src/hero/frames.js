@@ -23,7 +23,7 @@
 export const FRAME = { w: 1920, h: 1080 }
 
 /** Slides in the sequence. Adding one in Figma means adding an entry below. */
-export const SLIDES = 42
+export const SLIDES = 43
 
 /**
  * `n` slides holding the same value.
@@ -36,14 +36,28 @@ export const SLIDES = 42
 const hold = (n, v) => Array(n).fill(v)
 
 /**
- * The twelve pillar chips.
+ * The thirteen pillar chips.
  *
- * `at` runs slide 1→5 and then stops: by slide 5 the cloud has collapsed to the
+ * `at` runs slide 1->5 and then stops: by slide 5 the cloud has collapsed to the
  * centre and faded out, and slides 6, 7 and 8 leave it there. Clamping is how
  * "and then nothing happens" is expressed without repeating identical rows.
  *
- * Two chips read "Respiratory". That is what the design says; `key` keeps them
- * distinct.
+ * Matched to the file by LABEL, never by position in the frame. Figma reorders
+ * these children between slides, and two of them have changed identity in place
+ * — the chip that used to read "Respiratory" at 1172,556 is now "Mental
+ * Wellness", and the one that used to read "Mental Wellness" out at 1704,362 is
+ * now "Prescriptions" — so an index would have quietly swapped two chips rather
+ * than failing.
+ *
+ * Slides 4 and 5 are every chip at zero opacity, and the file has not renamed
+ * them there. Those two poses are therefore taken by position, which is safe
+ * precisely because nothing is visible: they only decide the shape of the
+ * collapse. "Virtual Consultations" has no node at all on slide 5 and holds its
+ * slide-4 pose, which it is already invisible at.
+ *
+ * `icon` names a file in public/assets/icons. Three of them do not match their
+ * chip — Liver carries the PureScore mark, Nutrition the Metabolic one and
+ * Cardiovascular the PregnaCare one. That is what the file draws.
  */
 export const CHIPS = [
   {
@@ -76,7 +90,7 @@ export const CHIPS = [
     icon: 'wearables',
     at: [
       { c: [668.6, 630.7], o: 1 },
-      { c: [825.6, 593.7], o: 1 },
+      { c: [825.6, 613.7], o: 1 },
       { c: [968.6, 444.7], o: 1 },
       { c: [968.6, 444.7], o: 0 },
       { c: [970.6, 262.7], o: 0 },
@@ -119,26 +133,26 @@ export const CHIPS = [
     ],
   },
   {
-    key: 'respiratory-a',
-    label: 'Respiratory',
-    icon: 'pulmonology',
+    key: 'mental-wellness',
+    label: 'Mental Wellness',
+    icon: 'brain',
     at: [
-      { c: [1172, 556], o: 1 },
-      { c: [1123, 533], o: 1 },
-      { c: [1063, 393], o: 1 },
+      { c: [1184, 556], o: 1 },
+      { c: [1135, 533], o: 1 },
+      { c: [1075, 393], o: 1 },
       { c: [963, 393], o: 0 },
       { c: [996, 205], o: 0 },
     ],
   },
   {
-    key: 'mental-wellness',
-    label: 'Mental Wellness',
-    icon: 'brain',
+    key: 'prescriptions',
+    label: 'Prescriptions',
+    icon: 'prescription',
     at: [
-      { c: [1716.6, 362.7], o: 0.3 },
-      { c: [1568.6, 369.7], o: 0.3 },
-      { c: [1407.6, 289.7], o: 0.3 },
-      { c: [1010.6, 342.7], o: 0 },
+      { c: [1704.6, 362.7], o: 0.6 },
+      { c: [1556.6, 369.7], o: 0.6 },
+      { c: [1395.6, 289.7], o: 0.3 },
+      { c: [998.6, 342.7], o: 0 },
       { c: [1014.6, 220.7], o: 0 },
     ],
   },
@@ -167,7 +181,7 @@ export const CHIPS = [
     ],
   },
   {
-    key: 'respiratory-b',
+    key: 'respiratory',
     label: 'Respiratory',
     icon: 'pulmonology',
     at: [
@@ -184,19 +198,26 @@ export const CHIPS = [
     icon: 'pregnacare',
     at: [
       { c: [556.5, 506], o: 0.8 },
-      { c: [676.5, 487], o: 0.8 },
+      { c: [676.5, 537], o: 0.8 },
       { c: [814.5, 414], o: 0.8 },
       { c: [914.5, 414], o: 0 },
       { c: [1016.5, 235], o: 0 },
     ],
   },
+  {
+    key: 'virtual-consultations',
+    label: 'Virtual Consultations',
+    icon: 'stethoscope',
+    at: [
+      { c: [849, 429], o: 0.8 },
+      { c: [849, 429], o: 0.8 },
+      { c: [929, 519], o: 0.8 },
+      { c: [919, 429], o: 0 },
+      { c: [919, 429], o: 0 },
+    ],
+  },
 ]
 
-/**
- * Which chips survive on a phone. Twelve in a 390px-wide cloud is mush, so the
- * six that carry the idea stay and the rest are dropped — chosen for spread
- * across the cloud rather than for what reads best in a list.
- */
 export const MOBILE_CHIPS = new Set([
   'lab-results',
   'wearables',
@@ -289,9 +310,13 @@ export const DEVICE_POSE = [
   // and then leaves over the top.
   { c: [959.7, 898.5], s: ai(931), r: FACE }, // 38
   { c: [959.7, 601.5], s: ai(931), r: FACE }, // 39
-  { c: [959.7, -176.5], s: ai(931), r: FACE }, // 40
+  // Slide 40 is new. The phone pauses 61px short of where it was, and only
+  // then leaves — so the exit is its own step rather than the tail of the
+  // rise, and the closing rows have a step to themselves to arrive in.
+  { c: [959.7, 540.5], s: ai(931), r: FACE }, // 40
   { c: [959.7, -176.5], s: ai(931), r: FACE }, // 41
   { c: [959.7, -176.5], s: ai(931), r: FACE }, // 42
+  { c: [959.7, -176.5], s: ai(931), r: FACE }, // 43
 ]
 
 /**
@@ -306,8 +331,8 @@ export const DEVICE_FADE = [
   ...hold(13, 1), // 1-13
   ...hold(11, 0), // 14-24
   // Back from slide 25, and it stays for the day and the closing act.
-  ...hold(17, 1), // 25-41
-  0, // 42: the phone has left; the closing rows are the whole frame
+  ...hold(18, 1), // 25-42
+  0, // 43: the phone has left; the closing rows are the whole frame
 ]
 
 /**
@@ -337,8 +362,8 @@ export const DEVICE_FRONT_FROM = 25
  */
 export const DEVICE_TILT = [
   ...hold(25, 0), // 1-25
-  // Slides 26 to 42: face on, at rest, and watching the cursor.
-  ...hold(17, 1),
+  // Slides 26 to 43: face on, at rest, and watching the cursor.
+  ...hold(18, 1),
 ]
 
 /**
@@ -361,19 +386,22 @@ export const DEVICE_TILT = [
  * device is moving rather than snapping while it is sitting still.
  */
 export const SCREEN_SEQ = [
-  ...hold(6, 7), // 1-6    the Home screen
-  ...hold(11, 8), // 7-17  Pura AI
-  7, // 18       one step back down, so 8 -> 6 never skips 7
-  ...hold(9, 6), // 19-27  the day's first screen, arriving while nothing shows
+  ...hold(6, 8), // 1-6    the Home screen
+  ...hold(11, 9), // 7-17  Pura AI
+  8, // 18       one step back down, so 9 -> 7 never skips 8
+  ...hold(9, 7), // 19-27  the day's first screen, arriving while nothing shows
   // The day. Each scene brings its own screen; it changes on the SETTLED
   // slide and holds through the transition after it, which is the rule the
   // copy follows too — so the two can never disagree.
-  5, 5, // 28-29
-  4, 4, // 30-31
-  3, 3, // 32-33
-  2, 2, // 34-35
-  1, 1, // 36-37
-  ...hold(5, 0), // 38-42  the Digital Twin screen the closing act is about
+  6, 6, // 28-29
+  5, 5, // 30-31
+  4, 4, // 32-33
+  3, 3, // 34-35
+  2, 2, // 36-37
+  // The close is TWO screens: the twin's overview while the headline about it
+  // is on the page, then its visceral-fat detail once the phone is centred.
+  1, 1, // 38-39
+  ...hold(4, 0), // 40-43
 ]
 
 /**
@@ -439,7 +467,7 @@ export const HAND_FADE = [1, 1, 1, 1, 0.45, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
  * The last entry brings it back for the final slide, where the label has
  * changed to "Back to top" and is worth reading again.
  */
-export const CUE_LABEL = [...hold(3, 1), ...hold(38, 0), 1]
+export const CUE_LABEL = [...hold(3, 1), ...hold(39, 0), 1]
 
 export const HAND_ASPECT = 942 / 500
 
@@ -781,7 +809,9 @@ export const CARD_CONTENT = [
     img: 'family',
     icon: 'tag-family',
     tag: 'Family',
-    title: 'Health for the whole family',
+    // U+2028 LINE SEPARATOR, exactly as the file sets it: the card breaks
+    // after "the" rather than wherever the measure happens to fall.
+    title: 'Health for the\u2028whole family',
   },
 ]
 
@@ -820,7 +850,7 @@ export const PILLS = parked(16, { c: [960, 1068], o: 0, b: 8 }, [
 /* ------------------------------------------------------ the partner band */
 
 /**
- * "Built by PureHealth", rising from the foot of slide 16 into the middle of 17.
+ * "Built by PureHealth.", rising from the foot of slide 16 into the middle of 17.
  *
  * It travels with the PROMO ROW, not with the headline — the file states both
  * and they agree exactly: the row goes 541 -> -36 and the band 1106.5 -> 529.5,
@@ -1266,8 +1296,8 @@ export const DAY_SCENES = [
     media: '/assets/day/scene-d.jpg',
     alt: 'A consultation on the phone, at home',
     screen: 2,
-    head: 'Good morning, your appointment with Dr. El-Sayed has been confirmed.',
-    headBox: [148, 277, 487, 160],
+    head: 'Your appointment with Dr. El-Sayed has been confirmed.',
+    headBox: [148, 277, 393, 160],
     window: mediaTrack(32),
   },
   {
@@ -1286,7 +1316,7 @@ export const DAY_SCENES = [
     media: '/assets/day/scene-f.jpg',
     alt: 'Winding down at the end of the day',
     screen: 0,
-    head: 'Lights out by 11. Prioritise a smooth wind down to help you recharge.',
+    head: 'Lights out by 11 pm. Prioritise a smooth wind down to help you recharge.',
     headBox: [148, 320, 424, 160],
     // The day's last scene leaves upward rather than shuttering away — see
     // `copyTrack` and `DAY_LIFT`.
@@ -1303,18 +1333,18 @@ export const DAY_SCENES = [
 }))
 
 export const DAY_PILL_LABELS = [
-  ['Virtual consultations', 162],
+  ['Virtual Consultations', 165],
   ['Prescriptions', 111],
-  ['Home Sample test', 145],
+  ['Home Lab Test', 121],
   ['Care Plans', 97],
 ]
 /** One row of four, 39 tall, and the box now hugs its chips exactly: four
- *  widths and three 8px gaps come to 539. */
-export const DAY_PILL_ROW_W = 539
+ *  widths and three 8px gaps come to 518. */
+export const DAY_PILL_ROW_W = 518
 export const DAY_PILL_GAP = 8
 export const DAY_PILLS = copyTrack([148, 469, DAY_PILL_ROW_W, 39], 32)
 
-/* -------------------------------------------------- the close (37 to 42) */
+/* -------------------------------------------------- the close (37 to 43) */
 
 /**
  * "With a digital twin that gives you a clearer picture of how the plan is
@@ -1326,18 +1356,20 @@ export const TWIN_HEAD = parked(37, { c: [960.5, 588], o: 0, b: 6 }, [
   { c: [960.5, -303], o: 0, b: 6 },
 ])
 
-/** "Pura knows your body like you do." — the last line on the page. */
-export const CLOSE_HEAD = parked(39, { c: [959, 1116.5], o: 0, b: 6 }, [
-  { c: [959, 820.5], o: 1, b: 0 },
-  { c: [959, 820.5], o: 1, b: 0 },
-  { c: [959, 524.5], o: 1, b: 0 },
-])
-
-/** The two store badges under it. They resolve a slide after the headline. */
-export const CLOSE_BADGES = parked(39, { c: [960, 1182], o: 0 }, [
-  { c: [960, 886], o: 0.3 },
-  { c: [960, 886], o: 1 },
-  { c: [960, 590], o: 1 },
+/**
+ * "Pura knows your body like you do." — the last line on the page.
+ *
+ * Slides 41, 42 and 43. It settles, drifts 14px, and then rises with the rows
+ * on the last step. The parked pose is one 296px rise below where it lands,
+ * which is the same travel the rest of the act arrives on.
+ *
+ * There are NO store badges under it. The file used to put a pair there and
+ * they are gone; the closing frame is the headline and the two photo rows.
+ */
+export const CLOSE_HEAD = parked(40, { c: [959, 1136.5], o: 0, b: 6 }, [
+  { c: [959, 840.5], o: 1, b: 0 },
+  { c: [959, 826.5], o: 1, b: 0 },
+  { c: [959, 550.5], o: 1, b: 0 },
 ])
 
 /**
@@ -1353,20 +1385,20 @@ export const CLOSE_TILE = { w: 425, h: 242, r: 150, gap: 24 }
 /**
  * The rows wait for the phone to get out of the way.
  *
- * Step 38 is slide 39 -> 40, and the phone leaves over the top across it: it
- * starts centred at 601.5 and its bottom edge only clears row A's top line
+ * Step 39 is slide 40 -> 41, and the phone leaves over the top across it: it
+ * starts centred at 540.5 and its bottom edge only clears row A's top line
  * about three quarters of the way through. Both rows hold their entry pose,
- * invisible, until it has. Nothing is needed on the way in to 42 — by then the
+ * invisible, until it has. Nothing is needed on the way in to 43 — by then the
  * phone is long gone.
  */
-export const CLOSE_ROW_A = parked(39, { c: [3277.5, 598], o: 0 }, [
-  { c: [2567.5, 598], o: 1 },
-  { c: [1857.5, 598], o: 1 },
+export const CLOSE_ROW_A = parked(40, { c: [3277.5, 548], o: 0 }, [
+  { c: [2567.5, 548], o: 1 },
+  { c: [1857.5, 558], o: 1 },
   { c: [745.5, 302], o: 1 },
 ])
 
-export const CLOSE_ROW_B = parked(39, { c: [-1232, 1103], o: 0 }, [
-  { c: [-585, 1103], o: 0.3 },
+export const CLOSE_ROW_B = parked(40, { c: [-1232, 1153], o: 0 }, [
+  { c: [-585, 1153], o: 0.3 },
   { c: [62, 1103], o: 1 },
   { c: [1175, 807], o: 1 },
 ])
@@ -1384,28 +1416,29 @@ export const PILL_LABELS = [
   'Sleep and Stress',
   'Care',
   'Wellness',
-  "Women's Health",
 ]
 
 /**
  * What the carousel holds, per tab.
  *
- * The file draws six versions of this band — Slides 18/19 and the five
+ * The file draws five versions of this band — Slides 18/19 and the four
  * `Carousel Selection` frames — and each brings its own lead photograph, its own
  * copy and its own card visuals. The visuals are the file's `Feature · …`
- * frames, exported flat at 300x300: small compositions of charts, rings and
- * record lists that are not worth rebuilding in the DOM and would not match if
+ * frames, exported flat at 300x300: small panels carrying a label, a live value
+ * and a caption, not worth rebuilding in the DOM and certain not to match if
  * they were.
  *
+ * There used to be a sixth, Women's Health. `Carousel Selection 6` has been
+ * deleted from the file and the tab hidden in the row, so it is gone here too.
+ *
  * Every card names its own, as `<tab>-<card>`. That is deliberately literal
- * rather than shared-by-content: the five selections happen to carry the same
- * four visuals as each other today, but they are five separate frames that get
- * edited separately, and a shared file would quietly stop tracking the one that
- * changed. Tab 1 already has five of its own, different from the rest.
+ * rather than shared-by-content: the four selections are four separate frames
+ * that get edited separately, and a shared file would quietly stop tracking the
+ * one that changed. Tab 1 has five of its own, different from the rest.
  */
 /**
  * Each tab brings its own lead photograph. This is the one thing besides the
- * copy that actually differs between the file's six versions of the band.
+ * copy that actually differs between the file's five versions of the band.
  */
 const LEADS = [
   ['lead-1', 'Someone checking their health on the Pura app at home'],
@@ -1413,7 +1446,6 @@ const LEADS = [
   ['lead-3', 'A man winding down on his bed at the end of the day'],
   ['lead-4', 'A doctor with a tablet, by the window of a clinic'],
   ['lead-5', 'A group running together on the beach at sunrise'],
-  ['lead-6', 'A pregnant woman having a scan with a clinician'],
 ]
 
 /** One tab's band: its lead photograph, then a card per line of copy. */
@@ -1520,18 +1552,6 @@ export const CAROUSEL_TABS = [
     ['FitCoins', 'Earn FitCoins automatically as you hit goals and finish challenges.'],
     ['Rewards', 'Spend FitCoins on rewards from Pura partners across the UAE.'],
   ]),
-  // Women's Health
-  deck(5, [
-    ['PregnaCare', 'Week-by-week guidance through pregnancy, grounded in clinical advice.'],
-    [
-      'Pregnancy dashboard',
-      'A personal view of your blood results, lifestyle and symptoms, in one place.',
-    ],
-    [
-      'Gynaecologist consultations',
-      'Speak to a gynaecologist by video when you have a question.',
-    ],
-  ]),
 ]
 
 /** The band the page opens on. */
@@ -1603,7 +1623,7 @@ export const STEP_WINDOWS = {
    */
   act4Arrival: { 15: [0.75, 1] },
   /** The closing rows wait for the phone to leave — see `CLOSE_ROW_A`. */
-  closeRows: { 38: [0.78, 1] },
+  closeRows: { 39: [0.78, 1] },
 }
 
 /**

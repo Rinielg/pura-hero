@@ -14,7 +14,7 @@ Two sources feed it, and they are not interchangeable:
 
 | | Source |
 |---|---|
-| The sequence | Figma `Final Website` (slides 1–42), the `Carousel Selection 2`–`6` frames |
+| The sequence | Figma `Final Website` (slides 1–43), the `Carousel Selection 2`–`5` frames, the `Loader` frame |
 | The navigation | Figma `Menu MVP` for what ships; the `Menu` frame, node `6203:71995`, for the full one that is kept behind `NAVIGATION` in `config.js` |
 | Everything the inner pages say | `https://pura-website-upload-1.vercel.app` — **not** pura.ai, which is the older single-page site |
 
@@ -37,18 +37,18 @@ npm run build    # static output in dist/ — deploy that folder anywhere
 
 | Slides | What moves |
 |---|---|
-| 1 | At rest. Heading up top, twelve chips scattered across the frame, the device small and front-on at the bottom under a white wash. |
+| 1 | At rest. Heading up top, thirteen chips scattered across the frame, the device small and front-on at the bottom under a white wash. |
 | 2–4 | The heading dissolves rather than slides — Figma moves it 50px and drops it to 40%. The cloud gathers inward and fades; the device rotates into its 3/4 pose, grows and rises. |
 | 5–6 | The hand comes up to meet the device, then **fades in place** as the device lifts away. "A health companion that knows you" arrives at 40% behind the phone. |
 | 7–8 | The device turns back to **face-on**, its screen crossfades from Home to Pura AI, and the agent bar appears then widens from 354 to 560. |
 | 9–10 | The whole first act starts travelling up and out — device, wash and gradient backdrop together. What it uncovers is plain white. The second act's copy softens away as "One place for your whole health." rises from below. |
 | 11–12 | The third act resolves: headline, paragraph, two pills, and a five-card promo row entering from the right. |
 | 13–15 | Nothing moves but the card row's x. The last stretch of the page is a **horizontal** scroll driven by the vertical one. |
-| 16–19 | The first three acts leave together. Slide 17 is the **partner band** — "Built by PureHealth" over eight logos that drift sideways as you scroll — and then "Help for every part of your health." and the **tabbed** feature carousel: six tabs over six decks of cards, with arrows that page the row. |
+| 16–19 | The first three acts leave together. Slide 17 is the **partner band** — "Built by PureHealth" over eight logos that drift sideways as you scroll — and then "Help for every part of your health." and the **tabbed** feature carousel: five tabs over five decks of cards, with arrows that page the row. |
 | 20–25 | "See how Pura fits into one ordinary day.", the peach time ruler, and the media panel growing from a 154×88 pill. The device returns at 25, rising from below the frame — and from here it draws **in front of** the wash rather than under it. |
 | 24–36 | The file stops drawing the navigation here and moves everything up 80px into the space. The build **keeps** the bar — it hides itself on the way down anyway. |
 | 26–36 | **The day.** Six scenes joined by five transitions: a settled slide changes the photograph, the greeting, the phone's screen and the hour on the ruler; the transition between two of them changes only the photograph, which splits the panel in half and reveals the next scene from the bottom. The phone stays put throughout and follows the cursor. The day runs 7:00 to 23:00 on the ruler. |
-| 37–42 | **The close.** The day rises off the top as one piece, the gradient comes back full-frame, the phone grows for the Digital Twin and then leaves, and the page ends on two rows of photographs travelling opposite ways under the last line. |
+| 37–43 | **The close.** The day rises off the top as one piece, the gradient comes back full-frame, the phone grows for the Digital Twin — its overview on 38–39, its visceral-fat detail from 40 — pauses, and then leaves, and the page ends on two rows of photographs travelling opposite ways under the last line. |
 
 `Slide overview` in Figma is an assembly board rather than a moment in the
 sequence, and is deliberately ignored — it does not show the whole site.
@@ -117,18 +117,20 @@ The result lands within 1.5% of the reference on both axes.
 |---|---|
 | `public/models/iphone-18-pro.glb` | pura-device-viewer |
 | `public/assets/pura-screen.jpg`, `pura-ai-screen.jpg` | the first two app screens from Figma, on the model's display |
-| `public/assets/carousel/lead-1…6.jpg` | one lead photograph per carousel tab, from the six `Carousel Selection` frames |
+| `public/assets/carousel/lead-1…5.jpg` | one lead photograph per carousel tab, from slide 18 and the four `Carousel Selection` frames |
 | `public/assets/partners/*` | the eight partner marks and the band's gradient, from the `Partners` component on slide 17 |
 | `public/assets/carousel/feature-<tab>-<card>.jpg` | each tab's card visuals, from that selection's own `Feature · …` frames. Per-tab on purpose — see CONTEXT §6 |
-| `public/assets/day/ui-a…f.jpg` | the six screens the phone shows through the day (slides 26–36) |
-| `public/assets/day/ui-twin.jpg` | the Digital Twin screen for the close. **Supplied by Riniel, not exported** — the Figma node is placed short and has no sheet |
+| `public/assets/day/ui-a…f.jpg` | the six screens the phone shows through the day (slides 26–37) |
+| `public/assets/day/ui-twin-early.jpg`, `ui-twin.jpg` | the Digital Twin's overview (38–39) and its visceral-fat detail (40–43). Two different screens — see CONTEXT §5 |
 | `public/assets/close/close-a1…b5.jpg` | the closing act's two rows of stadium photographs |
 | `public/assets/day/scene-a…f.jpg` | the day's six photo panels, exported from the Figma `Image` frames at 812×778 so the crop is baked in |
 | `public/assets/hand.webp` | Figma, cropped from the source by its CROP transform, with the wrist fade rebuilt as a CSS mask |
-| `public/assets/icons/*.svg` | the chip cloud's duotone icons, the promo tags, the carousel arrow, and the MVP menu's WhatsApp/phone/email marks |
+| `public/assets/icons/*.svg` | the thirteen chips' duotone icons, the promo tags, the carousel arrow, and the MVP menu's WhatsApp/phone/email marks |
 | `public/assets/store-*.svg`, `pura-logo.svg` | Figma |
 | `public/bg/*.json` | the supplied mesh-gradient Lottie (desktop) |
 | `public/bg/gradient-bg-mobile.jpg` | the same background as a still, for phones |
+| `public/bg/loader-bg.jpg` | the `Loader` frame's own flat gradient, behind the loading screen |
+| `public/assets/pura-wordmark.svg` | the PURA mark on the loading screen, from the `Loader` frame |
 
 ## Notes
 
@@ -189,11 +191,11 @@ The result lands within 1.5% of the reference on both axes.
   pill at radius 0. A static frame has nothing moving underneath it to blur;
   this page does.
 - **The cursor tilt is not in the file either.** A static frame cannot express
-  it. 18° of yaw and 12° of pitch, gated to slides 26–42 by `DEVICE_TILT`, and
+  it. 18° of yaw and 12° of pitch, gated to slides 26–43 by `DEVICE_TILT`, and
   off entirely under `prefers-reduced-motion` or on a touch screen.
 - **Scene D's pillar row is dropped below 980px**, and the day's panel is centred
   rather than parked on the right. Both are derivations — there is no mobile
-  frame for slides 26–42 any more than for the rest of the sequence. The copy
+  frame for slides 26–43 any more than for the rest of the sequence. The copy
   itself is no longer a derivation: it is measured and stacked at build time,
   so it survives a copy change.
 - **All nine phone screens load up front** (~1.2MB, ~68MB of GPU memory),
@@ -228,7 +230,11 @@ The result lands within 1.5% of the reference on both axes.
   The copy itself is measured at build time now, so it survives a copy change —
   but the device's 0.7 shrink and the band's own margins are still numbers that
   fit rather than numbers from a frame.
-- **Mobile composition is a derivation, not a design.** Six of the twelve chips
+- **The page holds behind a loading screen until slide 1 can be drawn**, built to the
+  file's `Loader` frame. Everything below the hero carries `fetchPriority="low"` — without
+  it the ~140 always-mounted `<img>` elements take every connection and the phone's own
+  screen textures do not arrive for fourteen seconds. See CONTEXT §7b.
+- **Mobile composition is a derivation, not a design.** Six of the thirteen chips
   survive, the cloud converges harder, and the scroll cue drops its label. Those
   are judgement calls made to fit — the Figma file only covers 1920×1080. The
   same applies to the 23 inner pages: there are no Figma frames for them, so

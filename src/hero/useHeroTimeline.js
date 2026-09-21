@@ -13,7 +13,6 @@ import {
   AGENT_BAR,
   BACKDROP_FADE,
   BACKDROP_Y,
-  CLOSE_BADGES,
   CLOSE_HEAD,
   CLOSE_ROW_A,
   CLOSE_ROW_B,
@@ -158,6 +157,19 @@ export function goToMoment(progress = 0) {
 }
 
 /** One moment forward, or back to the start once the sequence has run. */
+/**
+ * Freeze the page.
+ *
+ * Used by the loading screen, which is the one moment the reader must not be
+ * able to scroll — a smoother that is merely covered still takes wheel events,
+ * because `normalizeScroll` listens on the document rather than on anything the
+ * overlay sits in front of. On a phone and under reduced motion there is no
+ * smoother at all, and `html.is-loading` does the same job in CSS.
+ */
+export function setSmootherPaused(paused) {
+  activeSmoother?.paused(paused)
+}
+
 export function advance() {
   if (atEnd()) return goToMoment(0)
   const current = activeTrigger?.progress ?? 0
@@ -776,7 +788,6 @@ export function useHeroTimeline({
       for (const [ref, table] of [
         [refs.twinHead, TWIN_HEAD],
         [refs.closeHead, CLOSE_HEAD],
-        [refs.closeBadges, CLOSE_BADGES],
       ]) {
         if (!ref.current) continue
         gsap.set(ref.current, { xPercent: -50, yPercent: -50 })

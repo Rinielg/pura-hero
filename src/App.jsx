@@ -3,7 +3,9 @@ import gsap from 'gsap'
 import { Scene } from './Scene'
 import { Backdrop } from './Backdrop'
 import { QUALITY } from './config'
-import { AppStores, Nav, StoreBadges } from './hero/Chrome'
+import { AppStores, Nav } from './hero/Chrome'
+import { Preloader } from './Preloader'
+import { begin } from './preload'
 import {
   CARD_CONTENT,
   CAROUSEL_GEO,
@@ -29,12 +31,13 @@ import {
   scrollLength,
 } from './hero/frames'
 import {
+  PHONE_MAX,
   frameWindow,
   pickLayout,
   projectChip,
   stageScale as computeStageScale,
 } from './hero/layout'
-import { advance, handBaseWidth, useHeroTimeline } from './hero/useHeroTimeline'
+import { advance, handBaseWidth, setSmootherPaused, useHeroTimeline } from './hero/useHeroTimeline'
 
 /**
  * Layers, bottom to top:
@@ -110,7 +113,7 @@ function Partners({ scale, frameW, innerRef, rowRef }) {
     <section
       className="partners"
       ref={innerRef}
-      aria-label="Built by PureHealth"
+      aria-label="Built by PureHealth."
       style={{ width: `${frameW}px`, height: `${B.h * scale}px`, '--bs': scale }}
     >
       {/* The gradient is one image hung far above the band and clipped by it,
@@ -119,6 +122,7 @@ function Partners({ scale, frameW, innerRef, rowRef }) {
         className="partners__grad"
         src="/assets/partners/gradient.jpg"
         alt=""
+        fetchPriority="low"
         style={{ left: px(B.grad.x), top: px(B.grad.y), width: px(B.grad.w), height: px(B.grad.h) }}
       />
       {/* Figma blurs the backdrop here as well as washing it. Skipped: one
@@ -128,10 +132,10 @@ function Partners({ scale, frameW, innerRef, rowRef }) {
       <span className="partners__wash" style={{ top: px(B.wash.y), height: px(B.wash.h) }} />
 
       <h2 className="partners__head" style={{ top: px(B.head) }}>
-        Built by PureHealth
+        Built by PureHealth.
       </h2>
       <p className="partners__sub" style={{ top: px(B.sub) }}>
-        One of the world’s largest and most trusted healthcare networks.
+        The largest and most trusted healthcare group in the Middle East.
       </p>
 
       {/* A rail around the row, masked at both ends.
@@ -151,6 +155,7 @@ function Partners({ scale, frameW, innerRef, rowRef }) {
               <img
                 key={`${set}-${slug}`}
                 src={`/assets/partners/partner-${slug}.png`}
+                fetchPriority="low"
                 // One copy reads; the rest are the same marks again and would be
                 // read out four times over.
                 alt={set === 1 ? name : ''}
@@ -267,7 +272,7 @@ function Carousel({ items, tab, scale, frameW, pad, innerRef, controlRef }) {
                 key={i}
                 style={{ width: `${item * scale}px`, height: `${CAROUSEL_GEO.photoH * scale}px` }}
               >
-                <img src={`/assets/carousel/${it.img}.jpg`} alt={it.alt} />
+                <img src={`/assets/carousel/${it.img}.jpg`} alt={it.alt} fetchPriority="low" />
               </figure>
             ) : (
               <article className="feature" key={i} style={{ width: `${item * scale}px` }}>
@@ -277,6 +282,7 @@ function Carousel({ items, tab, scale, frameW, pad, innerRef, controlRef }) {
                   className="feature__panel"
                   src={`/assets/carousel/feature-${it.feature}.jpg`}
                   alt=""
+                  fetchPriority="low"
                   style={{ height: `${item * scale}px` }}
                 />
                 <h3 className="feature__title">{it.title}</h3>
@@ -341,7 +347,6 @@ export default function App() {
     partnerRow: useRef(null),
     twinHead: useRef(null),
     closeHead: useRef(null),
-    closeBadges: useRef(null),
     closeRows: useRef([]),
     washTop: useRef(null),
     pills: useRef(null),
@@ -380,6 +385,34 @@ export default function App() {
     return () => {
       window.removeEventListener('resize', onResize)
       mq.removeEventListener('change', onMotion)
+    }
+  }, [])
+
+  /**
+   * Hold the page until slide 1 can actually be drawn, then fetch the rest.
+   *
+   * Runs once, on mount, and deliberately not against `layout`: a resize past
+   * the phone breakpoint must not restart the loading screen. The only thing
+   * the breakpoint decides here is whether the gradient still is wanted, and
+   * that is read at the moment the wait begins.
+   *
+   * The scroll is frozen for the duration. Not because the sequence would break
+   * — it would not — but because a reader who scrolls behind a loading screen
+   * arrives at slide 6 with no idea how they got there.
+   */
+  useEffect(() => {
+    const phone = window.innerWidth < PHONE_MAX
+    setSmootherPaused(true)
+    document.documentElement.classList.add('is-loading')
+    let live = true
+    begin({ phone }).then(() => {
+      if (!live) return
+      setSmootherPaused(false)
+      document.documentElement.classList.remove('is-loading')
+    })
+    return () => {
+      live = false
+      document.documentElement.classList.remove('is-loading')
     }
   }, [])
 
@@ -448,6 +481,8 @@ export default function App() {
 
   return (
     <>
+      <Preloader />
+
       {/* The gradient sits in a stage of its own so it can travel in frame
           pixels like everything else. Plain white is behind it: from slide 10
           the first act scrolls away and what it uncovers is the page.
@@ -528,7 +563,7 @@ export default function App() {
                 refs.scenes.current[i] = el
               }}
             >
-              <img src={scene.media} alt={scene.alt} />
+              <img src={scene.media} alt={scene.alt} fetchPriority="low" />
             </figure>
           ))}
         </div>
@@ -541,8 +576,13 @@ export default function App() {
         <div className="stage" style={stageStyle}>
           <div className="hero-copy" ref={refs.heading} style={{ top: `${copyTop}px` }}>
             <h1 ref={refs.headLine}>Your health, simplified.</h1>
+            {/* The file sets a NON-BREAKING space between "medical" and
+                "history", which is what stops the pair splitting across the two
+                lines this wraps to on a narrow window. Written as an escape
+                rather than pasted, because a literal U+00A0 in the source is
+                indistinguishable from an ordinary space. */}
             <p ref={refs.subLine}>
-              Your wearables, medical history and lab results, together in one app.
+              {'Your wearables, medical\u00A0history and lab results, together in one app.'}
             </p>
           </div>
         </div>
@@ -554,7 +594,7 @@ export default function App() {
       <div className="layer layer--copy">
         <div className="stage" style={stageStyle}>
           <h2 className="kicker" ref={refs.kicker}>
-            A health companion that knows you
+            A health companion that knows you.
           </h2>
           <p className="body-copy" ref={refs.body}>
             Ask Pura AI anything. Every answer is built from your health records, lab
@@ -606,6 +646,7 @@ export default function App() {
                   className={card.frame ? 'card__photo is-cropped' : 'card__photo'}
                   src={`/assets/cards/${card.img}.jpg`}
                   alt=""
+                  fetchPriority="low"
                   style={
                     card.frame && {
                       width: `${card.frame.w}%`,
@@ -786,6 +827,7 @@ export default function App() {
                   key={img}
                   src={`/assets/close/close-${img}.jpg`}
                   alt=""
+                  fetchPriority="low"
                   style={{
                     width: `${CLOSE_TILE.w * layout.cardScale}px`,
                     height: `${CLOSE_TILE.h * layout.cardScale}px`,
@@ -799,10 +841,6 @@ export default function App() {
           <h2 className="close-head" ref={refs.closeHead}>
             Pura knows your body like you do.
           </h2>
-
-          <div className="close-badges" ref={refs.closeBadges}>
-            <StoreBadges />
-          </div>
 
           <div className="agent-bar" ref={refs.bar}>
             <img className="agent-bar__mark" src="/assets/pura-sparkle.png" alt="" />

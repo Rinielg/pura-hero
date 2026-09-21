@@ -930,15 +930,6 @@ body {
   letter-spacing: -0.88px;
 }
 
-.close-badges {
-  position: absolute;
-  left: 0;
-  top: 0;
-  display: flex;
-  gap: 8px;
-  will-change: transform, opacity;
-}
-
 /* Five 425x242 stadiums on a 24px gap — 2219 against a 1920 frame, so both ends
    are always off screen. `flex: none` because the row is wider than anything it
    could be laid out inside. */
@@ -1565,6 +1556,82 @@ body {
 
 /* ------------------------------------------------------------- responsive */
 
+/* -------------------------------------------------------------- preloader */
+/* No scrolling behind the loading screen. This covers the phone and
+   reduced-motion cases, where there is no ScrollSmoother to pause. */
+html.is-loading,
+html.is-loading body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+
+
+/**
+ * The `Loader` frame, and the measurements are its own.
+ *
+ * At 1920 the wordmark is 209 wide, the track 392x4, and the gap between them
+ * 68 — so each is expressed as its share of that frame and clamped, which keeps
+ * the proportions on a laptop and stops the wordmark shrinking to nothing on a
+ * phone. The file has no mobile Loader; the lower clamps are this build's call.
+ *
+ * It sits above everything including the navigation, because it is the page
+ * until it isn't.
+ */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: #fbefe3 url('/bg/loader-bg.jpg') center / cover no-repeat;
+  /* Only opacity is animated, and only on the way out. */
+  transition: opacity 0.6s ease;
+}
+
+.preloader.is-done {
+  opacity: 0;
+  /* The hero is live underneath the moment the fade starts. */
+  pointer-events: none;
+}
+
+.preloader__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* 68 / 1920 */
+  gap: clamp(40px, 3.54vw, 68px);
+}
+
+.preloader__mark {
+  display: block;
+  /* 209 / 1920 */
+  width: clamp(132px, 10.88vw, 209px);
+  height: auto;
+}
+
+/* 392 x 4, fully rounded, on 5% black. */
+.preloader__track {
+  position: relative;
+  width: clamp(240px, 20.42vw, 392px);
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.preloader__bar {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: #0e1a2b;
+  transform: scaleX(0);
+  transform-origin: left center;
+  /* Eased because the weights land in lumps, not because the progress is
+     invented — see preload.js. */
+  transition: transform 0.35s ease-out;
+}
+
 @media (max-width: 1080px) {
   .nav__pill { gap: 20px; }
   .pnav__label { padding: 0 11px; font-size: 13px; }
@@ -1784,4 +1851,10 @@ body {
   .pnav__item,
   .stores__badge,
   .cue__dot { transition: none; }
+
+  /* The bar still moves — it is the only thing telling the reader the page is
+     working — but it steps to each value instead of easing, and the overlay
+     leaves without a fade. */
+  .preloader,
+  .preloader__bar { transition: none; }
 }

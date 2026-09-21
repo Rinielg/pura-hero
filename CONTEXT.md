@@ -4,7 +4,7 @@ The running record of this prototype: what is built, why it is built that way, w
 broke and how it was fixed. Read this before continuing the build. The README covers
 how to run it; this file covers how to *reason* about it.
 
-- **Design source:** [Pura Website](https://www.figma.com/design/1ybPUzTZG9WJ2dle6NfH2U/Pura-Website), page **Final Website**, frames `Slide 1` … `Slide 42`, plus the `Carousel Selection 2`–`6` frames for the tabbed band, plus the `Menu` frame (node `6203:71995`) for the navigation.
+- **Design source:** [Pura Website](https://www.figma.com/design/1ybPUzTZG9WJ2dle6NfH2U/Pura-Website), page **Final Website**, frames `Slide 1` … `Slide 43`, plus the `Carousel Selection 2`–`5` frames for the tabbed band, the `Loader` frame (node `6289:96509`) for the loading screen, plus the `Menu` frame (node `6203:71995`) for the navigation.
 - **Content source for the inner pages:** `https://pura-website-upload-1.vercel.app` — **not** pura.ai.
 - **Live:** https://pura-hero.vercel.app · **Repo:** https://github.com/Rinielg/pura-hero (private — it carries PureHealth brand assets)
 - **Device model:** forked from [Rinielg/pura-device-viewer](https://github.com/Rinielg/pura-device-viewer)
@@ -18,7 +18,7 @@ scrolling scrubs a single GSAP timeline between them. There is no second section
 page is the sequence, plus fixed page furniture (nav, store badges, scroll cue).
 
 `Slide overview` in the Figma file is an assembly board, **not** a moment. Ignore it.
-Everything comes from `Slide 1` … `Slide 42`, in numeric order.
+Everything comes from `Slide 1` … `Slide 43`, in numeric order.
 
 ---
 
@@ -264,7 +264,9 @@ viewports it serves, there is no Lottie in it.
 | `src/hero/useHeroTimeline.js` | The timeline. Turns tables into tweens. |
 | `src/hero/layout.js` | Breakpoints and the four projections. |
 | `src/App.jsx` | The layer stack, the DOM, and the `Carousel` component. |
-| `src/Device.jsx` | The three.js phone: black finish, nine screens, shader crossfade, cursor tilt. |
+| `src/Device.jsx` | The three.js phone: black finish, ten screens, shader crossfade, cursor tilt. |
+| `src/preload.js` | What the loading screen waits for, and what it lets the browser fetch later. |
+| `src/Preloader.jsx` | The loading screen itself, built to the file's `Loader` frame. |
 | `src/Scene.jsx` | The canvas and the procedural studio the mirrored body reflects. |
 | `src/deviceProxy.js` | The one seam between GSAP and three.js. Nothing else crosses it. |
 | `src/Backdrop.jsx` | The mesh gradient: the Lottie on desktop, a still on a phone. |
@@ -851,14 +853,22 @@ the allowlist is by name.
   is to export the *source* image and apply its `CROP` `imageTransform` yourself.
 - A node that sits past the frame edge exports at a few pixels wide. Re-export the same
   component from a later slide where it is fully inside.
-- **`exportAsync` gives a node's RENDER bounds, not its box.** The closing act's `UI`
-  rectangle is 417×896, but its image paints only the top 629 — so the export came back
-  418×629, and forcing that into the screen's 0.466 canvas squashed the content by 30%.
-  It read as a stretched phone screen. Check `absoluteRenderBounds` against
-  `absoluteBoundingBox` before resizing anything, and fit-and-pad rather than force.
-  In this case the fit-and-pad was only ever a reconstruction: the frame in the file is
-  placed short, and `ui-twin.jpg` is now the real 880×1912 export Riniel supplied. If that
-  node is re-exported it will come back short again — compare the aspect to 0.46 first.
+- **`exportAsync` gives a node's RENDER bounds, not its box.** A `UI` rectangle is
+  417×896, but if its image paints only the top 629 the export comes back 418×629 — and
+  forcing that into the screen's 0.466 canvas squashes the content by 30%. It reads as a
+  stretched phone screen.
+
+  **Do not export a screen node at all. Take the image fill's source bytes and apply the
+  fill's own crop.** `figma.getImageByHash(fill.imageHash).getBytesAsync()` returns the
+  original image at full resolution, unclipped by any frame, and `fill.imageTransform`
+  says which part of it the rect shows: for the axis-aligned `[[a,0,tx],[0,d,ty]]` the
+  visible region is `x ∈ [tx, tx+a]`, `y ∈ [ty, ty+d]` in normalised source coordinates.
+  Crop that and the result matches the node's aspect to four decimal places with no
+  resampling and no clipping. Every screen under `public/assets/day` is made this way.
+
+  It is also the only way to get the resolution right. `ui-a` and `ui-f` come from
+  440×956 sources; a 3× node export of those is a 2× UPSCALE of a small image, which
+  looks soft on the glass and is larger on disk for no information at all.
 - Nothing corrects a screen texture's aspect: the shader samples raw UV, so a texture of
   the wrong shape is silently stretched onto the glass. `window.__screen` reports the
   surface aspect in DEV — it is 0.4599, and the asset's own wallpaper (1024×2048) does not
@@ -867,6 +877,21 @@ the allowlist is by name.
   format, though it renders on canvas. Exported from the same component on a later slide.
 - Figma flips the Google Play wordmark inside its component: `transform: scaleY(-1)`.
 - `BACKGROUND_BLUR radius` → CSS `backdrop-filter: blur(radius / 2)`.
+
+### Two screens of the same subject
+
+The closing act shows the Digital Twin's **overview** (the 82-biomarkers ring) on slides
+38 and 39, and its **visceral-fat detail** from slide 40. They are the same subject at the
+same size and the difference is easy to miss by eye — the build shipped one screen for
+both until the `UI` rect's `imageHash` was read per slide:
+
+```js
+for (let n = 25; n <= 43; n++) { /* … */ fill.imageHash }
+```
+
+Distinct hashes are the answer to "how many screens are there". Eight across slides 25–42,
+which with Home and Pura AI is the ten in `SCREEN_URLS`. Do this after any change to the
+day or the close rather than trusting a visual scan.
 
 ### Node ids are worthless here
 
@@ -901,7 +926,7 @@ different from the rest.
 
 Only the open tab's images are in the DOM, so only its four or five ever load.
 
-- The decks are **different lengths** (My Health has five cards, Women's Health three), so
+- The decks are **different lengths** (My Health has five cards, the rest four), so
   changing tab takes the row back to page 0. A tab picked while the row was paged along
   would otherwise open in its middle.
 - `role="tablist"` / `role="tab"` / `role="tabpanel"`, so the relationship survives a
@@ -1079,6 +1104,55 @@ the file has them, because the file is the source — but they are worth fixing 
 
 ---
 
+## 7b. The loading screen
+
+Built to the file's `Loader` frame (node `6289:96509`), which is four things and no more:
+the brand gradient, the PURA wordmark at 209×98, a 392×4 track at 5% black, and the bar
+that fills it. `src/Preloader.jsx` is that frame; `src/preload.js` is what it waits for.
+
+The frame's background is a flat image, not the hero's Lottie, and the build keeps it that
+way — `public/bg/loader-bg.jpg`, 39 kB. Starting a second copy of the most expensive thing
+on the page while the page is still loading would be a strange way to make it feel fast,
+and because it is the same artwork the cross-fade into the animated version is invisible.
+
+### What it waits for
+
+The phone model, its two opening screens, the hand, the gradient still on a phone, and the
+brand face. Progress is by WEIGHT and it is real — the bar reports what has landed rather
+than easing to 90% and sitting there. `DEADLINE` (12 s) is the one concession: a task that
+never settles must not strand the reader behind an overlay.
+
+Two things are worth knowing before touching it:
+
+- **`progress()` returns 0 until `begin()` has run.** React runs a child's effects before
+  its parent's, so `Preloader` subscribes a beat before `App` claims anything — and an
+  empty task set is, quite correctly, complete. Without the `started` flag the loading
+  screen renders and vanishes in the same frame, every time, and looks like it is not
+  there at all.
+- **The scroll is frozen by `smoother.paused(true)`, not by the overlay.** A fixed element
+  in front of ScrollSmoother does not stop it: `normalizeScroll` listens on the document.
+  `html.is-loading` covers the phone and reduced-motion cases, where there is no smoother.
+
+### 140 images in the DOM, and why the phone took fourteen seconds
+
+The first build of this held the page for the full 12-second deadline, and the phone did
+not appear until 14.5 s. The model was not slow: the 4.4 MB glb finished at **48 ms**. The
+phone's own screen textures did not start until **14 531 ms**.
+
+The cause is structural. The sequence's visuals are FIXED layers that are always mounted,
+so every photograph in the carousel, the day and the close is an `<img>` in the document
+from the first paint whether or not anyone has scrolled to it. That is about 140 requests,
+and under HTTP/1.1 they took every connection. The device's `fetch()` calls queued behind
+all of them.
+
+The fix is one attribute — `fetchPriority="low"` on every image below the hero — and the
+loading screen goes from **12.6 s to 1.05 s**, with the screens starting at 563 ms.
+
+Keep it in mind when adding anything to those layers: an image added without
+`fetchPriority="low"` does not just load itself late, it delays the phone.
+
+---
+
 ## 8. How to verify a change
 
 Screenshots lie here — the Browser pane returns stale frames, and when the pane is hidden
@@ -1154,7 +1228,7 @@ const rootReasons = (el) => {
 
 ## 9. Open items
 
-- **Mobile has no design.** Slides 17–42 are projected, not designed. The filter pill row
+- **Mobile has no design.** Slides 17–43 are projected, not designed. The filter pill row
   is ~603px on a 375px screen even after scaling with `--ps` — the ends are cut off. It
   wants either a real mobile frame or a horizontally scrollable row. Flagged, not invented.
 - **The 23 inner pages have no design either.** They are built in the sequence's visual
@@ -1164,12 +1238,12 @@ const rootReasons = (el) => {
 - **The For Business form is a mailto.** The live site runs a Formidable form; a prototype
   should not collect anyone's details, so the CTA points at the address the form ends in.
 - **Interactions beyond the band** are still to come; Riniel is providing them. What exists
-  is the carousel: six tabs over six decks, and arrows that page the row.
+  is the carousel: five tabs over five decks, and arrows that page the row.
 - **The day's mobile layout is derived, not designed.** The copy is no longer hand-placed
   — `mobileStack()` measures it and the panel drop falls out of that — but the device's
   0.7 shrink, the 170px band top and the 18/26px gaps are still numbers that fit rather
   than numbers from a frame. A real mobile design would replace them.
-- **Slides 20–42 have no interactions apart from the cursor tilt.** 42 is the end of the
+- **Slides 20–43 have no interactions apart from the cursor tilt.** 43 is the end of the
   sequence; the last thing the page does is the two photo rows and the store badges.
 - **Scene D's pillar row is hidden below 980px.** Wrapped into two rows it is ~90px
   tall and the band between the ruler and the panel is already carrying a three-line
@@ -1198,16 +1272,9 @@ const rootReasons = (el) => {
 - **Promo cards 3 and 4** still share the line "Give your mind the same attention".
   The tags now differ (Mental Wellness / Care) and the file has it that way, so the
   build follows it — but the body copy looks like placeholder waiting to be written.
-- **The Digital Twin screen is not in the Figma file.** Its `UI` node is a 417×896
-  rectangle whose image paints only the top 629 — no sheet, no cards. `ui-twin.jpg` is the
-  880×1912 export Riniel supplied instead. Re-export that node and it comes back short
-  again; compare the aspect to 0.46 before using anything from it.
 - **The footer still lists all 23 pages while the bar shows two.** The MVP menu is what
   ships and `MENU` still drives the footer and the inner pages' sibling band, which keeps
   the site connected — but for a first release the two disagree about how big the site is.
   Riniel's call.
-- **The store badges appear twice on slides 41–42** — once in the closing act, where the
-  file puts a pair under the last line, and once as the fixed bottom-right furniture that
-  is on every slide. Both are right on their own.
 - **The repo is private** because of the brand assets. Public visibility is Riniel's call.
 - The bundle is over 500 kB — three.js and the model. Code-splitting is untouched.

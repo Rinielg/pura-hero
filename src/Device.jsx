@@ -6,12 +6,19 @@ import { DEVICE } from './config'
 import variantData from './variants.json'
 import { deviceProxy } from './deviceProxy'
 import { loadImageElement, makeScreenTexture } from './screenTexture'
+import { DEVICE_MODEL, DEVICE_SCREENS, settle } from './preload'
 import { deviceRefHeight } from './hero/useHeroTimeline'
 
 const MODEL_URL = '/models/iphone-18-pro.glb'
 /** The two things the screen shows, crossfaded across the turn to face-on. */
 /**
  * Every screen the phone shows, in the order `SCREEN_SEQ` walks them.
+ *
+ * TEN of them, not nine: the closing act shows the Digital Twin's OVERVIEW on
+ * slides 38 and 39 and its visceral-fat detail from 40, and the file draws
+ * those as two different images. Read off the `UI` rect's image hash per slide
+ * rather than by eye — two screens of the same subject at the same size are
+ * exactly the kind of difference a glance misses.
  *
  * Backwards through the day on purpose. The sequence is a tweened INDEX into
  * this list and the shader crossfades between the two entries either side of
@@ -20,19 +27,20 @@ const MODEL_URL = '/models/iphone-18-pro.glb'
  * sequence reads 4 -> 5 -> 4 -> 3 -> 2 -> 1 -> 0 and never skips.
  */
 const SCREEN_URLS = [
-  '/assets/day/ui-twin.jpg', // 0  the close - Digital Twin
-  '/assets/day/ui-f.jpg', // 1  scene F - winding down
-  '/assets/day/ui-e.jpg', // 2  scene E - medication delivered
-  '/assets/day/ui-d.jpg', // 3  scene D - the consultation
-  '/assets/day/ui-c.jpg', // 4  scene C - the HbA1c answer
-  '/assets/day/ui-b.jpg', // 5  scene B - the digital twin
-  '/assets/day/ui-a.jpg', // 6  scene A - the morning plan
-  '/assets/pura-screen.jpg', // 7  Home
-  '/assets/pura-ai-screen.jpg', // 8  Pura AI
+  '/assets/day/ui-twin.jpg', // 0  the close - Digital Twin, visceral fat
+  '/assets/day/ui-twin-early.jpg', // 1  the close - Digital Twin, the overview
+  '/assets/day/ui-f.jpg', // 2  scene F - winding down
+  '/assets/day/ui-e.jpg', // 3  scene E - medication delivered
+  '/assets/day/ui-d.jpg', // 4  scene D - the consultation
+  '/assets/day/ui-c.jpg', // 5  scene C - the HbA1c answer
+  '/assets/day/ui-b.jpg', // 6  scene B - the digital twin
+  '/assets/day/ui-a.jpg', // 7  scene A - the morning plan
+  '/assets/pura-screen.jpg', // 8  Home
+  '/assets/pura-ai-screen.jpg', // 9  Pura AI
 ]
 
 /** Which entry the phone shows before anything has been tweened. */
-const SCREEN_DEFAULT = 7
+const SCREEN_DEFAULT = 8
 
 /** The colourway the hero uses. Black reads as one dark mass against the
  *  cream gradient, which makes the lit screen the brightest thing on the page —
@@ -388,9 +396,13 @@ export function Device({ layout, stageScale, anisotropy = 4 }) {
   const [screenTexture, setScreenTexture] = useState(null)
   const pointer = usePointer()
 
+  // `useGLTF` suspends, so by the time this runs the model is fetched and
+  // parsed and the Suspense boundary has released — which is what the loading
+  // screen is waiting to hear about the heaviest single file on the page.
   useLayoutEffect(() => {
     adaptMaterials(scene)
     applyVariant(scene, FINISH)
+    settle(DEVICE_MODEL)
   }, [scene])
 
   useLayoutEffect(() => {
@@ -433,8 +445,14 @@ export function Device({ layout, stageScale, anisotropy = 4 }) {
         const display = findDisplay(scene)
         built = images.map((image) => makeScreenTexture(image, display))
         setScreenTexture(built)
+        settle(DEVICE_SCREENS)
       })
-      .catch((error) => console.warn('[device] screen textures failed:', error.message))
+      .catch((error) => {
+        console.warn('[device] screen textures failed:', error.message)
+        // A 404 on one screen must not leave the reader behind the loading
+        // screen for the full deadline.
+        settle(DEVICE_SCREENS)
+      })
     return () => {
       cancelled = true
       built?.forEach((t) => t.dispose())
