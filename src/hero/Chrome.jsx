@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { NAV_MENU, STORE } from '../site/content'
+import { APP_STORE_LINK, NAV_MENU, STORE } from '../site/content'
 
 export const STORE_LINKS = STORE
 
@@ -291,7 +291,10 @@ export function Nav() {
           ))}
         </ul>
 
-        <a className="nav__cta" href={STORE.appStore} target="_blank" rel="noreferrer">
+        {/* This button does not name a store, so it goes to whichever one this
+            visitor can actually install from — see `storeForPlatform`. The two
+            BADGES stay explicit: clicking the Play badge means Play. */}
+        <a className="nav__cta" href={APP_STORE_LINK} target="_blank" rel="noreferrer">
           <img src="/assets/pura-sparkle.png" alt="" width="14" height="14" aria-hidden="true" />
           Get the app
         </a>

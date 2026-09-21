@@ -17,7 +17,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { Link } from 'react-router-dom'
 import { Backdrop } from '../Backdrop'
-import { STORE } from './content'
+import { APP_STORE_LINK, STORE } from './content'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -75,7 +75,9 @@ export function PageHero({ kicker, title, lead, children }) {
         {lead ? <p className="ph__lead">{lead}</p> : null}
         {children}
         <div className="ph__cta">
-          <a className="btn btn--dark" href={STORE.appStore} target="_blank" rel="noreferrer">
+          {/* The same unnamed "Get the app" as the nav's, so it resolves the
+              same way rather than always sending everyone to the App Store. */}
+          <a className="btn btn--dark" href={APP_STORE_LINK} target="_blank" rel="noreferrer">
             Get the app
           </a>
           <Link className="btn btn--ghost" to="/">

@@ -30,6 +30,49 @@ export const STORE = {
   googlePlay: 'https://play.google.com/store/apps/details?id=ae.purehealth.pura',
 }
 
+/**
+ * Which store a "Get the app" button should send THIS visitor to.
+ *
+ * The two badges stay explicit — someone clicking the Play badge wants Play.
+ * This is only for the button that does not name a store, where the visitor's
+ * own platform is the best guess at what they can actually install.
+ *
+ *   iPhone, iPad, iPod  ->  App Store
+ *   Android             ->  Play
+ *   Mac                 ->  App Store   (Riniel's rule: the iOS listing)
+ *   anything else       ->  Play        (Windows, Linux, ChromeOS)
+ *
+ * Order matters. iOS user agents contain the string "like Mac OS X", so a naive
+ * test for Mac matches every iPhone — the device tests have to run first, and
+ * the Mac test reads `platform` rather than the full user agent.
+ *
+ * iPadOS 13+ in its default desktop mode reports itself as a Macintosh, which
+ * this does NOT try to unpick: an iPad falls through to the Mac branch and gets
+ * the App Store, which is the right answer for an iPad anyway.
+ *
+ * Read once, at module load. A visitor does not change platform mid-visit, and
+ * evaluating it per render would only invite a hydration mismatch.
+ */
+export function storeForPlatform(
+  // `userAgentData` is Chromium-only and `platform` is deprecated, so neither
+  // can be relied on alone — but between them they cover every browser, and the
+  // user agent is the fallback that always exists. Both are arguments so the
+  // rules can be checked against a table of real user agents rather than only
+  // against whatever machine happens to be running.
+  ua = typeof navigator === 'undefined' ? '' : navigator.userAgent || '',
+  platform = typeof navigator === 'undefined'
+    ? ''
+    : navigator.userAgentData?.platform || navigator.platform || ''
+) {
+  if (/Android/i.test(ua)) return STORE.googlePlay
+  if (/iPhone|iPad|iPod/i.test(ua)) return STORE.appStore
+  if (/Mac/i.test(platform) || /Macintosh/i.test(ua)) return STORE.appStore
+  return STORE.googlePlay
+}
+
+/** The resolved answer, so every button agrees and nothing is recomputed. */
+export const APP_STORE_LINK = storeForPlatform()
+
 export const EXTERNAL = {
   group: 'https://purehealth.ae/',
   email: 'mailto:care.pura@pura.ai',
