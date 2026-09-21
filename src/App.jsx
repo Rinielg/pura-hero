@@ -663,10 +663,15 @@ export default function App() {
                   </span>
                 </header>
                 <footer className="card__foot">
+                  {/* The file still draws a round + at the end of this row and
+                      it is not rendered here — Riniel's call, not the file's.
+                      It went nowhere: the promo cards have no destination in
+                      the MVP, so it was a control that did nothing.
+
+                      The title is `flex: 1 0 0`, so dropping the button hands
+                      it the 32px disc and the 16px gap. `.card__more` is kept
+                      in styles.css; putting it back is this block alone. */}
                   <h3 className="card__title">{card.title}</h3>
-                  <button type="button" className="card__more" aria-label={`More about ${card.title}`}>
-                    <img src="/assets/icons/card-plus.svg" alt="" />
-                  </button>
                 </footer>
               </article>
             ))}

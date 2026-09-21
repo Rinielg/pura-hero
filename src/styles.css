@@ -663,6 +663,8 @@ body {
   color: #fff;
 }
 
+/* Not rendered — see the card footer in App.jsx. Kept so that restoring the
+   button is a markup change and nothing else. */
 .card__more {
   display: grid;
   place-items: center;
