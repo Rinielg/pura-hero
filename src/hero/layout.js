@@ -46,6 +46,8 @@ export const LAYOUTS = {
     /** The carousel's tab pills. Separate from `chipScale` since the phone
      *  wants the cloud's chips at full size and the tab row shrunk. */
     pillScale: 1,
+    barScale: 1,
+    barMax: Infinity,
     /** Uniform scale for device + hand. */
     objScale: 1,
     objOffset: [0, 0],
@@ -72,6 +74,12 @@ export const LAYOUTS = {
     /** The tab pills do NOT follow it. At full size the row is 969 wide in a
      *  440 frame, which is the open item about the filter row, not a fix. */
     pillScale: 0.62,
+    /** The agent bar, from `M_Slide 7`: 326 wide where the desktop frame has
+     *  354, inside a 57px margin either side. Capped at that 326, because the
+     *  bar cannot be wider than its own margins allow — which is what happens
+     *  to slide 8, where the desktop bar widens to 560. */
+    barScale: 326 / 354,
+    barMax: 326,
     // (932/1080) keeps the device the same share of frame height as the design
     // gives it; 0.7 then takes it down to something that leaves room for the
     // heading and the cloud on a phone, where a device at 113% of viewport
@@ -158,12 +166,24 @@ export function projectChip([x, y], L) {
  * differently is the one thing this file exists to prevent.
  */
 export const MOBILE_HERO_UNTIL = 14
+
+/**
+ * Fitted from the two mobile frames, which is exactly enough to determine it.
+ *
+ *   M_Slide 1  device centre 219.8, 828   (desktop 959.8, 928)
+ *   M_Slide 7  device centre 219.8, 679   (desktop 960,   753.5)
+ *
+ * x is a translation. y is a translation AND a compression: the phone travels
+ * 149 up the phone frame where it travels 174.5 up the desktop one, which is
+ * 0.854 of it. A pure translation lands slide 7 twenty-five pixels low.
+ */
 const HERO_ANCHOR = [219.8, 828]
 const HERO_FROM = [960, 928]
+const HERO_KY = (679 - 828) / (753.5 - 928)
 
 export const heroProject = ([x, y]) => [
   x - HERO_FROM[0] + HERO_ANCHOR[0],
-  y - HERO_FROM[1] + HERO_ANCHOR[1],
+  HERO_ANCHOR[1] + (y - HERO_FROM[1]) * HERO_KY,
 ]
 
 /** True where the phone's first act uses its own 1:1 arrangement. */

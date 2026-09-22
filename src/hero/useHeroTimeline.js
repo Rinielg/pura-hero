@@ -366,8 +366,14 @@ export function useHeroTimeline({
           fx,
           fy,
           // `deviceRefHeight` carries `objScale`, so dividing it out is what
-          // puts the body back at the design's own 614.
-          s: hero ? scaled.s / L.objScale : scaled.s,
+          // puts the body back at the design's own 614 — and on a phone it STAYS
+          // there. `M_Slide 1` and `M_Slide 7` both draw the device 298x614, so
+          // it does not grow through the first act the way the desktop frame
+          // grows it to 930. Left growing, it reached 930 in a 952 frame: the
+          // phone filled the screen, the copy above it was pushed off the top,
+          // and the agent bar ended up floating in the middle of the app's own
+          // screen. That is what "the bar comes in too soon" looked like.
+          s: hero ? DEVICE_POSE[0].s / L.objScale : scaled.s,
           rx: scaled.r[0],
           ry: scaled.r[1],
           rz: scaled.r[2],
@@ -481,10 +487,25 @@ export function useHeroTimeline({
           return {
             x,
             y,
-            width: projectLength(at(AGENT_BAR, slide).w, L),
-            opacity: at(AGENT_BAR, slide).o,
+            // `M_Slide 7` gives the bar its own width on a phone, capped at the
+            // margin the file leaves it — see `barScale` / `barMax`.
+            width: Math.min(
+              L.name === 'mobile'
+                ? at(AGENT_BAR, slide).w * L.barScale
+                : projectLength(at(AGENT_BAR, slide).w, L),
+              L.barMax
+            ),
           }
         })
+        // Opacity is its OWN track, because it is the only part of the bar that
+        // waits for the phone to turn — see `STEP_WINDOWS.agentBar`. Windowing
+        // the whole thing would hold its position and width back too, and the
+        // bar would jump into place as it appeared.
+        track(
+          refs.bar.current,
+          (slide) => ({ opacity: at(AGENT_BAR, slide).o }),
+          STEP_WINDOWS.agentBar
+        )
       }
 
       // ------------------------------------------- the fourth and fifth acts

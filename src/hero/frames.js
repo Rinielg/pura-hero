@@ -1697,6 +1697,20 @@ export const STEP_WINDOWS = {
    * band included, leaves at the same -670.
    */
   act4Arrival: { 15: [0.75, 1] },
+  /**
+   * The agent bar waits for the phone to face you.
+   *
+   * Step 5 is slide 6 -> 7, and two things happen across it: the device turns
+   * from its 3/4 pose to face-on, and the bar fades up. Run over the whole step
+   * they happen together, so the bar is already half there while the phone is
+   * still side-on — which on a phone, where the device is most of the frame,
+   * reads as the bar arriving on a screen that is not facing you yet.
+   *
+   * The last third is after the turn has substantially finished. `DEVICE_POSE`
+   * still reaches its face-on pose at slide 7 either way; this only says when
+   * inside the step the bar is allowed to appear.
+   */
+  agentBar: { 5: [0.66, 1] },
   /** The closing rows wait for the phone to leave — see `CLOSE_ROW_A`. */
   closeRows: { 39: [0.78, 1] },
 }
