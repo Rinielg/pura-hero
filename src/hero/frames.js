@@ -22,6 +22,9 @@
 /** The frame every coordinate below is expressed in. */
 export const FRAME = { w: 1920, h: 1080 }
 
+/** Top of the heading's box in `M_Slide 1`, the phone's own frame. */
+export const MOBILE_COPY_TOP = 152
+
 /** Slides in the sequence. Adding one in Figma means adding an entry below. */
 export const SLIDES = 43
 
@@ -64,6 +67,7 @@ export const CHIPS = [
     key: 'lab-results',
     label: 'Lab results',
     icon: 'health-report',
+    mobile: [43.1, 301.7],
     at: [
       { c: [263.1, 397.7], o: 0.6 },
       { c: [440.1, 419.7], o: 0.6 },
@@ -76,6 +80,7 @@ export const CHIPS = [
     key: 'medical-history',
     label: 'Medical history',
     icon: 'health-records',
+    mobile: [292.6, 470.7],
     at: [
       { c: [1318.6, 447.7], o: 1 },
       { c: [1247.6, 431.7], o: 1 },
@@ -88,6 +93,7 @@ export const CHIPS = [
     key: 'wearables',
     label: 'Wearables',
     icon: 'wearables',
+    mobile: [-39.4, 664.7],
     at: [
       { c: [668.6, 630.7], o: 1 },
       { c: [825.6, 613.7], o: 1 },
@@ -100,6 +106,7 @@ export const CHIPS = [
     key: 'liver',
     label: 'Liver',
     icon: 'purescore',
+    mobile: [-445, 679],
     at: [
       { c: [287, 679], o: 0.6 },
       { c: [504, 659], o: 0.6 },
@@ -112,6 +119,7 @@ export const CHIPS = [
     key: 'renal',
     label: 'Renal',
     icon: 'renal',
+    mobile: [400, 385],
     at: [
       { c: [1549, 486], o: 0.8 },
       { c: [1459, 475], o: 0.8 },
@@ -124,6 +132,7 @@ export const CHIPS = [
     key: 'metabolic',
     label: 'Metabolic',
     icon: 'metabolic',
+    mobile: [-31.5, 755],
     at: [
       { c: [564.5, 755], o: 0.8 },
       { c: [738.5, 714], o: 0.8 },
@@ -136,6 +145,7 @@ export const CHIPS = [
     key: 'mental-wellness',
     label: 'Mental Wellness',
     icon: 'brain',
+    mobile: [352, 599],
     at: [
       { c: [1184, 556], o: 1 },
       { c: [1135, 533], o: 1 },
@@ -148,6 +158,7 @@ export const CHIPS = [
     key: 'prescriptions',
     label: 'Prescriptions',
     icon: 'prescription',
+    mobile: [449.6, 301.7],
     at: [
       { c: [1704.6, 362.7], o: 0.6 },
       { c: [1556.6, 369.7], o: 0.6 },
@@ -160,6 +171,7 @@ export const CHIPS = [
     key: 'sleep',
     label: 'Sleep',
     icon: 'partly-cloudy-night',
+    mobile: [475, 777],
     at: [
       { c: [1263, 755], o: 0.6 },
       { c: [1127, 731], o: 0.6 },
@@ -172,6 +184,7 @@ export const CHIPS = [
     key: 'nutrition',
     label: 'Nutrition',
     icon: 'metabolic',
+    mobile: [41.5, 578],
     at: [
       { c: [892.5, 542], o: 1 },
       { c: [935.5, 508], o: 1 },
@@ -184,6 +197,7 @@ export const CHIPS = [
     key: 'respiratory',
     label: 'Respiratory',
     icon: 'pulmonology',
+    mobile: [514, 688],
     at: [
       { c: [1401, 633], o: 0.6 },
       { c: [1322, 601], o: 0.6 },
@@ -196,6 +210,7 @@ export const CHIPS = [
     key: 'cardiovascular',
     label: 'Cardiovascular',
     icon: 'pregnacare',
+    mobile: [68.5, 470],
     at: [
       { c: [556.5, 506], o: 0.8 },
       { c: [676.5, 537], o: 0.8 },
@@ -208,6 +223,7 @@ export const CHIPS = [
     key: 'virtual-consultations',
     label: 'Virtual Consultations',
     icon: 'stethoscope',
+    mobile: [170, 386],
     at: [
       { c: [849, 429], o: 0.8 },
       { c: [849, 429], o: 0.8 },
@@ -218,6 +234,15 @@ export const CHIPS = [
   },
 ]
 
+/**
+ * NOT USED any more — the phone shows all thirteen.
+ *
+ * It named the six the cloud kept when the mobile layout was a squeezed copy of
+ * the desktop one and two thirds of the chips had to be dropped to stop them
+ * overlapping into mush. `M_Slide 1` replaced that with a real arrangement, so
+ * `allChips` is true on both layouts now. Kept for the moment because it
+ * records which six read best when only six will fit.
+ */
 export const MOBILE_CHIPS = new Set([
   'lab-results',
   'wearables',

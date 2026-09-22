@@ -1706,7 +1706,8 @@ html.is-loading body {
 }
 
 @media (max-width: 980px) {
-  .nav { top: 16px; padding: 0 16px; }
+  /* 40, as `M_Slide 1` has it — the same as desktop. */
+  .nav { top: 40px; padding: 0 16px; }
   .pnav { display: none; }
   .nav__pill { height: 52px; gap: 12px; padding: 8px 8px 8px 18px; }
   .nav__cta { height: 36px; padding: 8px 14px; font-size: 13px; }
@@ -1816,7 +1817,12 @@ html.is-loading body {
      is redundant here rather than useful. The hero keeps them: it is one
      viewport that never scrolls under them, and they are part of its
      composition. */
-  .site .stores { display: none; }
+  /* Hidden on a phone EVERYWHERE now, not just on the inner pages. `M_Slide 1`
+     draws the hero's foot as the scroll cue alone, and on a 440 frame the pair
+     of badges lands right on top of it. The inner pages already end with both
+     store links in their CTA, and the hero's nav has a Get the app button that
+     now picks the right store on its own. */
+  .stores { display: none; }
 
   .stores { right: 12px; bottom: 12px; gap: 6px; }
   .stores__badge { width: 104px; height: 35px; gap: 6px; padding: 0 6px; }
@@ -1825,8 +1831,11 @@ html.is-loading body {
   .stores__text strong { font-size: 14px; line-height: 16px; }
   .stores__wordmark { width: 58px; height: 12px; }
 
-  .hero-copy h1 { font-size: 36px; }
-  .hero-copy p { font-size: 16px; }
+  /* `M_Slide 1`: 34 over a 325 measure, and the sub 16 over 338. The sub is
+     given the measure rather than the container so it breaks after "results"
+     the way the frame does. */
+  .hero-copy h1 { font-size: 34px; }
+  .hero-copy p { font-size: 16px; max-width: 338px; margin-inline: auto; }
   .hero-copy { padding: 0 7%; }
   /* The frame is narrower than these were authored for, so they are sized to
      the frame rather than carried across at their desktop widths. */
@@ -1902,11 +1911,12 @@ html.is-loading body {
   .agent-bar__mark { width: 26px; height: 26px; }
   .agent-bar__label { font-size: 13px; }
   .agent-bar__btn { width: 32px; height: 32px; }
-  /* Above the store badges, and label dropped: on a phone the device reaches
-     down into where the words sit, and dark ink over the app's navy card is
-     unreadable. The chevron carries its own disc, so it survives alone. */
-  .cue { bottom: 16px; gap: 0; }
-  .cue__label { display: none; }
+  /* The label is BACK. It was dropped because the phone used to reach down into
+     where the words sit and dark ink over the app's navy card is unreadable —
+     but the device now takes its pose from `M_Slide 1`, which puts the words at
+     885 and the disc at 925 over the washed-out foot of the phone, exactly as
+     the file draws them. */
+  .cue { bottom: 16px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

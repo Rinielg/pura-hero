@@ -1279,7 +1279,9 @@ const rootReasons = (el) => {
 
 ## 9. Open items
 
-- **Mobile has no design.** Slides 17–43 are projected, not designed. The filter pill row
+- **Mobile has a design for the FIRST SLIDE only.** `M_Slide 1` (440×952) is the phone's
+  hero and the build follows it exactly — thirteen chips at full size, the device 1:1, the
+  type at 34/16. Slides 2–43 are still projected rather than designed. The filter pill row
   is ~603px on a 375px screen even after scaling with `--ps` — the ends are cut off. It
   wants either a real mobile frame or a horizontally scrollable row. Flagged, not invented.
 - **The 23 inner pages have no design either.** They are built in the sequence's visual

@@ -43,6 +43,9 @@ export const LAYOUTS = {
     chipK: [1, 1],
     chipOffset: [0, 0],
     chipScale: 1,
+    /** The carousel's tab pills. Separate from `chipScale` since the phone
+     *  wants the cloud's chips at full size and the tab row shrunk. */
+    pillScale: 1,
     /** Uniform scale for device + hand. */
     objScale: 1,
     objOffset: [0, 0],
@@ -53,20 +56,27 @@ export const LAYOUTS = {
   },
   mobile: {
     name: 'mobile',
-    frame: [430, 932],
-    // 0.235 puts the widest chip pair inside a 390px viewport with a gutter;
-    // 0.8 keeps enough vertical spread that the cloud still reads as a cloud.
+    frame: [440, 952],
+    // Only the chips' MOTION now — slide 1 comes from `M_Slide 1` instead, and
+    // these carry the travel away from it. See `projectChipAt`.
     chipK: [0.235, 0.8],
     // Pushed down. The heading needs three lines on a phone where it needs one
     // and a bit on desktop, and without this the top of the cloud lands inside
     // the sub-heading.
     chipOffset: [0, 58],
-    chipScale: 0.62,
+    // The file draws the cloud at FULL size on a phone — a 148-wide chip is 148
+    // wide in both frames — and lets it run off both edges. That overflow is
+    // the design: the cloud is bigger than the screen, which is what makes it
+    // read as a cloud rather than as six labels.
+    chipScale: 1,
+    /** The tab pills do NOT follow it. At full size the row is 969 wide in a
+     *  440 frame, which is the open item about the filter row, not a fix. */
+    pillScale: 0.62,
     // (932/1080) keeps the device the same share of frame height as the design
     // gives it; 0.7 then takes it down to something that leaves room for the
     // heading and the cloud on a phone, where a device at 113% of viewport
     // height is simply too much.
-    objScale: (932 / 1080) * 0.7,
+    objScale: (952 / 1080) * 0.7,
     // Raised, so the device is not sitting under the store badges by the time
     // it reaches its resting pose.
     objOffset: [0, -18],
@@ -81,7 +91,7 @@ export const LAYOUTS = {
     // scale, which is why the pair is re-tiled into the panel box rather than
     // projected window by window.
     panelGap: 8,
-    allChips: false,
+    allChips: true,
   },
 }
 
@@ -96,6 +106,30 @@ export const PHONE_MAX = 820
 
 export const pickLayout = (width) => (width < PHONE_MAX ? LAYOUTS.mobile : LAYOUTS.desktop)
 
+/**
+ * Where a chip sits on a given slide.
+ *
+ * On desktop this is just `projectChip` of the pose. On a phone it is not a
+ * projection at all for slide 1: `M_Slide 1` in the file gives the cloud its
+ * own arrangement, which is NOT the desktop one squeezed — the chips keep their
+ * full size and spill off both edges, and their positions do not fall out of
+ * any convergence applied to the desktop ones.
+ *
+ * So the file's pose is the anchor and the desktop TRAVEL is what carries them
+ * from it, converged by `chipK`. Slide 1 is then exactly the frame the designer
+ * drew, and slides 2 onward keep the choreography that already worked — with no
+ * jump between them, which taking the design for one slide and the projection
+ * for the rest would give.
+ */
+export function projectChipAt(chip, pose, L) {
+  if (L.name !== 'mobile' || !chip.mobile) return projectChip(pose.c, L)
+  const first = chip.at[0].c
+  return [
+    chip.mobile[0] + (pose.c[0] - first[0]) * L.chipK[0],
+    chip.mobile[1] + (pose.c[1] - first[1]) * L.chipK[1],
+  ]
+}
+
 /** Chip centre, in the layout's own frame pixels. */
 export function projectChip([x, y], L) {
   return [
@@ -103,6 +137,37 @@ export function projectChip([x, y], L) {
     L.frame[1] / 2 + (y - DESIGN_CY) * L.chipK[1] + L.chipOffset[1],
   ]
 }
+
+/**
+ * The device and the hand through the FIRST ACT on a phone.
+ *
+ * `M_Slide 1` draws the device at its design size — 298x614, the same numbers
+ * the 1920 frame uses — placed at 219.8, 828 in a 440x952 frame. So the hero on
+ * a phone is not the desktop composition scaled down at all: it is the same
+ * objects, 1:1, re-anchored in a narrower frame, with the overflow clipped.
+ *
+ * That is a different projection from `projectObject`, which converges
+ * everything by `objScale`, and it cannot simply replace it: `objScale` also
+ * sizes the day's photo panel, and the day has no mobile frame. So this applies
+ * only while the hero is the subject, and hands back over during slides 14-24 —
+ * where `DEVICE_FADE` holds the device at zero and there is nothing on screen
+ * for the handover to be seen in.
+ *
+ * The hand goes with it. It has no mobile frame either, but it and the device
+ * are one physical arrangement — a phone above a hand — and projecting them
+ * differently is the one thing this file exists to prevent.
+ */
+export const MOBILE_HERO_UNTIL = 14
+const HERO_ANCHOR = [219.8, 828]
+const HERO_FROM = [960, 928]
+
+export const heroProject = ([x, y]) => [
+  x - HERO_FROM[0] + HERO_ANCHOR[0],
+  y - HERO_FROM[1] + HERO_ANCHOR[1],
+]
+
+/** True where the phone's first act uses its own 1:1 arrangement. */
+export const inMobileHero = (L, slide) => L.name === 'mobile' && slide < MOBILE_HERO_UNTIL
 
 /** Device or hand centre — the uniform projection. */
 export function projectObject([x, y], L) {

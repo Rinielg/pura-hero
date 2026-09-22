@@ -60,6 +60,9 @@ import {
   projectCards,
   projectChip,
   projectLength,
+  heroProject,
+  inMobileHero,
+  projectChipAt,
   projectObject,
 } from './layout'
 
@@ -340,9 +343,9 @@ export function useHeroTimeline({
         if (!el) continue // dropped at this breakpoint
         gsap.set(el, { xPercent: -50, yPercent: -50 })
         track(el, (slide) => {
-          const { c, o } = at(chip.at, slide)
-          const [x, y] = projectChip(c, L)
-          return { x, y, opacity: o }
+          const pose = at(chip.at, slide)
+          const [x, y] = projectChipAt(chip, pose, L)
+          return { x, y, opacity: pose.o }
         })
       }
 
@@ -356,11 +359,15 @@ export function useHeroTimeline({
         const scaled = tight
           ? { ...pose, s: pose.s * 0.7, c: [pose.c[0], pose.c[1] + drop] }
           : pose
-        const [fx, fy] = projectObject(scaled.c, L)
+        // The phone's first act is drawn 1:1 from `M_Slide 1` — see heroProject.
+        const hero = inMobileHero(L, slide)
+        const [fx, fy] = hero ? heroProject(scaled.c) : projectObject(scaled.c, L)
         return {
           fx,
           fy,
-          s: scaled.s,
+          // `deviceRefHeight` carries `objScale`, so dividing it out is what
+          // puts the body back at the design's own 614.
+          s: hero ? scaled.s / L.objScale : scaled.s,
           rx: scaled.r[0],
           ry: scaled.r[1],
           rz: scaled.r[2],
@@ -414,8 +421,12 @@ export function useHeroTimeline({
         const base = HAND_POSE[3].w
         track(refs.hand.current, (slide) => {
           const pose = at(HAND_POSE, slide)
-          const [x, y] = projectObject(pose.c, L)
-          return { x, y, scale: pose.w / base }
+          const hero = inMobileHero(L, slide)
+          const [x, y] = hero ? heroProject(pose.c) : projectObject(pose.c, L)
+          // `handBaseWidth` carries `objScale` too, so the hand is put back to
+          // the design's size the same way the device is.
+          const k = hero ? 1 / L.objScale : 1
+          return { x, y, scale: (pose.w / base) * k }
         })
         track(refs.hand.current, (slide) => ({ opacity: at(HAND_FADE, slide) }), STEP_WINDOWS.handFade)
       }

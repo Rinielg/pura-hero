@@ -20,7 +20,7 @@ import {
   DAY_PILL_ROW_W,
   DAY_SCENES,
   HAND_ASPECT,
-  MOBILE_CHIPS,
+  MOBILE_COPY_TOP,
   PARTNER_BAND,
   PILL_LABELS,
   CLOSE_LINK_ITEMS,
@@ -472,7 +472,11 @@ export default function App() {
   // cloud's convergence rather than the device's uniform scale — otherwise it
   // drifts away from the chips it is supposed to sit above. 205 is where
   // Figma's slide 1 puts the top of the heading.
-  const copyTop = projectChip([960, 205], layout)[1]
+  // `M_Slide 1` puts the heading's box at y 152 in a 440x952 frame, which is
+  // not where the chip projection lands it — the phone's cloud is the file's own
+  // arrangement now, not a converged copy, so the heading above it is too.
+  const copyTop =
+    layout.name === 'mobile' ? MOBILE_COPY_TOP : projectChip([960, 205], layout)[1]
 
   return (
     <>
@@ -692,7 +696,7 @@ export default function App() {
           <div
             className="pills"
             ref={refs.pills}
-            style={{ '--ps': layout.chipScale, '--pvw': `${layout.frame[0]}px` }}
+            style={{ '--ps': layout.pillScale, '--pvw': `${layout.frame[0]}px` }}
           >
             <div className="pills__row" role="tablist" aria-label="Parts of your health">
               {PILL_LABELS.map((label, i) => (
