@@ -8,6 +8,9 @@ import { Preloader } from './Preloader'
 import { begin } from './preload'
 import {
   CARD_CONTENT,
+  CARD_GAP,
+  CARD_H,
+  CARD_W,
   FRAME,
   CAROUSEL_GEO,
   CAROUSEL_TABS,
@@ -640,9 +643,28 @@ export default function App() {
           {/* Five cards, wider than the frame on purpose: slides 13 to 15 change
               nothing but this row's x, so the end of the page is a horizontal
               scroll driven by the vertical one. */}
-          <div className="cards" ref={refs.cards}>
+          {/* Each card is given its width AND height outright rather than a
+              width and an `aspect-ratio`. Safari does not reliably derive a
+              cross size from a main size that flex resolved, so on a real
+              iPhone the cards collapsed to the height of their own text — about
+              75px — and the photograph inside them was squashed flat. The
+              emulator resolved it correctly, which is why it only showed on a
+              device. The gap goes inline too, so the five cards and four gaps
+              come to exactly `CARD_ROW_W`. */}
+          <div
+            className="cards"
+            ref={refs.cards}
+            style={{ gap: `${CARD_GAP * layout.cardScale}px` }}
+          >
             {CARD_CONTENT.map((card) => (
-              <article className="card" key={card.img}>
+              <article
+                className="card"
+                key={card.img}
+                style={{
+                  width: `${CARD_W * layout.cardScale}px`,
+                  height: `${CARD_H * layout.cardScale}px`,
+                }}
+              >
                 <img
                   className={card.frame ? 'card__photo is-cropped' : 'card__photo'}
                   src={`/assets/cards/${card.img}.jpg`}

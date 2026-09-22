@@ -21,6 +21,7 @@ import {
   BODY_COPY,
   CARDS,
   CARD_ROW_W,
+  CARDS_ARRIVE,
   CAROUSEL,
   CAROUSEL_CTRL,
   CHIPS,
@@ -734,13 +735,33 @@ export function useHeroTimeline({
       // The row is laid out at its projected width and moved by x, so the
       // horizontal scroll is a transform rather than a layout change.
       if (refs.cards.current) {
-        gsap.set(refs.cards.current, {
-          xPercent: -50,
-          yPercent: -50,
-          width: CARD_ROW_W * L.cardScale,
-        })
+        const rowW = CARD_ROW_W * L.cardScale
+        gsap.set(refs.cards.current, { xPercent: -50, yPercent: -50, width: rowW })
+
+        /**
+         * Where the row's travel starts, on a phone.
+         *
+         * The row is 1439 wide in a 440 frame, so only one card is ever on
+         * screen and the whole point is that all five pass through it. The
+         * desktop travel projected down did neither end properly: the row
+         * arrived with its first card 189 in from the left, and stopped with
+         * its last card still 161 short of the right edge — so the fifth card
+         * was never seen at all.
+         *
+         * Shifting the whole travel so the row ENTERS at the gutter fixes both
+         * ends at once, because the travel's length was already right. Computed
+         * from the row's own arrival pose rather than typed in, so it cannot go
+         * stale if `CARDS` or `cardScale` changes.
+         */
+        const CARD_GUTTER = 16
+        const cardDx =
+          L.name === 'mobile'
+            ? CARD_GUTTER - (projectCards(CARDS[CARDS_ARRIVE].c, L)[0] - rowW / 2)
+            : 0
+
         track(refs.cards.current, (slide) => {
-          const [x, y] = projectCards(at(CARDS, slide).c, L)
+          const [x0, y] = projectCards(at(CARDS, slide).c, L)
+          const x = x0 + cardDx
           return { x, y, opacity: at(CARDS, slide).o }
         })
       }

@@ -766,7 +766,14 @@ export const ACT3_CTA = [
  * are crossed, and it is why the row is tracked as a position rather than
  * living in an overflow container.
  */
-export const CARD_ROW_W = 1944
+/** One card, and the air between two. Five cards and four gaps are the row. */
+export const CARD_W = 376
+export const CARD_H = 402
+export const CARD_GAP = 16
+export const CARD_ROW_W = CARD_W * 5 + CARD_GAP * 4
+/** The slide the row arrives on, 0-indexed — slide 11, where CARDS first has o:1. */
+export const CARDS_ARRIVE = 10
+
 export const CARDS = [
   { c: [1891, 1368], o: 0 },
   { c: [1891, 1368], o: 0 },
