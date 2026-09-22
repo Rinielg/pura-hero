@@ -22,6 +22,7 @@ import {
   CARDS,
   CARD_ROW_W,
   CARDS_ARRIVE,
+  CARDS_SETTLED,
   CAROUSEL,
   CAROUSEL_CTRL,
   CHIPS,
@@ -806,9 +807,28 @@ export function useHeroTimeline({
             ? CARD_GUTTER - (projectCards(CARDS[CARDS_ARRIVE].c, L)[0] - rowW / 2)
             : 0
 
+        /**
+         * On a phone the row never sits lower than where it ends up.
+         *
+         * The desktop rise brings it up from below the fold across three
+         * slides, which is fine in a 1080 frame. Projected onto a phone it
+         * arrives at 984 in a 952 frame — entirely under the fold — and is not
+         * fully on screen until slide 13, two slides after it is revealed. So
+         * the reader sees the copy, then a gap, then nothing.
+         *
+         * Clamping to the SETTLED pose rather than picking a number keeps this
+         * true at any viewport height: wherever the row comes to rest, it fades
+         * in there instead of climbing to it. The vertical arrival is a desktop
+         * nicety; on a phone the row's job is the horizontal scroll, and being
+         * visible when it appears matters more.
+         */
+        const cardSettledY =
+          L.name === 'mobile' ? projectCards(CARDS[CARDS_SETTLED].c, L)[1] : Infinity
+
         track(refs.cards.current, (slide) => {
-          const [x0, y] = projectCards(at(CARDS, slide).c, L)
+          const [x0, y0] = projectCards(at(CARDS, slide).c, L)
           const x = x0 + cardDx
+          const y = Math.min(y0, cardSettledY)
           return { x, y, opacity: at(CARDS, slide).o }
         })
       }

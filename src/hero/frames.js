@@ -916,6 +916,9 @@ export const CARD_GAP = 16
 export const CARD_ROW_W = CARD_W * 5 + CARD_GAP * 4
 /** The slide the row arrives on, 0-indexed — slide 11, where CARDS first has o:1. */
 export const CARDS_ARRIVE = 10
+/** Where it comes to rest, 0-indexed — slide 13, the first of the three that
+ *  change nothing but its x. */
+export const CARDS_SETTLED = 12
 
 export const CARDS = [
   { c: [1891, 1368], o: 0 },
