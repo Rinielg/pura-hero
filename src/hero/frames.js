@@ -25,6 +25,16 @@ export const FRAME = { w: 1920, h: 1080 }
 /** Top of the heading's box in `M_Slide 1`, the phone's own frame. */
 export const MOBILE_COPY_TOP = 152
 
+/**
+ * The phone's cloud fades a slide later than the desktop's.
+ *
+ * `M_Slide 4` still draws every chip at full strength, where the desktop frame
+ * has had them at zero since slide 4. They go out across 4 -> 5 instead, which
+ * is the last row the table holds — `at()` clamps, so slide 5 is what every
+ * slide after it gets.
+ */
+export const MOBILE_CHIP_FADE = [1, 1, 1, 1, 0]
+
 /** Slides in the sequence. Adding one in Figma means adding an entry below. */
 export const SLIDES = 43
 
@@ -52,11 +62,19 @@ const hold = (n, v) => Array(n).fill(v)
  * now "Prescriptions" — so an index would have quietly swapped two chips rather
  * than failing.
  *
- * Slides 4 and 5 are every chip at zero opacity, and the file has not renamed
- * them there. Those two poses are therefore taken by position, which is safe
- * precisely because nothing is visible: they only decide the shape of the
- * collapse. "Virtual Consultations" has no node at all on slide 5 and holds its
- * slide-4 pose, which it is already invisible at.
+ * Slides 4 and 5 are every chip at zero opacity on DESKTOP, and the file has
+ * not renamed them there. Those two desktop poses are therefore taken by
+ * position, which is safe precisely because nothing is visible.
+ *
+ * `mobile` is the phone's own cloud, one centre per slide 1 to 5. Three of the
+ * five come straight from a frame — `M_Slide 1`, `M_Slide 3`, `M_Slide 4` — and
+ * the other two are the only derivation here: slide 2 is the midpoint of the
+ * two frames either side of it, and slide 5 continues the 3-to-4 convergence by
+ * the same step again, where the cloud has already faded out.
+ *
+ * The phone's chips also fade LATER than the desktop's. The file still draws
+ * them at full strength on `M_Slide 4`, where the desktop frame has them at
+ * zero since slide 4 — so `MOBILE_CHIP_FADE` carries the opacity instead.
  *
  * `icon` names a file in public/assets/icons. Three of them do not match their
  * chip — Liver carries the PureScore mark, Nutrition the Metabolic one and
@@ -67,7 +85,13 @@ export const CHIPS = [
     key: 'lab-results',
     label: 'Lab results',
     icon: 'health-report',
-    mobile: [43.1, 301.7],
+    mobile: [
+      [43.1, 301.7],
+      [43.6, 351.2],
+      [44.1, 400.7],
+      [274.1, 410.7],
+      [504.1, 420.7],
+    ],
     at: [
       { c: [263.1, 397.7], o: 0.6 },
       { c: [440.1, 419.7], o: 0.6 },
@@ -80,7 +104,13 @@ export const CHIPS = [
     key: 'medical-history',
     label: 'Medical history',
     icon: 'health-records',
-    mobile: [292.6, 470.7],
+    mobile: [
+      [292.6, 470.7],
+      [351.6, 534.2],
+      [410.6, 597.7],
+      [289.6, 615.7],
+      [168.6, 633.7],
+    ],
     at: [
       { c: [1318.6, 447.7], o: 1 },
       { c: [1247.6, 431.7], o: 1 },
@@ -93,7 +123,13 @@ export const CHIPS = [
     key: 'wearables',
     label: 'Wearables',
     icon: 'wearables',
-    mobile: [-39.4, 664.7],
+    mobile: [
+      [-39.4, 664.7],
+      [49.6, 689.7],
+      [138.6, 714.7],
+      [138.6, 714.7],
+      [138.6, 714.7],
+    ],
     at: [
       { c: [668.6, 630.7], o: 1 },
       { c: [825.6, 613.7], o: 1 },
@@ -106,7 +142,13 @@ export const CHIPS = [
     key: 'liver',
     label: 'Liver',
     icon: 'purescore',
-    mobile: [-445, 679],
+    mobile: [
+      [-445, 679],
+      [-445, 679],
+      [-445, 679],
+      [-445, 679],
+      [-445, 679],
+    ],
     at: [
       { c: [287, 679], o: 0.6 },
       { c: [504, 659], o: 0.6 },
@@ -119,7 +161,13 @@ export const CHIPS = [
     key: 'renal',
     label: 'Renal',
     icon: 'renal',
-    mobile: [400, 385],
+    mobile: [
+      [400, 385],
+      [400.5, 434.5],
+      [401, 484],
+      [299, 518],
+      [197, 552],
+    ],
     at: [
       { c: [1549, 486], o: 0.8 },
       { c: [1459, 475], o: 0.8 },
@@ -132,7 +180,13 @@ export const CHIPS = [
     key: 'metabolic',
     label: 'Metabolic',
     icon: 'metabolic',
-    mobile: [-31.5, 755],
+    mobile: [
+      [-31.5, 755],
+      [46.5, 799],
+      [124.5, 843],
+      [124.5, 843],
+      [124.5, 843],
+    ],
     at: [
       { c: [564.5, 755], o: 0.8 },
       { c: [738.5, 714], o: 0.8 },
@@ -145,7 +199,13 @@ export const CHIPS = [
     key: 'mental-wellness',
     label: 'Mental Wellness',
     icon: 'brain',
-    mobile: [352, 599],
+    mobile: [
+      [352, 599],
+      [280.5, 691.5],
+      [209, 784],
+      [199, 784],
+      [189, 784],
+    ],
     at: [
       { c: [1184, 556], o: 1 },
       { c: [1135, 533], o: 1 },
@@ -158,7 +218,13 @@ export const CHIPS = [
     key: 'prescriptions',
     label: 'Prescriptions',
     icon: 'prescription',
-    mobile: [449.6, 301.7],
+    mobile: [
+      [449.6, 301.7],
+      [449.1, 342.7],
+      [448.6, 383.7],
+      [388.6, 418.7],
+      [328.6, 453.7],
+    ],
     at: [
       { c: [1704.6, 362.7], o: 0.6 },
       { c: [1556.6, 369.7], o: 0.6 },
@@ -171,7 +237,13 @@ export const CHIPS = [
     key: 'sleep',
     label: 'Sleep',
     icon: 'partly-cloudy-night',
-    mobile: [475, 777],
+    mobile: [
+      [475, 777],
+      [441.5, 776],
+      [408, 775],
+      [242, 753],
+      [76, 731],
+    ],
     at: [
       { c: [1263, 755], o: 0.6 },
       { c: [1127, 731], o: 0.6 },
@@ -184,7 +256,13 @@ export const CHIPS = [
     key: 'nutrition',
     label: 'Nutrition',
     icon: 'metabolic',
-    mobile: [41.5, 578],
+    mobile: [
+      [41.5, 578],
+      [91, 616],
+      [140.5, 654],
+      [140.5, 654],
+      [140.5, 654],
+    ],
     at: [
       { c: [892.5, 542], o: 1 },
       { c: [935.5, 508], o: 1 },
@@ -197,7 +275,13 @@ export const CHIPS = [
     key: 'respiratory',
     label: 'Respiratory',
     icon: 'pulmonology',
-    mobile: [514, 688],
+    mobile: [
+      [514, 688],
+      [488, 689],
+      [462, 690],
+      [241, 684],
+      [20, 678],
+    ],
     at: [
       { c: [1401, 633], o: 0.6 },
       { c: [1322, 601], o: 0.6 },
@@ -210,7 +294,13 @@ export const CHIPS = [
     key: 'cardiovascular',
     label: 'Cardiovascular',
     icon: 'pregnacare',
-    mobile: [68.5, 470],
+    mobile: [
+      [68.5, 470],
+      [64, 517],
+      [59.5, 564],
+      [236.5, 580],
+      [413.5, 596],
+    ],
     at: [
       { c: [556.5, 506], o: 0.8 },
       { c: [676.5, 537], o: 0.8 },
@@ -223,7 +313,13 @@ export const CHIPS = [
     key: 'virtual-consultations',
     label: 'Virtual Consultations',
     icon: 'stethoscope',
-    mobile: [170, 386],
+    mobile: [
+      [170, 386],
+      [153, 432.5],
+      [136, 479],
+      [312, 487],
+      [488, 495],
+    ],
     at: [
       { c: [849, 429], o: 0.8 },
       { c: [849, 429], o: 0.8 },
@@ -273,6 +369,39 @@ const ai = (screenHeight) => Math.round(((screenHeight * 163.371) / 158.259 / 63
 
 const TILT = [-32, -35, -24]
 const FACE = [0, 0, 0]
+
+/**
+ * The phone's device through the first act, from the four frames that exist.
+ *
+ * `h` is the phone BODY's height in the frame's own pixels, which is what
+ * `DEVICE_REF_H` is a multiple of. Slides 1, 3, 4 and 7 are read off `M_Slide
+ * 1`, `M_Slide 3`, `M_Slide 4` and `M_Slide 7`; 2, 5 and 6 are interpolated
+ * between them.
+ *
+ * Two things here are NOT the desktop choreography scaled down:
+ *
+ *   The phone grows and comes back. 614 at slide 1, 820 across the two
+ *   transition frames, 614 again by 7. The desktop frame runs 614 -> 934 -> 930
+ *   and never returns.
+ *
+ *   There is no hand. `M_Slide 3` and `M_Slide 4` have no Hand node at all, so
+ *   the phone simply turns and grows on its own — see App.jsx, which does not
+ *   render it on a phone.
+ *
+ * The turn is left where the desktop puts it: tilted from slide 2, face-on
+ * again at 7, and the timeline tweens between. Slide 7's pose is exactly what
+ * `heroProject` gives for the desktop slide-7 centre, so slides 8 onward carry
+ * on from here with nothing to join.
+ */
+export const MOBILE_DEVICE = [
+  { c: [219.8, 828], h: 614, r: FACE },
+  { c: [220.2, 735], h: 717, r: TILT },
+  { c: [220.6, 643], h: 820, r: TILT },
+  { c: [220.6, 643], h: 820, r: TILT },
+  { c: [220.3, 655], h: 751, r: TILT },
+  { c: [220.1, 667], h: 683, r: TILT },
+  { c: [219.8, 679], h: 614, r: FACE },
+]
 
 /**
  * The device, as eight poses.

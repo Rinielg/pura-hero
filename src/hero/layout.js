@@ -114,30 +114,6 @@ export const PHONE_MAX = 820
 
 export const pickLayout = (width) => (width < PHONE_MAX ? LAYOUTS.mobile : LAYOUTS.desktop)
 
-/**
- * Where a chip sits on a given slide.
- *
- * On desktop this is just `projectChip` of the pose. On a phone it is not a
- * projection at all for slide 1: `M_Slide 1` in the file gives the cloud its
- * own arrangement, which is NOT the desktop one squeezed — the chips keep their
- * full size and spill off both edges, and their positions do not fall out of
- * any convergence applied to the desktop ones.
- *
- * So the file's pose is the anchor and the desktop TRAVEL is what carries them
- * from it, converged by `chipK`. Slide 1 is then exactly the frame the designer
- * drew, and slides 2 onward keep the choreography that already worked — with no
- * jump between them, which taking the design for one slide and the projection
- * for the rest would give.
- */
-export function projectChipAt(chip, pose, L) {
-  if (L.name !== 'mobile' || !chip.mobile) return projectChip(pose.c, L)
-  const first = chip.at[0].c
-  return [
-    chip.mobile[0] + (pose.c[0] - first[0]) * L.chipK[0],
-    chip.mobile[1] + (pose.c[1] - first[1]) * L.chipK[1],
-  ]
-}
-
 /** Chip centre, in the layout's own frame pixels. */
 export function projectChip([x, y], L) {
   return [

@@ -534,13 +534,19 @@ export default function App() {
             </div>
           ))}
 
-          <img
-            className="hand"
-            ref={refs.hand}
-            src="/assets/hand.webp"
-            alt=""
-            style={{ width: `${handW}px`, height: `${handW * HAND_ASPECT}px` }}
-          />
+          {/* Not on a phone. `M_Slide 3` and `M_Slide 4` are the transition and
+              neither has a Hand node — the device simply turns and grows on its
+              own there. `track` skips a ref with no element, so the hand's two
+              tracks drop out with it. */}
+          {layout.name === 'mobile' ? null : (
+            <img
+              className="hand"
+              ref={refs.hand}
+              src="/assets/hand.webp"
+              alt=""
+              style={{ width: `${handW}px`, height: `${handW * HAND_ASPECT}px` }}
+            />
+          )}
 
           {/* The day's six photo panels, stacked in one box.
               They live BEHIND the device and behind the wash, which is the

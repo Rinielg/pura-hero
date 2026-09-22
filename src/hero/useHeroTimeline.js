@@ -26,6 +26,8 @@ import {
   CAROUSEL_CTRL,
   CHIPS,
   FRAME,
+  MOBILE_CHIP_FADE,
+  MOBILE_DEVICE,
   CUE_LABEL,
   COPY_HEAD,
   COPY_SUB,
@@ -57,13 +59,12 @@ import {
 } from './frames'
 import {
   DEVICE_REF_H,
+  heroProject,
+  inMobileHero,
   projectBottom,
   projectCards,
   projectChip,
   projectLength,
-  heroProject,
-  inMobileHero,
-  projectChipAt,
   projectObject,
 } from './layout'
 
@@ -345,8 +346,15 @@ export function useHeroTimeline({
         gsap.set(el, { xPercent: -50, yPercent: -50 })
         track(el, (slide) => {
           const pose = at(chip.at, slide)
-          const [x, y] = projectChipAt(chip, pose, L)
-          return { x, y, opacity: pose.o }
+          // On a phone the cloud is the file's own, one centre per slide from
+          // `M_Slide 1`, `3` and `4` — not the desktop cloud converged. Its
+          // opacity is the chip's OWN strength held until the fade, because the
+          // desktop table has every chip at zero from slide 4 and the phone's
+          // frames still draw them at full there.
+          const mob = L.name === 'mobile' && chip.mobile ? at(chip.mobile, slide) : null
+          const [x, y] = mob ?? projectChip(pose.c, L)
+          const opacity = mob ? chip.at[0].o * at(MOBILE_CHIP_FADE, slide) : pose.o
+          return { x, y, opacity }
         })
       }
 
@@ -360,24 +368,28 @@ export function useHeroTimeline({
         const scaled = tight
           ? { ...pose, s: pose.s * 0.7, c: [pose.c[0], pose.c[1] + drop] }
           : pose
-        // The phone's first act is drawn 1:1 from `M_Slide 1` — see heroProject.
+        // The phone's first act on mobile is its own, from the four M_ frames.
+        // `MOBILE_DEVICE` covers slides 1 to 7; past that the phone is leaving
+        // and `heroProject` carries it, which joins seamlessly because slide 7
+        // in the table IS what heroProject gives for the desktop slide-7 pose.
         const hero = inMobileHero(L, slide)
-        const [fx, fy] = hero ? heroProject(scaled.c) : projectObject(scaled.c, L)
+        const mob = hero && slide < MOBILE_DEVICE.length ? MOBILE_DEVICE[slide] : null
+        const [fx, fy] = mob ? mob.c : hero ? heroProject(scaled.c) : projectObject(scaled.c, L)
         return {
           fx,
           fy,
           // `deviceRefHeight` carries `objScale`, so dividing it out is what
-          // puts the body back at the design's own 614 — and on a phone it STAYS
-          // there. `M_Slide 1` and `M_Slide 7` both draw the device 298x614, so
-          // it does not grow through the first act the way the desktop frame
-          // grows it to 930. Left growing, it reached 930 in a 952 frame: the
-          // phone filled the screen, the copy above it was pushed off the top,
-          // and the agent bar ended up floating in the middle of the app's own
-          // screen. That is what "the bar comes in too soon" looked like.
-          s: hero ? DEVICE_POSE[0].s / L.objScale : scaled.s,
-          rx: scaled.r[0],
-          ry: scaled.r[1],
-          rz: scaled.r[2],
+          // turns a body height in the phone frame's own pixels back into a
+          // pose scale. Past the table the phone holds slide 1's size while it
+          // leaves, which is what slide 7 is anyway.
+          s: mob
+            ? mob.h / (DEVICE_REF_H * L.objScale)
+            : hero
+              ? DEVICE_POSE[0].s / L.objScale
+              : scaled.s,
+          rx: (mob ?? scaled).r[0],
+          ry: (mob ?? scaled).r[1],
+          rz: (mob ?? scaled).r[2],
           // An INDEX into SCREEN_URLS, tweened. The renderer crossfades between
           // the two textures either side of it, so the list's order matters —
           // see the note on SCREEN_SEQ.
