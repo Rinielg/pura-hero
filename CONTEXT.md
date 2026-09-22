@@ -4,7 +4,7 @@ The running record of this prototype: what is built, why it is built that way, w
 broke and how it was fixed. Read this before continuing the build. The README covers
 how to run it; this file covers how to *reason* about it.
 
-- **Design source:** [Pura Website](https://www.figma.com/design/1ybPUzTZG9WJ2dle6NfH2U/Pura-Website), page **Final Website**, frames `Slide 1` … `Slide 43`, plus the `Carousel Selection 2`–`5` frames for the tabbed band, the `Loader` frame (node `6289:96509`) for the loading screen, plus the `Menu` frame (node `6203:71995`) for the navigation.
+- **Design source:** [Pura Website](https://www.figma.com/design/1ybPUzTZG9WJ2dle6NfH2U/Pura-Website), page **Final Website**, frames `Slide 1` … `Slide 43`, plus the `Carousel Selection 2`–`5` frames for the tabbed band, the `Loader` frame (node `6289:96509`) for the loading screen, the `M_Slide 1/3/4/7` frames (440×952) for the phone's first act, plus the `Menu` frame (node `6203:71995`) for the navigation.
 - **Content source for the inner pages:** `https://pura-website-upload-1.vercel.app` — **not** pura.ai.
 - **Live:** https://pura-hero.vercel.app · **Repo:** https://github.com/Rinielg/pura-hero (private — it carries PureHealth brand assets)
 - **Device model:** forked from [Rinielg/pura-device-viewer](https://github.com/Rinielg/pura-device-viewer)
@@ -1204,6 +1204,76 @@ Keep it in mind when adding anything to those layers: an image added without
 
 ---
 
+## 7c. The phone's own hero
+
+There are four mobile frames — `M_Slide 1`, `3`, `4` and `7`, all 440×952 — and
+between them they define the whole first act on a phone. It is **not** the
+desktop composition scaled down, and every attempt to treat it as one was wrong:
+
+| | desktop | phone |
+|---|---|---|
+| chips | 12 of 13 shown, converged by `chipK` | all 13, **full size**, spilling off both edges, at the file's own per-slide centres |
+| chip fade | zero from slide 4 | full strength on `M_Slide 4`, out by 5 (`MOBILE_CHIP_FADE`) |
+| device | 614 → 934 → 930, never returns | 614 → **820** across 3 and 4 → 614 again by 7 (`MOBILE_DEVICE`) |
+| hand | slides 4–6 | **none.** Neither transition frame has a Hand node |
+| kicker | projected | 205, with its paragraph 65 under it |
+
+`heroProject` is FITTED, not a translation. Two frames determine it exactly: the
+phone travels 149 up its frame where the desktop travels 174.5, so y carries a
+0.854 compression. A pure translation puts slide 7 twenty-five pixels low.
+
+`MOBILE_DEVICE` covers slides 1–7. Past that the phone is leaving and
+`heroProject` carries it, which joins with nothing to smooth over because slide
+7 in the table IS what `heroProject` gives for the desktop slide-7 pose.
+
+**Read more than two frames before inferring a curve.** From `M_Slide 1` and
+`M_Slide 7` alone the device looked like it held 614 throughout — both draw it
+at that size — and that shipped before `M_Slide 3` showed it reaching 820 in
+between.
+
+### The frame is 952 tall and a phone is not
+
+Safari's chrome takes an iPhone to about 780, and `cover` crops the difference
+off the top and the bottom equally — so the heading's box lands at 66, under a
+navigation bar whose bottom edge is at 92. **This is invisible in any emulator
+sized to the frame**, which is how it reached a device.
+
+The stage takes a `stageShift` on mobile: down by exactly enough to clear the
+nav and no more, so the phone below keeps what height the viewport can give it.
+On a viewport tall enough to show the whole frame it is zero.
+
+---
+
+## 7d. Two traps that only appear on a real device
+
+Both of these measured clean in every emulated viewport and were broken on an
+iPhone. Neither produced an error.
+
+### `overflow: hidden` while ScrollTrigger measures
+
+`html.is-loading` locks the page during loading. On a phone there is no
+ScrollSmoother, so that lock is the only thing holding the document — and if the
+timeline is built before loading finishes, **ScrollTrigger measures a document
+with nothing to scroll, caches it, and pins every trigger at progress 0 for the
+rest of the session.** The page scrolls; the sequence never moves; nothing
+errors.
+
+It is a race, so it looks intermittent, and it is very easy to blame the dev
+server for. `setSmootherPaused(false)` now calls `ScrollTrigger.refresh()`, and
+`is-loading` has a failsafe release on its own timer so the lock can never
+outlive the loader.
+
+### `aspect-ratio` on a flex-resolved width
+
+`.card` took its width from `flex: 1 0 0` and its height from `aspect-ratio`.
+Safari does not reliably derive a cross size from a main size that flex
+resolved: the cards fell back to the height of their own text, about 75px, and
+the photograph inside was squashed flat. Both dimensions are given outright now.
+
+**If a size has to be right, give it — do not have it derived.**
+
+---
+
 ## 8. How to verify a change
 
 Screenshots lie here — the Browser pane returns stale frames, and when the pane is hidden
@@ -1279,9 +1349,10 @@ const rootReasons = (el) => {
 
 ## 9. Open items
 
-- **Mobile has a design for the FIRST SLIDE only.** `M_Slide 1` (440×952) is the phone's
-  hero and the build follows it exactly — thirteen chips at full size, the device 1:1, the
-  type at 34/16. Slides 2–43 are still projected rather than designed. The filter pill row
+- **Mobile is designed for slides 1, 3, 4 and 7 only.** Those four frames are followed
+  exactly — see §7c. Slides 2, 5 and 6 are INTERPOLATED between them: if the phone's
+  shrink back from 820 to 614 reads wrong, those two rows are where to look. Slides 8–43
+  are still projected rather than designed. The filter pill row
   is ~603px on a 375px screen even after scaling with `--ps` — the ends are cut off. It
   wants either a real mobile frame or a horizontally scrollable row. Flagged, not invented.
 - **The 23 inner pages have no design either.** They are built in the sequence's visual

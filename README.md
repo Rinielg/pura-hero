@@ -230,6 +230,13 @@ The result lands within 1.5% of the reference on both axes.
   The copy itself is measured at build time now, so it survives a copy change —
   but the device's 0.7 shrink and the band's own margins are still numbers that
   fit rather than numbers from a frame.
+- **The phone has its own hero, not a scaled desktop one.** Four mobile frames
+  (`M_Slide 1`, `3`, `4`, `7`) define the first act: all thirteen chips at full
+  size, the device on its own scale curve, no hand at all. See CONTEXT §7c.
+- **Two bugs in this build only ever appeared on a real device** — a scroll lock
+  that pinned ScrollTrigger at zero, and `aspect-ratio` collapsing on a
+  flex-resolved width in Safari. Both measured clean in every emulator. CONTEXT
+  §7d has them; check a phone before believing a mobile fix.
 - **A line that hugs in Figma is not a line with a measure.** `textAutoResize`
   says which, and a hugging node given a fixed CSS width fits until the copy
   changes. Wrapping bugs also show up on machines WITH Greycliff CF installed
@@ -238,11 +245,12 @@ The result lands within 1.5% of the reference on both axes.
   file's `Loader` frame. Everything below the hero carries `fetchPriority="low"` — without
   it the ~140 always-mounted `<img>` elements take every connection and the phone's own
   screen textures do not arrive for fourteen seconds. See CONTEXT §7b.
-- **Mobile composition is a derivation, not a design.** Six of the thirteen chips
-  survive, the cloud converges harder, and the scroll cue drops its label. Those
-  are judgement calls made to fit — the Figma file only covers 1920×1080. The
-  same applies to the 23 inner pages: there are no Figma frames for them, so
-  every block is built to be replaced when real designs land.
+- **Mobile is designed for the first act and derived after it.** Four frames
+  (`M_Slide 1`, `3`, `4`, `7`) cover slides 1 to 7 and the build follows them
+  exactly; slides 2, 5 and 6 are interpolated between them, and everything from
+  8 on is still the desktop composition projected down. The same applies to the
+  23 inner pages: there are no Figma frames for them, so every block is built to
+  be replaced when real designs land.
 - **The inner pages' filter pill row overflows on a phone.** ~603px of pills on a
   375px screen even after scaling. It wants a real mobile frame or a scrollable
   row rather than an invented one.
