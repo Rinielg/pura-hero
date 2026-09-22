@@ -29,7 +29,7 @@
  */
 
 /** How long the loader may hold the page, whatever happens. */
-const DEADLINE = 12000
+export const DEADLINE = 12000
 
 /** key -> { weight, done }. Insertion order is irrelevant; only the sum is. */
 const tasks = new Map()

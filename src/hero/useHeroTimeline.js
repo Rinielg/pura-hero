@@ -44,6 +44,9 @@ import {
   HAND_FADE,
   HAND_POSE,
   KICKER,
+  MOBILE_BODY_GAP,
+  MOBILE_COPY_REF,
+  MOBILE_KICKER_Y,
   PARTNERS,
   PARTNER_DRIFT,
   TWIN_HEAD,
@@ -174,6 +177,23 @@ export function goToMoment(progress = 0) {
  */
 export function setSmootherPaused(paused) {
   activeSmoother?.paused(paused)
+  if (paused) return
+
+  /**
+   * The page has just become scrollable again, so everything has to re-measure.
+   *
+   * This is not a nicety. `html.is-loading` puts `overflow: hidden` on the
+   * document, and on a phone — where there is no smoother and that lock is the
+   * only thing holding the page — ScrollTrigger measures a document with
+   * NOTHING to scroll. It caches that, and every trigger sits at progress 0 for
+   * the rest of the session: the page scrolls, the sequence never moves, and
+   * there is no error to find.
+   *
+   * It only bites when the timeline is built BEFORE loading finishes, which is
+   * a race — which is why it looked intermittent and like a dev-server fault
+   * for far too long.
+   */
+  ScrollTrigger.refresh()
 }
 
 export function advance() {
@@ -465,11 +485,26 @@ export function useHeroTimeline({
         filter: blur(at(COPY_SUB, slide).b),
       }))
 
+      /**
+       * The kicker's centre, and the anchor its paragraph hangs off.
+       *
+       * On a phone this is the frame's own y rather than the chip cloud's
+       * convergence — `M_Slide 7` puts it at 205 where the convergence lands it
+       * at 267, and at 267 the paragraph below ran into the rising phone.
+       * Anchored on that frame and carrying the desktop table's travel, the way
+       * the cloud and the device do.
+       */
+      const kickerAt = (slide, L2) => {
+        const y = at(KICKER, slide).y
+        if (L2.name !== 'mobile') return projectChip([960, y], L2)
+        return [projectChip([960, y], L2)[0], MOBILE_KICKER_Y + (y - KICKER[MOBILE_COPY_REF].y)]
+      }
+
       // --------------------------------------------------------------- kicker
       if (refs.kicker.current) {
         gsap.set(refs.kicker.current, { xPercent: -50, yPercent: -50 })
         track(refs.kicker.current, (slide) => {
-          const [x, y] = projectChip([960, at(KICKER, slide).y], L)
+          const [x, y] = kickerAt(slide, L)
           return { x, y, opacity: at(KICKER, slide).o, filter: blur(at(KICKER, slide).b) }
         })
       }
@@ -483,7 +518,7 @@ export function useHeroTimeline({
         const mobile = L.name === 'mobile'
         track(refs.body.current, (slide) => {
           const [x, y] = mobile
-            ? projectChip([960, at(KICKER, slide).y + 120], L)
+            ? [kickerAt(slide, L)[0], kickerAt(slide, L)[1] + MOBILE_BODY_GAP]
             : projectChip(at(BODY_COPY, slide).c, L)
           return { x, y, opacity: at(BODY_COPY, slide).o, filter: blur(at(BODY_COPY, slide).b) }
         })

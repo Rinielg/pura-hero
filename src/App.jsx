@@ -5,7 +5,7 @@ import { Backdrop } from './Backdrop'
 import { QUALITY } from './config'
 import { AppStores, Nav } from './hero/Chrome'
 import { Preloader } from './Preloader'
-import { begin } from './preload'
+import { DEADLINE, begin } from './preload'
 import {
   CARD_CONTENT,
   CARD_GAP,
@@ -403,13 +403,23 @@ export default function App() {
     setSmootherPaused(true)
     document.documentElement.classList.add('is-loading')
     let live = true
-    begin({ phone }).then(() => {
-      if (!live) return
+    const unlock = () => {
       setSmootherPaused(false)
       document.documentElement.classList.remove('is-loading')
+    }
+    begin({ phone }).then(() => {
+      if (live) unlock()
     })
+    // A second, independent release. `begin` has its own deadline, but this one
+    // does not depend on anything upstream of it resolving — and the failure it
+    // guards against is the worst kind: the overlay unmounts, the page looks
+    // finished, and `is-loading` is still holding `overflow: hidden`, so it
+    // simply will not scroll and nothing on screen says why. Seen in dev when
+    // the module graph got duplicated; cheap enough to make impossible.
+    const failsafe = setTimeout(unlock, DEADLINE + 2000)
     return () => {
       live = false
+      clearTimeout(failsafe)
       document.documentElement.classList.remove('is-loading')
     }
   }, [])
@@ -459,10 +469,29 @@ export default function App() {
 
   useHeroTimeline({ wrapperRef, contentRef, heroRef, refs, layout, reduced, onProgress: setFinished })
 
+  /**
+   * How far the whole composition is pushed down on a phone.
+   *
+   * The frame is 952 tall and a real browser viewport is not — Safari's chrome
+   * takes an iPhone to about 780 — and `cover` crops the difference off the top
+   * and the bottom equally. That put the heading's box at 66, under a
+   * navigation bar whose own bottom edge is at 92, so the title was unreadable
+   * on a device and fine in every emulator sized to the frame.
+   *
+   * The stage moves down by exactly enough to clear it and no more, so the
+   * phone below keeps as much of its height as the viewport can give it. On a
+   * viewport tall enough to show the frame, this is zero and nothing moves.
+   */
+  const NAV_BOTTOM = 92
+  const NAV_GAP = 12
+  const headingTop = viewport.h / 2 + (MOBILE_COPY_TOP - layout.frame[1] / 2) * scale
+  const stageShift =
+    layout.name === 'mobile' ? Math.max(0, NAV_BOTTOM + NAV_GAP - headingTop) : 0
+
   const stageStyle = {
     width: `${layout.frame[0]}px`,
     height: `${layout.frame[1]}px`,
-    transform: `translate(-50%, -50%) scale(${scale})`,
+    transform: `translate(-50%, calc(-50% + ${stageShift}px)) scale(${scale})`,
   }
   /** The stage that carries the left-hung furniture — see the note above. */
   const columnStyle = {

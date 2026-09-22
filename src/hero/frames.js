@@ -26,6 +26,20 @@ export const FRAME = { w: 1920, h: 1080 }
 export const MOBILE_COPY_TOP = 152
 
 /**
+ * The second act's copy on a phone, from `M_Slide 7`: kicker centred at 205,
+ * its paragraph 65 below it.
+ *
+ * The gap was 120, which is what put the paragraph at 363 — and the device's
+ * top edge at slide 7 is 372, so the phone was rising straight through it. The
+ * frame has 65, and at 65 the paragraph clears the phone by more than a hundred
+ * pixels.
+ */
+export const MOBILE_KICKER_Y = 205
+export const MOBILE_BODY_GAP = 65
+/** The slide those two are read off — `M_Slide 7`, 0-indexed. */
+export const MOBILE_COPY_REF = 6
+
+/**
  * The phone's cloud fades a slide later than the desktop's.
  *
  * `M_Slide 4` still draws every chip at full strength, where the desktop frame
