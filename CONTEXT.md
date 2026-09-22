@@ -1337,9 +1337,10 @@ const rootReasons = (el) => {
   leftovers from the inner-pages build that `vercel --prod` happens to upload along with
   everything else, not a hole in the repo — a fresh clone deploys the same site. Commit
   them or delete them; either is fine, and neither is urgent.
-- **Promo cards 3 and 4** still share the line "Give your mind the same attention".
-  The tags now differ (Mental Wellness / Care) and the file has it that way, so the
-  build follows it — but the body copy looks like placeholder waiting to be written.
+- **Promo cards 3 and 4 now share a TAG rather than a line.** Card 4 has become
+  "A doctor when you need one", which settles the duplicate headline — but the file
+  tags both cards Mental Wellness, with the same brain mark, where card 4 used to
+  carry Care. Followed as drawn. `tag-care.svg` is now unused and kept on disk.
 - **The footer still lists all 23 pages while the bar shows two.** The MVP menu is what
   ships and `MENU` still drives the footer and the inner pages' sibling band, which keeps
   the site connected — but for a first release the two disagree about how big the site is.

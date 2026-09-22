@@ -146,11 +146,12 @@ function Partners({ scale, frameW, innerRef }) {
       <h2 className="partners__head" style={{ top: px(B.head) }}>
         Built by PureHealth.
       </h2>
-      {/* Verbatim from the file, missing apostrophe included — it reads
-          "worlds" where it plainly means "world's". Flagged to Riniel rather
-          than corrected here, because copy is not this build's to change. */}
+      {/* A STRAIGHT apostrophe, because that is the character the file's text
+          node holds — checked, not assumed: every character in it is ASCII.
+          The rest of the site's copy uses a curly one, so this is the odd one
+          out, but matching the file beats matching the house style. */}
       <p className="partners__sub" style={{ top: px(B.sub) }}>
-        The worlds largest and most trusted healthcare group.
+        One of the world's largest and most trusted healthcare groups.
       </p>
 
       {/* The logo row is GONE. The file hides `Partner Logos` on 17 and 18 and

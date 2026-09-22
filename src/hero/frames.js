@@ -801,9 +801,13 @@ export const CARD_CONTENT = [
   },
   {
     img: 'mental-wellness-2',
-    icon: 'tag-care',
-    tag: 'Care',
-    title: 'Give your mind the same attention',
+    // The file tags this one Mental Wellness too, with the same brain mark as
+    // the card before it — not Care, which is what this used to carry. The
+    // photograph is unchanged and always was a video call with a doctor, so it
+    // fits the new line better than the one it replaces.
+    icon: 'tag-mental-wellness',
+    tag: 'Mental Wellness',
+    title: 'A doctor when you need one',
   },
   {
     img: 'family',
