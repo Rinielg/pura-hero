@@ -127,6 +127,11 @@ Three things about that extraction are worth knowing before touching it:
 The two PayTabs links in Terms §5 are read off the PDF's own link annotations
 (`https://ai.paytabs.com/...`), not guessed.
 
+**Which PDF feeds which page was checked, not assumed.** The brief listed them
+the other way round, so the pairing was taken from the documents themselves —
+the frame's header reads *Terms & Conditions / Last updated: 20 August 2026*,
+which is the T&C PDF's own date. Riniel has confirmed it. Do not "fix" it back.
+
 Two labels differ between the two sources. **Figma wins for the nav**: it says
 *Your Health* where the site says *My Health*, and *Pura AI* where the site says
 *Ask Pura*.
