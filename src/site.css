@@ -866,18 +866,36 @@
   color: var(--ink);
 }
 
-/* Clause numbers sit in their own column and the text hangs off them, which is
-   how both source documents are set and the only way a nested 7.1.2.1 stays
-   legible. */
+/**
+ * Numbering.
+ *
+ * Every numbered line is a two-column grid: the number, then the text. A
+ * hanging indent (padding-left plus a negative text-indent) draws the same
+ * picture and was what this used first, but it computes the number's position
+ * from the text's, and the two drifted apart by the container's padding — the
+ * clause numbers ended up hanging outside the column while the section
+ * headings sat inside it.
+ *
+ * The grid states the column instead of deriving it, so `1.` and `1.1.` share
+ * one left edge by construction, at every width and in every engine.
+ */
 .legal__n {
-  display: inline-block;
-  width: 56px;
+  width: auto;
 }
 
-/* A section number stays next to its title — a heading is read as a phrase,
-   and "1." parked 56px away from "Aim and purpose" is not one. The hanging
-   column below is for the clauses, where the numbers are four levels deep and
-   have to line up with each other. */
+.legal__h,
+.legal__t,
+.legal__p {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+}
+
+/* A paragraph with no number is body text in its own right, not a clause, and
+   runs the full measure. */
+.legal__p--flush {
+  display: block;
+}
+
 .legal__h {
   margin: 40px 0 16px;
   font-family: var(--brand);
@@ -888,40 +906,36 @@
 }
 
 .legal__h:first-child { margin-top: 0; }
-.legal__h .legal__n { width: auto; padding-right: 8px; }
 
 .legal__t {
   margin: 0 0 4px;
-  padding-left: 56px;
-  text-indent: -56px;
   font-size: 16px;
   line-height: 1.4;
   font-weight: 700;
 }
 
 .legal__clause { margin: 0 0 16px; }
-.legal__clause .legal__p { margin: 0; padding-left: 56px; text-indent: 0; }
+
+/* The clause's body sits under its title, not under its number. */
+.legal__clause .legal__p {
+  display: block;
+  margin: 0;
+  padding-left: 44px;
+}
 
 .legal__p {
   margin: 0 0 16px;
-  padding-left: 56px;
-  text-indent: -56px;
 }
 
-/* An unnumbered paragraph is body text in its own right, not a clause. */
-.legal__p--flush {
-  padding-left: 0;
-  text-indent: 0;
-}
-
+/* One step in, and a wider column: these are 12.2.10 and 7.1.2.1. */
 .legal__p--sub {
-  padding-left: 112px;
-  text-indent: -56px;
+  margin-left: 44px;
+  grid-template-columns: 60px 1fr;
 }
 
 .legal__ul {
   margin: 0 0 16px;
-  padding-left: 76px;
+  padding-left: 64px;
 }
 
 .legal__ul li { margin: 0 0 8px; }
@@ -945,7 +959,7 @@
    means. Two columns on a desktop, stacked on a phone. */
 .legal__dl {
   margin: 0 0 24px;
-  padding-left: 56px;
+  padding-left: 44px;
 }
 
 .legal__row {
@@ -971,20 +985,18 @@
 
   .legal__title { font-size: 26px; letter-spacing: -0.5px; }
 
-  /* The hanging indent is a desktop luxury: at 320px of measure it eats a
-     sixth of every line. On a phone the number runs into the text instead. */
-  .legal__n { width: auto; padding-right: 8px; }
+  /* The number column is a desktop luxury: at 320px of measure it eats a sixth
+     of every line. On a phone the number runs into the text instead. */
+  .legal__n { padding-right: 8px; }
 
   .legal__h,
   .legal__t,
-  .legal__p,
-  .legal__p--sub,
-  .legal__clause .legal__p {
-    padding-left: 0;
-    text-indent: 0;
+  .legal__p {
+    display: block;
   }
 
-  .legal__p--sub { padding-left: 20px; }
+  .legal__clause .legal__p { padding-left: 0; }
+  .legal__p--sub { margin-left: 20px; }
   .legal__ul { padding-left: 20px; }
   .legal__dl { padding-left: 0; }
   .legal__row { grid-template-columns: 1fr; gap: 8px; }
