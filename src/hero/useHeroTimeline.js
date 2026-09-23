@@ -14,7 +14,6 @@ import {
   BACKDROP_FADE,
   BACKDROP_Y,
   CLOSE_HEAD,
-  CLOSE_LINKS,
   CLOSE_ROW_A,
   CLOSE_ROW_B,
   DAY_LIFT,
@@ -904,17 +903,6 @@ export function useHeroTimeline({
       // the frame and never moves.
       if (refs.washTop.current) {
         track(refs.washTop.current, (slide) => ({ opacity: at(WASH_TOP, slide).o }))
-      }
-
-      // The legal row at the foot of the last slide. Opacity only, for the same
-      // reason: pinned to the bottom edge of the frame. It is also gated for
-      // the pointer, so the links cannot be tabbed to or clicked through the
-      // forty-two slides where they are invisible.
-      if (refs.closeLinks.current) {
-        track(refs.closeLinks.current, (slide) => {
-          const o = at(CLOSE_LINKS, slide).o
-          return { opacity: o, pointerEvents: o > 0.5 ? 'auto' : 'none' }
-        })
       }
 
       for (const [ref, table] of [

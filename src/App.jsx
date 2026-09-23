@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { Scene } from './Scene'
 import { Backdrop } from './Backdrop'
@@ -26,7 +26,6 @@ import {
   MOBILE_COPY_TOP,
   PARTNER_BAND,
   PILL_LABELS,
-  CLOSE_LINK_ITEMS,
   CLOSE_ROWS,
   CLOSE_TILE,
   RULER_HOURS,
@@ -345,7 +344,6 @@ export default function App() {
     twinHead: useRef(null),
     closeHead: useRef(null),
     closeRows: useRef([]),
-    closeLinks: useRef(null),
     washTop: useRef(null),
     pills: useRef(null),
     carousel: useRef(null),
@@ -945,33 +943,6 @@ export default function App() {
 
       <Nav />
       <AppStores />
-
-      {/* The legal row at the foot of the last slide.
-          FIXED to the viewport, not placed in the frame, for the same reason the
-          cue and the store badges are: the stage COVERS, so on anything wider
-          than 16:9 the bottom of the frame is cropped — and at 21:9 the file's
-          1032-1080 band is cropped away entirely, which would take the legal
-          links off the page on a wide monitor. 48 and 16 are the file's own
-          numbers, used at 1:1 like the cue's are.
-
-          The URLs come from the hyperlink ranges on the file's own text node
-          rather than being invented. Every one opens in a new tab: this is a
-          scroll sequence with no navigation of its own, so following a link
-          in-place would lose the reader's position in it entirely. */}
-      <nav className="close-links" ref={refs.closeLinks} aria-label="Legal and help">
-        {CLOSE_LINK_ITEMS.map(([label, href], i) => (
-          <Fragment key={href}>
-            {i > 0 ? (
-              <span className="close-links__sep" aria-hidden="true">
-                •
-              </span>
-            ) : null}
-            <a href={href} target="_blank" rel="noreferrer">
-              {label}
-            </a>
-          </Fragment>
-        ))}
-      </nav>
 
       {/* ----------------------------------------------------- the document */}
       <div id="smooth-wrapper" ref={wrapperRef}>

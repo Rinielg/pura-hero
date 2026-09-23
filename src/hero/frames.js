@@ -1610,33 +1610,6 @@ export const CLOSE_ROWS = [
   ['b', ['b1', 'b2', 'b3', 'b4', 'b5']],
 ]
 
-/**
- * The legal row across the foot of slide 43 — the last thing on the page.
- *
- * A 48-tall bar in #f7cdb9 pinned to the bottom of the frame, with three links
- * centred in it. Only its OPACITY is on the timeline: like `WASH_TOP` at the
- * top of the frame, it is pinned to an edge and never travels, so there is no
- * position to tween. It has no slide-42 pose in the file either, which is why
- * it fades rather than rising — a rise would be this build inventing a move.
- */
-export const CLOSE_LINKS = parked(42, { o: 0 }, [{ o: 1 }])
-
-/** The bar itself, in frame pixels. */
-export const CLOSE_LINK_BAR = { h: 48 }
-
-/**
- * The three links, with the URLs the FILE carries.
- *
- * They are real hyperlinks on the text node's ranges rather than a guess —
- * `getStyledTextSegments(['hyperlink'])` reads them straight off it, and the
- * file underlines each one, which is why they are underlined here.
- */
-export const CLOSE_LINK_ITEMS = [
-  ['Privacy Policy', 'https://pura.ai/privacy-policy/'],
-  ['Terms And Conditions', 'https://pura.ai/terms-and-conditions/'],
-  ['FAQS', 'https://pura.ai/faqs/'],
-]
-
 /** The category pills, in order. The first is the selected one. */
 export const PILL_LABELS = [
   'My Health',

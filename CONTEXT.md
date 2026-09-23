@@ -68,8 +68,8 @@ copy from the upload site.
 ### Two menus, one bar
 
 The first release ships the **Menu MVP** page's bar: `Longevity Clinic`, a
-`Partner with us` dropdown of three off-site links (WhatsApp, `tel:`, `mailto:`)
-and the Get the app pill. `NAVIGATION` in `config.js` switches it; `MENU` and
+`Partner with us` dropdown of three off-site links (WhatsApp, `tel:`, `mailto:`),
+a `More` dropdown carrying the two legal documents, and the Get the app pill. `NAVIGATION` in `config.js` switches it; `MENU` and
 its 23 pages are kept, not deleted, and still drive the **footer** and the "more
 in this pillar" band at the foot of every inner page. The routes stay mounted,
 so an inner page is reachable by URL and still links to its siblings — it is
@@ -79,12 +79,53 @@ Two things to know when the full menu comes back: the footer already shows all
 23 pages while the bar shows two, which is a decision waiting to be made rather
 than a bug; and `Longevity Clinic` has no page, so it points at `/`.
 
+**The MVP bar's own spec is node `6448:258272`** (frame *Menu MVP*), which draws
+five states: default, hover on each of the three labels, and More/Privacy Policy
+active. The More dropdown carries no icons and no descriptions — two titles and
+nothing else — where Partner with us carries a mark against each item.
+
 **Navigation spec: Figma node `6203:71995`** (page *Final Website*, frame
 *Menu*). It draws four states — default, hover, dropdown-item hover, and
 active/selected — with measurements the CSS follows exactly: bar 955×56, 24px
 left padding, 48px gaps; link row 40px tall with a 2px gap; each item a 40px
 pill with 16px side padding; dropdown card 294 wide, radius 16, 20px padding,
 items radius 8 with 16/20 padding and a 4px gap.
+
+### The two legal documents
+
+`/privacy-policy` and `/terms-and-conditions` are built to node `6448:258800`
+(frame *Privacy Policy*): the nav, a 262px cream band with a centred 32px title
+and a last-updated line, and then one 800px column of 16px body text. No hero,
+no photograph, no store badges and no footer — so they sit OUTSIDE `SiteLayout`
+and render the nav themselves, in `src/site/Legal.jsx`.
+
+The copy is **generated, not typed**. `scripts/legal_build.py` reads the two
+signed bilingual PDFs in the client folder and writes `src/site/legal-copy.js`;
+`scripts/legal_fixes.py` holds every correction applied on the way. To change
+the copy, change the PDF and re-run:
+
+```bash
+python3 scripts/legal_build.py src/site/legal-copy.js
+```
+
+Three things about that extraction are worth knowing before touching it:
+
+- The PDFs are **bilingual**, English left and Arabic right. The script crops to
+  the English column by x-coordinate and then strips what still bleeds in. A
+  whole-page extraction interleaves the two and silently scrambles word order —
+  that is what produced "Clinical consultations Services: telehealth" on the
+  first pass.
+- Everything in `legal_fixes.py` is a defect of the **extraction**, never of the
+  document. Source oddities are reproduced exactly: "mental, mental", "serrvice",
+  "the English text will prevail apply", "section5", "app..". This is the text
+  PureHealth's legal team signed, and a prototype that tidies it is quoting
+  something that was never agreed.
+- Privacy 8.1 is a **table** in the source. Nothing recovers a table from a text
+  dump, so its six rows are transcribed by hand in `legal_fixes.py` and rendered
+  as a `<dl>`.
+
+The two PayTabs links in Terms §5 are read off the PDF's own link annotations
+(`https://ai.paytabs.com/...`), not guessed.
 
 Two labels differ between the two sources. **Figma wins for the nav**: it says
 *Your Health* where the site says *My Health*, and *Pura AI* where the site says
@@ -1414,9 +1455,22 @@ const rootReasons = (el) => {
   "A doctor when you need one", which settles the duplicate headline — but the file
   tags both cards Mental Wellness, with the same brain mark, where card 4 used to
   carry Care. Followed as drawn. `tag-care.svg` is now unused and kept on disk.
-- **The footer still lists all 23 pages while the bar shows two.** The MVP menu is what
+- **The closing legal row is gone.** Slide 43's `Privacy Policy · Terms And Conditions ·
+  FAQS` bar was removed at Riniel's request once the two documents got real pages in the
+  More menu. It took `CLOSE_LINKS`, `CLOSE_LINK_BAR` and `CLOSE_LINK_ITEMS` with it, and
+  with them the only link to a **FAQs** page — which has no page on this site and was
+  pointing at `pura.ai/faqs/`. If the sequence should still end on a legal row, `8880acf`
+  is the last commit that has it.
+- **The two source PDFs contain errors that are reproduced verbatim.** "mental, mental",
+  "serrvice provider(s)", "the English text will prevail apply", "section5", "app..",
+  and a Care Plans bullet that stops mid-clause at "appointment reminder". They are in
+  the signed documents, so they are on the site. Worth raising with legal rather than
+  fixing in code — a fix here would put text on the page that nobody signed.
+- **The legal documents are dated August 2026 and the footer still lists all 23 pages
+  while the bar shows two.** The MVP menu is what
   ships and `MENU` still drives the footer and the inner pages' sibling band, which keeps
   the site connected — but for a first release the two disagree about how big the site is.
-  Riniel's call.
+  Riniel's call. The footer's More group now points at the two real documents instead of
+  the `/legal` summary page, which is still mounted but no longer linked from anywhere.
 - **The repo is private** because of the brand assets. Public visibility is Riniel's call.
 - The bundle is over 500 kB — three.js and the model. Code-splitting is untouched.

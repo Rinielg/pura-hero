@@ -164,7 +164,8 @@ export const MENU = [
     items: [
       { to: '/education', title: 'Education', body: 'Blogs, guides & articles' },
       { to: '/support', title: 'Support', body: 'Help & FAQs' },
-      { to: '/legal', title: 'Legal', body: 'Privacy Policy & Terms of Use' },
+      { to: '/privacy-policy', title: 'Privacy Policy' },
+      { to: '/terms-and-conditions', title: 'Terms & Conditions' },
     ],
   },
 ]
@@ -208,6 +209,17 @@ export const MENU_MVP = [
       { title: 'Whatsapp', icon: 'whatsapp', href: EXTERNAL.whatsapp },
       { title: 'Phone', icon: 'phone', href: EXTERNAL.phone },
       { title: 'Email', icon: 'email', href: EXTERNAL.partner },
+    ],
+  },
+  {
+    // The file's third label, added with the two legal documents. Its dropdown
+    // carries no icons and no descriptions — just the two titles, which is
+    // what the Menu MVP frame draws.
+    key: 'more',
+    label: 'More',
+    items: [
+      { to: '/privacy-policy', title: 'Privacy Policy' },
+      { to: '/terms-and-conditions', title: 'Terms & Conditions' },
     ],
   },
 ]

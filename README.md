@@ -15,7 +15,8 @@ Two sources feed it, and they are not interchangeable:
 | | Source |
 |---|---|
 | The sequence | Figma `Final Website` (slides 1–43), the `Carousel Selection 2`–`5` frames, the `Loader` frame |
-| The navigation | Figma `Menu MVP` for what ships; the `Menu` frame, node `6203:71995`, for the full one that is kept behind `NAVIGATION` in `config.js` |
+| The navigation | Figma `Menu MVP`, node `6448:258272`, for what ships; the `Menu` frame, node `6203:71995`, for the full one that is kept behind `NAVIGATION` in `config.js` |
+| The legal pages | node `6448:258800` for the layout; the two signed PDFs for every word of the copy |
 | Everything the inner pages say | `https://pura-website-upload-1.vercel.app` — **not** pura.ai, which is the older single-page site |
 
 The sequence is still growing. New slides go into `src/hero/frames.js` as extra
@@ -278,8 +279,11 @@ The result lands within 1.5% of the reference on both axes.
 /why-pura  /mission  /about  /trust
 /for-business  /partners
 /education  /support  /legal
+/privacy-policy  /terms-and-conditions
 ```
 
-Routes are **generated from `PAGES` in `src/site/content.js`**, so a dropdown
-entry without a page cannot silently 404. `vercel.json` carries the SPA rewrite
+The first 23 are **generated from `PAGES` in `src/site/content.js`**, so a
+dropdown entry without a page cannot silently 404. The last two are the legal
+documents: a different template, a different content source and their own
+routes in `main.jsx` — see CONTEXT §2b. `vercel.json` carries the SPA rewrite
 that makes direct loads and refreshes work.
